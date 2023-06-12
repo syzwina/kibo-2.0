@@ -11,6 +11,7 @@ import gov.nasa.arc.astrobee.types.Point;
 import gov.nasa.arc.astrobee.types.Quaternion;
 
 import org.opencv.aruco.Board;
+import org.opencv.imgproc.Imgproc;
 import org.opencv.aruco.DetectorParameters;
 import org.opencv.aruco.Dictionary;
 import org.opencv.core.Mat;
@@ -56,7 +57,8 @@ public class YourService extends KiboRpcService {
         Log.i(TAG, "start mission!");
 
         int counter = 0;
-        while (counter < 10000) {
+        while (counter < 10000 && api.getTimeRemaining().get(1) > 6000) {
+            Log.i(TAG, "TIME:" + api.getTimeRemaining().get(1));
             counter++;
             imageProcessing(dictionary, corners, detectorParameters, ids);
             moveCloserToArucoMarker(inspectCorners(corners));
@@ -163,155 +165,85 @@ public class YourService extends KiboRpcService {
         Point point;
         Point new_point;
 
-        if (current_target == 1) {
+        kinematics = api.getRobotKinematics();
+        quaternion = kinematics.getOrientation();
+        point = kinematics.getPosition();
 
-            kinematics = api.getRobotKinematics();
-            quaternion = kinematics.getOrientation();
-            point = kinematics.getPosition();
+        if (x_difference < -50) {
+            new_point = new Point(point.getX(), point.getY() + 0.2, point.getZ());
+            moveBee(new_point, quaternion, 0); // move to right in y-axis
+        }
+        else if (x_difference > 50) {
+            new_point = new Point(point.getX(), point.getY() - 0.2, point.getZ());
+            moveBee(new_point, quaternion, 0); // move to left in y-axis
+        }
 
-            if (x_difference < -50) {
-                new_point = new Point(point.getX(), point.getY() + 0.2, point.getZ());
-                moveBee(new_point, quaternion, 0); // move to right in y-axis
-            }
-            else if (x_difference > 50) {
-                new_point = new Point(point.getX(), point.getY() - 0.2, point.getZ());
-                moveBee(new_point, quaternion, 0); // move to left in y-axis
-            }
+        if (x_difference < -30) {
+            new_point = new Point(point.getX(), point.getY() + 0.1, point.getZ());
+            moveBee(new_point, quaternion, 0); // move to right in y-axis
+        }
+        else if (x_difference > 30) {
+            new_point = new Point(point.getX(), point.getY() - 0.1, point.getZ());
+            moveBee(new_point, quaternion, 0); // move to left in y-axis
+        }
 
-            if (x_difference < -30) {
-                new_point = new Point(point.getX(), point.getY() + 0.1, point.getZ());
-                moveBee(new_point, quaternion, 0); // move to right in y-axis
-            }
-            else if (x_difference > 30) {
-                new_point = new Point(point.getX(), point.getY() - 0.1, point.getZ());
-                moveBee(new_point, quaternion, 0); // move to left in y-axis
-            }
-
-            if (x_difference < -20) {
-                new_point = new Point(point.getX(), point.getY() + 0.05, point.getZ());
-                moveBee(new_point, quaternion, 0); // move to right in y-axis
-            }
-            else if (x_difference > 20) {
-                new_point = new Point(point.getX(), point.getY() - 0.05, point.getZ());
-                moveBee(new_point, quaternion, 0); // move to left in y-axis
-            }
-
-
-
-            kinematics = api.getRobotKinematics();
-            quaternion = kinematics.getOrientation();
-            point = kinematics.getPosition();
-
-            if (y_difference <  -50) {
-                new_point = new Point(point.getX() + 0.2, point.getY(), point.getZ());
-                moveBee(new_point, quaternion, 0); // move to down in x-axis
-            }
-            else if (y_difference > 50) {
-                new_point = new Point(point.getX() - 0.2, point.getY(), point.getZ());
-                moveBee(new_point, quaternion, 0); // move to up in x-axis
-            }
-
-            if (y_difference <  -30) {
-                new_point = new Point(point.getX() + 0.1, point.getY(), point.getZ());
-                moveBee(new_point, quaternion, 0); // move to down in x-axis
-            }
-            else if (y_difference > 30) {
-                new_point = new Point(point.getX() - 0.1, point.getY(), point.getZ());
-                moveBee(new_point, quaternion, 0); // move to up in x-axis
-            }
-
-            if (y_difference <  -20) {
-                new_point = new Point(point.getX() + 0.05, point.getY(), point.getZ());
-                moveBee(new_point, quaternion, 0); // move to down in x-axis
-            }
-            else if (y_difference > 20) {
-                new_point = new Point(point.getX() - 0.05, point.getY(), point.getZ());
-                moveBee(new_point, quaternion, 0); // move to up in x-axis
-            }
+        if (x_difference < -20) {
+            new_point = new Point(point.getX(), point.getY() + 0.05, point.getZ());
+            moveBee(new_point, quaternion, 0); // move to right in y-axis
+        }
+        else if (x_difference > 20) {
+            new_point = new Point(point.getX(), point.getY() - 0.05, point.getZ());
+            moveBee(new_point, quaternion, 0); // move to left in y-axis
         }
 
 
-        if (current_target == 2) {
 
-            kinematics = api.getRobotKinematics();
-            quaternion = kinematics.getOrientation();
-            point = kinematics.getPosition();
+        kinematics = api.getRobotKinematics();
+        quaternion = kinematics.getOrientation();
+        point = kinematics.getPosition();
 
-            if (x_difference < -50) {
-                new_point = new Point(point.getX() + 0.2, point.getY(), point.getZ());
-                moveBee(new_point, quaternion, 0); // move to right in x-axis
-            }
-            else if (x_difference > 50) {
-                new_point = new Point(point.getX() - 0.2, point.getY(), point.getZ());
-                moveBee(new_point, quaternion, 0); // move to left in x-axis
-            }
-
-            if (x_difference < -30) {
-                new_point = new Point(point.getX() + 0.1, point.getY(), point.getZ());
-                moveBee(new_point, quaternion, 0); // move to right in x-axis
-            }
-            else if (x_difference > 30) {
-                new_point = new Point(point.getX() - 0.1, point.getY(), point.getZ());
-                moveBee(new_point, quaternion, 0); // move to left in x-axis
-            }
-
-            if (x_difference < -20) {
-                new_point = new Point(point.getX() + 0.05, point.getY(), point.getZ());
-                moveBee(new_point, quaternion, 0); // move to right in x-axis
-            }
-            else if (x_difference > 20) {
-                new_point = new Point(point.getX() - 0.05, point.getY(), point.getZ());
-                moveBee(new_point, quaternion, 0); // move to left in x-axis
-            }
-
-
-            kinematics = api.getRobotKinematics();
-            quaternion = kinematics.getOrientation();
-            point = kinematics.getPosition();
-
-            if (y_difference < -50) {
-                new_point = new Point(point.getX(), point.getY(), point.getZ() + 0.1);
-                moveBee(new_point, quaternion, 0); // move down in z-axis
-            }
-            else if (y_difference > 50) {
-                new_point = new Point(point.getX(), point.getY(), point.getZ() - 0.1);
-                moveBee(new_point, quaternion, 0); // move up in z-axis
-            }
-
-            if (y_difference < -30) {
-                new_point = new Point(point.getX(), point.getY(), point.getZ() + 0.05);
-                moveBee(new_point, quaternion, 0); // move down in z-axis
-            }
-            else if (y_difference > 30) {
-                new_point = new Point(point.getX(), point.getY(), point.getZ() - 0.05);
-                moveBee(new_point, quaternion, 0); // move up in z-axis
-            }
-
-            if (y_difference < -20) {
-                new_point = new Point(point.getX(), point.getY(), point.getZ() + 0.025);
-                moveBee(new_point, quaternion, 0); // move down in z-axis
-            }
-            else if (y_difference > 20) {
-                new_point = new Point(point.getX(), point.getY(), point.getZ() - 0.025);
-                moveBee(new_point, quaternion, 0); // move up in z-axis
-            }
+        if (y_difference <  -50) {
+            new_point = new Point(point.getX() + 0.2, point.getY(), point.getZ());
+            moveBee(new_point, quaternion, 0); // move to down in x-axis
+        }
+        else if (y_difference > 50) {
+            new_point = new Point(point.getX() - 0.2, point.getY(), point.getZ());
+            moveBee(new_point, quaternion, 0); // move to up in x-axis
         }
 
+        if (y_difference <  -30) {
+            new_point = new Point(point.getX() + 0.1, point.getY(), point.getZ());
+            moveBee(new_point, quaternion, 0); // move to down in x-axis
+        }
+        else if (y_difference > 30) {
+            new_point = new Point(point.getX() - 0.1, point.getY(), point.getZ());
+            moveBee(new_point, quaternion, 0); // move to up in x-axis
+        }
+
+        if (y_difference <  -20) {
+            new_point = new Point(point.getX() + 0.05, point.getY(), point.getZ());
+            moveBee(new_point, quaternion, 0); // move to down in x-axis
+        }
+        else if (y_difference > 20) {
+            new_point = new Point(point.getX() - 0.05, point.getY(), point.getZ());
+            moveBee(new_point, quaternion, 0); // move to up in x-axis
+        }
     }
 
     private void imageProcessing(Dictionary dictionary, List<Mat> corners, DetectorParameters detectorParameters, Mat ids) {
 
-        Mat image = api.getMatNavCam();
-        image = api.getMatNavCam();
-        api.saveMatImage(image, "nearTarget" + current_target + ".png");
+        Mat grayImage = api.getMatNavCam();
+        api.saveMatImage(grayImage, "nearTarget" + current_target + ".png");
 
-
+        Mat colorImage = new Mat();
+        // Convert the grayscale image to color
+        Imgproc.cvtColor(grayImage, colorImage, Imgproc.COLOR_GRAY2BGR);
 
         Log.i(TAG, "TARGET " + current_target + " image processing");
-        Aruco.detectMarkers(image, dictionary, corners, ids, detectorParameters);
-        Aruco.drawDetectedMarkers(image, corners, ids, new Scalar( 0, 150, 250 ));
+        Aruco.detectMarkers(colorImage, dictionary, corners, ids, detectorParameters);
+        Aruco.drawDetectedMarkers(colorImage, corners, ids, new Scalar( 0, 255, 0 ));
 
-        api.saveMatImage(image, "processedNearTarget" + current_target + ".png");
+        api.saveMatImage(colorImage, "processedNearTarget" + current_target + ".png");
 
     }
 
