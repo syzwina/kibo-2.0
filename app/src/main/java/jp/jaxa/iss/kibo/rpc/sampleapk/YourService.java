@@ -55,98 +55,18 @@ public class YourService extends KiboRpcService {
         api.startMission();
         Log.i(TAG, "start mission!");
 
-        current_target = 1;
-
-        // POINT 1
-        Point point = new Point(10.71f, -7.9f, 4.48f);
-        // Point point = new Point(10.3f, -7.3f, 4.48f); tested with this, but failed
-        Quaternion quaternion = new Quaternion(0f, 0.707f, 0f, 0.707f);
-        moveBee(point, quaternion, 1);
-
-        // report point1 arrival
-        // api.reportPoint1Arrival();
-        // new api doesn't have this?
-
         int counter = 0;
-        while (counter < 10) {
+        while (counter < 10000) {
             counter++;
             imageProcessing(dictionary, corners, detectorParameters, ids);
             moveCloserToArucoMarker(inspectCorners(corners));
             corners.clear();
         }
 
-
-
-        // irradiate the laser
-        Log.i(TAG, "turn laser on");
-        api.laserControl(true);
 
         // take target1 snapshots
         Log.i(TAG, "take target 1 snapshot");
         api.takeTargetSnapshot(1);
-
-        // turn the laser off
-        Log.i(TAG, "turn laser off");
-        api.laserControl(false);
-
-        current_target = 2;
-
-        // POINT 2 : lower than POINT 1
-        point = new Point(10.7f, -7.7f, 5f);
-        quaternion = new Quaternion(0f, 0f, -0.707f, 0.707f);
-        moveBee(point, quaternion, 2);
-
-        // POINT 3 : move forward towards target 2
-        point = new Point(10.7f, -9.5f, 5f);
-        quaternion = new Quaternion(0f, 0f, -0.707f, 0.707f);
-        moveBee(point, quaternion, 3);
-
-        // POINT 4 : move forward towards 'POINT 2 - as given in rulebook'
-        point = new Point(11.27460f, -9.92284f, 5.29881f);
-        // point = new Point(11.4f, -9.92284f, 5.29881f); tested with this but failed?
-        quaternion = new Quaternion(0f, 0f, -0.707f, 0.707f);
-        moveBee(point, quaternion, 4);
-
-
-
-        counter = 0;
-        while (counter < 10) {
-            counter++;
-            imageProcessing(dictionary, corners, detectorParameters, ids);
-            moveCloserToArucoMarker(inspectCorners(corners));
-            corners.clear();
-        }
-
-
-
-        // best not to turn lasers on when ydk if bee is pointing to the right thing
-
-        // irradiate the laser
-        Log.i(TAG, "turn laser on");
-        api.laserControl(true);
-
-        // take target2 snapshots
-        api.takeTargetSnapshot(2);
-
-        // turn the laser off
-        Log.i(TAG, "turn laser off");
-        api.laserControl(false);
-
-        // POINT 5 : move back to previous position
-        point = new Point(10.7f, -9.5f, 5f);
-        quaternion = new Quaternion(0f, 0f, -0.707f, 0.707f);
-        moveBee(point, quaternion, 5);
-
-        // POINT 6 : go back to POINT 2
-        point = new Point(10.7f, -7.7f, 5f);
-        quaternion = new Quaternion(0f, 0f, -0.707f, 0.707f);
-        moveBee(point, quaternion, 6);
-
-        // POINT 7 : go to GOAL / CREW
-        point = new Point(11.27460f, -7.89178f, 4.96538f);
-        quaternion = new Quaternion(0f, 0f, -0.707f, 0.707f);
-        moveBee(point, quaternion, 7);
-
 
 
         // send mission completion
