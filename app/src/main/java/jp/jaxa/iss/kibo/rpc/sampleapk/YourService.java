@@ -1,6 +1,5 @@
 package jp.jaxa.iss.kibo.rpc.sampleapk;
 
-import android.os.Looper;
 import android.util.Log;
 
 import gov.nasa.arc.astrobee.Kinematics;
@@ -10,7 +9,6 @@ import gov.nasa.arc.astrobee.Result;
 import gov.nasa.arc.astrobee.types.Point;
 import gov.nasa.arc.astrobee.types.Quaternion;
 
-import org.opencv.aruco.Board;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.aruco.DetectorParameters;
 import org.opencv.aruco.Dictionary;
@@ -18,8 +16,10 @@ import org.opencv.core.Mat;
 import org.opencv.aruco.Aruco;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
+import org.opencv.core.Point;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -131,8 +131,11 @@ public class YourService extends KiboRpcService {
         final int x_coords = 0;
         final int y_coords = 1;
 
+
+
         for (int corner=0;corner<corners.size();corner++) {
             size = corners.get(corner).size();
+
             for (int j = 0; j < size.width; j++) {
                 if (corner == 0 && j == 0) bottomleft = corners.get(corner).get(0, j);
                 if (corner == 1 && j == 2) bottomright = corners.get(corner).get(0, j);
@@ -242,6 +245,8 @@ public class YourService extends KiboRpcService {
         Log.i(TAG, "TARGET " + current_target + " image processing");
         Aruco.detectMarkers(colorImage, dictionary, corners, ids, detectorParameters);
         Aruco.drawDetectedMarkers(colorImage, corners, ids, new Scalar( 0, 255, 0 ));
+
+         Imgproc.putText(colorImage, "Aruco:"+ Arrays.toString(ids.get(0,0)), new org.opencv.core.Point(30.0, 80.0), 3, 0.5, new Scalar(255, 0, 0, 255), 1);
 
         api.saveMatImage(colorImage, "processedNearTarget" + current_target + ".png");
 
