@@ -95,22 +95,57 @@ public class YourService extends KiboRpcService {
         // the mission starts
         api.startMission();
         Log.i(TAG, "start mission!");
+        // technically i could just use while loop and count to 6 or 6 target, but this is not optimal as there will be only 2 target active at a time
+        // so revise this for sure, rn just checking if it moving according to what i think it'll move
+        //api.getActiveTargets()
+        // commented out the while loop for thinking later as im writing the pathrun manually in sequence
+        //int counter = 0;
+        //while (counter < 5 && api.getTimeRemaining().get(1) > 10 * 1000) {
+            Log.i(TAG, "TIME REMAINING:" + api.getTimeRemaining().get(1));
+            //counter++;
+            // move bee to point 1
+            moveBee(POINT1_COORDS, POINT1_QUATERNION, 1);
+            // turn on flashlight to improve accuracy, value taken from page 33 in manual
+            api.flashlightControlFront( (float) 0.5);
+            // optimize center using image processing the corners
+            optimizeCenter();
+            // irradiate with laser
+            laserBeam();
+            // turn off flashlight
+            api.flashlightControlFront((float) 0);
 
-        int counter = 0;
-        while (counter < 10000 && api.getTimeRemaining().get(1) > 10 * 1000) {
-            Log.i(TAG, "TIME:" + api.getTimeRemaining().get(1));
-            counter++;
-            imageProcessing(dictionary, corners, detectorParameters, ids);
-            moveCloserToArucoMarker(inspectCorners(corners));
-            corners.clear();
-        }
+            // move bee to point 2
+            moveBee(POINT2_COORDS, POINT2_QUATERNION, 2);
+            // turn on flashlight to improve accuracy, value taken from page 33 in manual
+            api.flashlightControlFront( (float) 0.5);
+            // optimize center using image processing the corners
+            optimizeCenter();
+            // irradiate with laser
+            laserBeam();
+            // turn off flashlight
+            api.flashlightControlFront((float) 0);
+
+            // previously had repetition of above codes till point 6 but removed temporarily for brevity
+        //}
 
 
         // take target1 snapshots
 //        Log.i(TAG, "take target 1 snapshot");
 //        api.takeTargetSnapshot(1);
 
-        moveBee(GOAL_COORDS, GOAL_QUATERNION, 7);
+        // move bee to target 7
+        moveBee(POINT7_COORDS, POINT7_QUATERNION, 7);
+        // turn on flashlight to improve accuracy, value taken from page 33 in manual
+        api.flashlightControlFront( (float) 0.5);
+        // optimize center using image processing the corners
+        optimizeCenter();
+        // read QR code dummy function, not yet implemented
+        readQR();
+        // turn off flashlight
+        api.flashlightControlFront((float) 0);
+
+        api.notifyGoingToGoal();
+        moveBee(GOAL_COORDS, GOAL_QUATERNION, 8);
 
         // send mission completion
         api.reportMissionCompletion("Mission Complete!");
@@ -146,6 +181,32 @@ public class YourService extends KiboRpcService {
         arucoTargets.put(14,4);
         arucoTargets.put(15,4);
         arucoTargets.put(16,4);
+
+    }
+
+    private void optimizeCenter(){
+        int img_process_counter = 0;
+        while (img_process_counter < 10) {
+            imageProcessing(dictionary, corners, detectorParameters, ids);
+            moveCloserToArucoMarker(inspectCorners(corners));
+            corners.clear();
+            img_process_counter++;
+        }
+    }
+
+    private void laserBeam(){
+        // turn on laser
+        api.laserControl(true);
+        try {
+            Thread.sleep(500); // Sleep for 1 second, not sure need or not, reconfirm this
+        } catch (InterruptedException e) {
+            // Handle the exception if necessary
+        }
+        // turn off laser
+        api.laserControl(false);
+    }
+
+    private void readQR(){
 
     }
 
