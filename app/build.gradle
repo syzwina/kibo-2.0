@@ -50,4 +50,7 @@ dependencies {
     }
     testCompile 'junit:junit:4.12'
     compile 'com.quickbirdstudios:opencv:3.4.4-contrib'
+    compile files('lib/commons-math3-3.6.1.jar')
+
 }
+

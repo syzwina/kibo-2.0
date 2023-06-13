@@ -23,6 +23,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+// for pathfinding
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+
 /**
  * Class meant to handle commands from the Ground Data System and execute them in Astrobee
  */
@@ -36,6 +39,7 @@ public class YourService extends KiboRpcService {
     private final KeepOutZone KOZ03 = new KeepOutZone(10.185f, -8.3826f, 4.1475f, 11.665f, -8.2826f, 4.6725f);
     private final KeepOutZone KOZ04 = new KeepOutZone(10.7955f, -8.0635f, 5.1055f, 11.3525f, -7.7305f, 5.1305f);
     private final KeepOutZone KOZ05 = new KeepOutZone(10.563f, -7.1449f, 4.6544f, 10.709f, -6.8099f, 4.8164f);
+    private KeepOutZone currentKOZ = new KeepOutZone(0f,0f,0f,0f,0f,0f); // not really needed but put it here anyway
 
     private final KeepInZone KIZ01 = new KeepInZone(10.3f, -10.2f, 4.32f, 11.55f, -6.0f, 5.57f);
     private final KeepInZone KIZ02 = new KeepInZone(9.5f, -10.5f, 4.02f, 10.5f, -9.6f, 4.8f);
@@ -47,6 +51,8 @@ public class YourService extends KiboRpcService {
      * Constants defined from RULEBOOK
      */
 
+    private Point currentCoords = new Point(0,0,0);
+    private Point currentGoalCoords = new Point(0,0,0);
     private final Point START_COORDS = new Point(9.815, -9.806, 4.293);
     private final Point GOAL_COORDS = new Point(11.143, -6.7607, 4.9654);
     private final Point POINT1_COORDS = new Point(11.2746, -9.92284, 5.2988);
@@ -64,6 +70,7 @@ public class YourService extends KiboRpcService {
     private final Point TARGET6_COORDS = new Point(12.023, -8.989, 4.8305);
     private final Point QR_CODE_COORDS = new Point(11.381944, -8.566172, 3.76203);
 
+    private Quaternion currentQuaternion = new Quaternion(0,0,0,0);
     private final Quaternion START_QUATERNION = new Quaternion((float) 1, (float) 0, (float) 0, (float) 0);
     private final Quaternion GOAL_QUATERNION = new Quaternion((float) 0, (float) 0, (float) -0.707, (float) 0.707);
     private final Quaternion POINT1_QUATERNION = new Quaternion((float) 0, (float) 0, (float) -0.707, (float) 0.707);
@@ -87,6 +94,7 @@ public class YourService extends KiboRpcService {
     Dictionary dictionary;
     Mat ids;
 
+
     @Override
     protected void runPlan1(){
 
@@ -103,6 +111,10 @@ public class YourService extends KiboRpcService {
         //while (counter < 5 && api.getTimeRemaining().get(1) > 10 * 1000) {
             Log.i(TAG, "TIME REMAINING:" + api.getTimeRemaining().get(1));
             //counter++;
+
+            // move bee from KIZ2 to KIZ1 by moving to bottom right of KIZ2
+            moveBee(new Point(10.4, -9.9, 4.50), POINT1_QUATERNION, 0);
+
             // move bee to point 1
             moveBee(POINT1_COORDS, POINT1_QUATERNION, 1);
             // turn on flashlight to improve accuracy, value taken from page 33 in manual
@@ -110,18 +122,18 @@ public class YourService extends KiboRpcService {
             // optimize center using image processing the corners
             optimizeCenter();
             // irradiate with laser
-            laserBeam();
+            laserBeam(current_target);
             // turn off flashlight
             api.flashlightControlFront((float) 0);
 
             // move bee to point 2
-            moveBee(POINT2_COORDS, POINT2_QUATERNION, 2);
+            moveBee(POINT2_COORDS, POINT2_QUATERNION, current_target);
             // turn on flashlight to improve accuracy, value taken from page 33 in manual
             api.flashlightControlFront( (float) 0.5);
             // optimize center using image processing the corners
             optimizeCenter();
             // irradiate with laser
-            laserBeam();
+            laserBeam(current_target);
             // turn off flashlight
             api.flashlightControlFront((float) 0);
 
@@ -134,7 +146,7 @@ public class YourService extends KiboRpcService {
 //        api.takeTargetSnapshot(1);
 
         // move bee to target 7
-        moveBee(POINT7_COORDS, POINT7_QUATERNION, 7);
+        moveBee(POINT7_COORDS, POINT7_QUATERNION, current_target);
         // turn on flashlight to improve accuracy, value taken from page 33 in manual
         api.flashlightControlFront( (float) 0.5);
         // optimize center using image processing the corners
@@ -145,7 +157,7 @@ public class YourService extends KiboRpcService {
         api.flashlightControlFront((float) 0);
 
         api.notifyGoingToGoal();
-        moveBee(GOAL_COORDS, GOAL_QUATERNION, 8);
+        moveBee(GOAL_COORDS, GOAL_QUATERNION, current_target);
 
         // send mission completion
         api.reportMissionCompletion("Mission Complete!");
@@ -194,7 +206,7 @@ public class YourService extends KiboRpcService {
         }
     }
 
-    private void laserBeam(){
+    private void laserBeam(int current_target){
         // turn on laser
         api.laserControl(true);
         try {
@@ -202,8 +214,7 @@ public class YourService extends KiboRpcService {
         } catch (InterruptedException e) {
             // Handle the exception if necessary
         }
-        // turn off laser
-        api.laserControl(false);
+        api.takeTargetSnapshot(current_target);
     }
 
     private void readQR(){
@@ -214,13 +225,27 @@ public class YourService extends KiboRpcService {
         float x = (float) point.getX();
         float y = (float) point.getY();
         float z = (float) point.getZ();
-        if (KOZ01.contains(x,y,z)
-                || KOZ02.contains(x,y,z)
-                || KOZ03.contains(x,y,x)
-                || KOZ04.contains(x,y,x)
-                || KOZ05.contains(x,y,x))
+        if (KOZ01.contains(x,y,z)) {
+            currentKOZ = KOZ01;
             return false;
-        return true;
+        }
+        else if (KOZ02.contains(x,y,z)){
+            currentKOZ = KOZ02;
+            return false;
+        }
+        else if (KOZ03.contains(x,y,z)){
+            currentKOZ = KOZ03;
+            return false;
+        }
+        else if (KOZ04.contains(x,y,z)){
+            currentKOZ = KOZ04;
+            return false;
+        }
+        else if (KOZ05.contains(x,y,z)){
+            currentKOZ = KOZ05;
+            return false;
+        }
+        else return true;
     }
 
     private boolean checksForKIZ(Point point){
@@ -234,9 +259,13 @@ public class YourService extends KiboRpcService {
     private void moveBee(Point point, Quaternion quaternion, int pointNumber){
 
         final int LOOP_MAX = 5;
-
+        currentGoalCoords = point;
+        currentQuaternion = quaternion;
         if (checksForKOZ(point)) Log.i(TAG, "point " + pointNumber + " is NOT in KOZ");
-        else Log.e(TAG, "point " + pointNumber + " is in KOZ");
+        else {
+            Log.e(TAG, "point " + pointNumber + " is in KOZ: " + currentKOZ.toString());
+            pathfind();
+        }
         if (checksForKIZ(point)) Log.i(TAG, "point " + pointNumber + " is in KIZ");
         else Log.e(TAG, "point " + pointNumber + " is NOT in KIZ");
         Log.i(TAG, "move to point " + pointNumber);
@@ -252,6 +281,100 @@ public class YourService extends KiboRpcService {
         if (result.hasSucceeded()) Log.i(TAG, "successfully moved to point " + pointNumber);
         else Log.e(TAG, "failed to move to point " + pointNumber);
         Log.i("coords", "point: x = " + point.getX() + ", y = " + point.getY() + ", z = " + point.getZ());
+    }
+
+    private void pathfind(){
+        Log.i("pathfind", "Pathfinding activated");
+        if (api.getRobotKinematics().getConfidence() == Kinematics.Confidence.GOOD) {
+            currentCoords = api.getRobotKinematics().getPosition();
+            Log.i("pathfind", "current coords is: x = " + currentCoords.getX() + ", y = " + currentCoords.getY() + ", z = " + currentCoords.getZ());
+            Quaternion currentOrientation = api.getRobotKinematics().getOrientation();
+            Log.i("pathfind", "current orient is: w = " + currentOrientation.getW() + " x = " + currentOrientation.getX() + ", y = " + currentOrientation.getY() + ", z = " + currentOrientation.getZ());
+            //try move out of corresponding KOZ
+
+            Vector3D currentPosition = new Vector3D(currentCoords.getX(),currentCoords.getY(),currentCoords.getZ());
+            Vector3D goalPosition = new Vector3D(currentGoalCoords.getX(),currentGoalCoords.getY(),currentGoalCoords.getZ());
+            while (!reachedGoal(currentPosition, goalPosition)){
+                int obstructedAxis = findObstructedAxis(currentPosition, goalPosition);
+
+                if (obstructedAxis == -1) {
+                    // No obstructed axis, move directly towards the goal
+                    moveTowardsGoal(currentPosition,goalPosition);
+                } else {
+                    // Move along the axis with the least obstruction
+                    moveAlongAxis(obstructedAxis,currentPosition,goalPosition);
+                }
+            }
+        }
+    }
+
+    private boolean reachedGoal(Vector3D currentPosition, Vector3D goalPosition) {
+        // Check if the current position is close enough to the goal
+        double threshold = 0.1;
+        double distance = currentPosition.distance(goalPosition);
+
+        return distance < threshold;
+    }
+
+    private int findObstructedAxis(Vector3D currentPosition, Vector3D goalPosition) {
+        // Check for obstructions along each axis (X, Y, Z)
+        // Determine which axis has the least obstruction
+        // In this example, assume the axis with the smallest difference in position is the least obstructed
+
+        double dx = Math.abs(currentPosition.getX() - goalPosition.getX());
+        double dy = Math.abs(currentPosition.getY() - goalPosition.getY());
+        double dz = Math.abs(currentPosition.getZ() - goalPosition.getZ());
+
+        if (dx < dy && dx < dz) {
+            return 0; // X-axis is obstructed
+        } else if (dy < dx && dy < dz) {
+            return 1; // Y-axis is obstructed
+        } else if (dz < dx && dz < dy) {
+            return 2; // Z-axis is obstructed
+        } else {
+            return -1; // No axis is obstructed or they are obstructed equally
+        }
+    }
+
+    private void moveTowardsGoal(Vector3D currentPosition, Vector3D goalPosition) {
+        // Move towards the goal by a certain distance or step size
+        double stepSize = 0.1;
+
+        Vector3D direction = goalPosition.subtract(currentPosition);
+        double distance = direction.getNorm();
+        double ratio = stepSize / distance;
+
+        Vector3D newPosition = currentPosition.add(direction.scalarMultiply(ratio));
+        //currentPosition = newPosition;
+        Point newPoint = new Point(newPosition.getX(),newPosition.getY(),newPosition.getZ());
+        moveBee(newPoint, currentQuaternion, current_target);
+        System.out.println("Moved towards goal: " + newPosition);
+    }
+
+    private void moveAlongAxis(int axis, Vector3D currentPosition, Vector3D goalPosition) {
+        // Move along the specified axis
+        double stepSize = 0.1;
+
+        Vector3D direction;
+        if (axis == 0) {
+            // Move along the X-axis
+            direction = new Vector3D(goalPosition.getX() - currentPosition.getX(), 0, 0);
+        } else if (axis == 1) {
+            // Move along the Y-axis
+            direction = new Vector3D(0, goalPosition.getY() - currentPosition.getY(), 0);
+        } else {
+            // Move along the Z-axis
+            direction = new Vector3D(0, 0, goalPosition.getZ() - currentPosition.getZ());
+        }
+
+        double distance = direction.getNorm();
+        double ratio = stepSize / distance;
+
+        Vector3D newPosition = currentPosition.add(direction.scalarMultiply(ratio));
+        //currentPosition = newPosition;
+        Point newPoint = new Point(newPosition.getX(),newPosition.getY(),newPosition.getZ());
+        moveBee(newPoint, currentQuaternion, current_target);
+        System.out.println("Moved along axis " + axis + ": " + newPosition);
     }
 
     private double[] inspectCorners(List<Mat> corners) {
