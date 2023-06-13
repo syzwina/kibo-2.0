@@ -201,7 +201,6 @@ public class YourService extends KiboRpcService {
 
         // use mod 4 to get whether it is tl, tr, bl, br
 
-        HashMap<Integer, Integer> arucoTargets = new HashMap<Integer, Integer>();
 
         double[] topright;
         double[] topleft;
@@ -211,10 +210,10 @@ public class YourService extends KiboRpcService {
         final int x_coords = 0;
         final int y_coords = 1;
 
-        bottomleft = corners.get(0).get(0, 0);
-        bottomright = corners.get(1).get(0, 2);
-        topleft = corners.get(2).get(0, 0);
-        topright = corners.get(3).get(0, 2);
+        bottomleft  = corners.get(0).get(0, 2);
+        bottomright = corners.get(0).get(0, 3);
+        topleft     = corners.get(0).get(0, 1);
+        topright    = corners.get(0).get(0, 0);
 
         double aruco_middle_x = (bottomleft[x_coords] + bottomright[x_coords] + topleft[x_coords] + topright[x_coords])/4;
         double aruco_middle_y = (bottomleft[y_coords] + bottomright[y_coords] + topleft[y_coords] + topright[y_coords])/4;
