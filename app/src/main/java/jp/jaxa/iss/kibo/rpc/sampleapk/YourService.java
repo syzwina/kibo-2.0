@@ -16,7 +16,7 @@ import org.opencv.core.Mat;
 import org.opencv.aruco.Aruco;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
-import org.opencv.core.Point;
+//import org.opencv.core.Point;
 
 import java.util.ArrayList;
 import java.util.Arrays;
