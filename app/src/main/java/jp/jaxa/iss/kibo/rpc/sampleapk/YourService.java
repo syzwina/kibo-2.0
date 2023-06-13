@@ -20,6 +20,7 @@ import org.opencv.core.Size;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -41,23 +42,23 @@ public class YourService extends KiboRpcService {
 
     private int current_target = 0;
 
+    HashMap<Integer, Integer> arucoTargets;
+    DetectorParameters detectorParameters;
+    List<Mat> corners;
+    Dictionary dictionary;
+    Mat ids;
 
     @Override
     protected void runPlan1(){
 
-        Log.i(TAG, "make dictionary");
-        Dictionary dictionary = Aruco.getPredefinedDictionary(Aruco.DICT_5X5_250);
-        List<Mat> corners = new ArrayList<Mat>();
-
-        Mat ids = new Mat(1, 4, 1, new Scalar( 0, 150, 250 ));
-        DetectorParameters detectorParameters = DetectorParameters.create();
+        init();
 
         // the mission starts
         api.startMission();
         Log.i(TAG, "start mission!");
 
         int counter = 0;
-        while (counter < 10000 && api.getTimeRemaining().get(1) > 6000) {
+        while (counter < 10000 && api.getTimeRemaining().get(1) > 10 * 1000) {
             Log.i(TAG, "TIME:" + api.getTimeRemaining().get(1));
             counter++;
             imageProcessing(dictionary, corners, detectorParameters, ids);
@@ -67,13 +68,45 @@ public class YourService extends KiboRpcService {
 
 
         // take target1 snapshots
-        Log.i(TAG, "take target 1 snapshot");
-        api.takeTargetSnapshot(1);
+//        Log.i(TAG, "take target 1 snapshot");
+//        api.takeTargetSnapshot(1);
 
+        moveBee(new Point (11.143, -6.7607, 4.9654), new Quaternion(0, 0, (float) -0.707, (float)-0.707), 7);
 
         // send mission completion
         api.reportMissionCompletion("Mission Complete!");
         Log.i(TAG, "reported mission completion");
+
+    }
+
+    private void init() {
+
+        // initialise aruco dictionary
+        dictionary = Aruco.getPredefinedDictionary(Aruco.DICT_5X5_250);
+
+        // initialise objects to be used in image processing
+        corners = new ArrayList<Mat>();
+        ids = new Mat(1, 4, 1, new Scalar( 0, 150, 250 ));
+        detectorParameters = DetectorParameters.create();
+
+        // initialise target to aruco marker hashmap
+        arucoTargets = new HashMap<Integer, Integer>();
+        arucoTargets.put(1,1);
+        arucoTargets.put(2,1);
+        arucoTargets.put(3,1);
+        arucoTargets.put(4,1);
+        arucoTargets.put(5,2);
+        arucoTargets.put(6,2);
+        arucoTargets.put(7,2);
+        arucoTargets.put(8,2);
+        arucoTargets.put(9,3);
+        arucoTargets.put(10,3);
+        arucoTargets.put(11,3);
+        arucoTargets.put(12,3);
+        arucoTargets.put(13,4);
+        arucoTargets.put(14,4);
+        arucoTargets.put(15,4);
+        arucoTargets.put(16,4);
 
     }
 
@@ -123,26 +156,26 @@ public class YourService extends KiboRpcService {
 
     private double[] inspectCorners(List<Mat> corners) {
 
-        Size size;
-        double[] topright = {0,0};
-        double[] topleft = {0,0};
-        double[] bottomleft = {0,0};
-        double[] bottomright = {0,0};
+        // once you choose one ID
+        // decide which ID it is, and were it is relative to the centre of the circle
+        // and set the new 'centre' coordinate to 'aruco_middle'
+
+        // use mod 4 to get whether it is tl, tr, bl, br
+
+        HashMap<Integer, Integer> arucoTargets = new HashMap<Integer, Integer>();
+
+        double[] topright;
+        double[] topleft;
+        double[] bottomleft;
+        double[] bottomright;
+
         final int x_coords = 0;
         final int y_coords = 1;
 
-
-
-        for (int corner=0;corner<corners.size();corner++) {
-            size = corners.get(corner).size();
-
-            for (int j = 0; j < size.width; j++) {
-                if (corner == 0 && j == 0) bottomleft = corners.get(corner).get(0, j);
-                if (corner == 1 && j == 2) bottomright = corners.get(corner).get(0, j);
-                if (corner == 2 && j == 0) topleft = corners.get(corner).get(0, j);
-                if (corner == 3 && j == 2) topright = corners.get(corner).get(0, j);
-            }
-        }
+        bottomleft = corners.get(0).get(0, 0);
+        bottomright = corners.get(1).get(0, 2);
+        topleft = corners.get(2).get(0, 0);
+        topright = corners.get(3).get(0, 2);
 
         double aruco_middle_x = (bottomleft[x_coords] + bottomright[x_coords] + topleft[x_coords] + topright[x_coords])/4;
         double aruco_middle_y = (bottomleft[y_coords] + bottomright[y_coords] + topleft[y_coords] + topright[y_coords])/4;
