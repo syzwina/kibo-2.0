@@ -42,6 +42,45 @@ public class YourService extends KiboRpcService {
 
     private int current_target = 0;
 
+
+    /**
+     * Constants defined from RULEBOOK
+     */
+
+    private final Point START_COORDS = new Point(9.815, -9.806, 4.293);
+    private final Point GOAL_COORDS = new Point(11.143, -6.7607, 4.9654);
+    private final Point POINT1_COORDS = new Point(11.2746, -9.92284, 5.2988);
+    private final Point POINT2_COORDS = new Point(10.612, -9.0709, 4.48);
+    private final Point POINT3_COORDS = new Point(10.71, -7.7, 4.48);
+    private final Point POINT4_COORDS = new Point(10.51, -6.7185, 5.1804);
+    private final Point POINT5_COORDS = new Point(11.114, -7.9756, 5.3393);
+    private final Point POINT6_COORDS = new Point(11.355, -8.9929, 4.7818);
+    private final Point POINT7_COORDS = new Point(11.369, -8.5518, 4.48);
+    private final Point TARGET1_COORDS = new Point(11.2625, -10.58, 5.3625);
+    private final Point TARGET2_COORDS = new Point(10.513384, -9.085172, 3.76203);
+    private final Point TARGET3_COORDS = new Point(10.6031, -7.71007, 3.76093);
+    private final Point TARGET4_COORDS = new Point(9.866984, -6.673972, 5.09531);
+    private final Point TARGET5_COORDS = new Point(11.102, -8.0304, 5.9076);
+    private final Point TARGET6_COORDS = new Point(12.023, -8.989, 4.8305);
+    private final Point QR_CODE_COORDS = new Point(11.381944, -8.566172, 3.76203);
+
+    private final Quaternion START_QUATERNION = new Quaternion((float) 1, (float) 0, (float) 0, (float) 0);
+    private final Quaternion GOAL_QUATERNION = new Quaternion((float) 0, (float) 0, (float) -0.707, (float) 0.707);
+    private final Quaternion POINT1_QUATERNION = new Quaternion((float) 0, (float) 0, (float) -0.707, (float) 0.707);
+    private final Quaternion POINT2_QUATERNION = new Quaternion((float) 0.5, (float) 0.5, (float) -0.5, (float) 0.5);
+    private final Quaternion POINT3_QUATERNION = new Quaternion((float) 0, (float) 0.707, (float) 0, (float) 0.707);
+    private final Quaternion POINT4_QUATERNION = new Quaternion((float) 0, (float) 0, (float) -1, (float) 0);
+    private final Quaternion POINT5_QUATERNION = new Quaternion((float) -0.5, (float) -0.5, (float) -0.5, (float) 0.5);
+    private final Quaternion POINT6_QUATERNION = new Quaternion((float) 0, (float) 0, (float) 0, (float) 1);
+    private final Quaternion POINT7_QUATERNION = new Quaternion((float) 0, (float) 0.707, (float) 0, (float) 0.707);
+    private final Quaternion TARGET1_QUATERNION = new Quaternion((float) 0.707, (float) 0, (float) 0, (float) 0.707);
+    private final Quaternion TARGET2_QUATERNION = new Quaternion((float) 0, (float) 0, (float) 0, (float) 1);
+    private final Quaternion TARGET3_QUATERNION = new Quaternion((float) 0.707, (float) 0, (float) 0, (float) 0.707);
+    private final Quaternion TARGET4_QUATERNION = new Quaternion((float) -0.5, (float) 0.5, (float) -0.5, (float) 0.5);
+    private final Quaternion TARGET5_QUATERNION = new Quaternion((float) 1, (float) 0, (float) 0, (float) 0);
+    private final Quaternion TARGET6_QUATERNION = new Quaternion((float) 0.5, (float) 0.5, (float) -0.5, (float) -0.5);
+    private final Quaternion QR_CODE_QUATERNION = new Quaternion((float) 0, (float) 0, (float) 0, (float) 1);
+
     HashMap<Integer, Integer> arucoTargets;
     DetectorParameters detectorParameters;
     List<Mat> corners;
@@ -71,7 +110,7 @@ public class YourService extends KiboRpcService {
 //        Log.i(TAG, "take target 1 snapshot");
 //        api.takeTargetSnapshot(1);
 
-        moveBee(new Point (11.143, -6.7607, 4.9654), new Quaternion(0, 0, (float) -0.707, (float)-0.707), 7);
+        moveBee(GOAL_COORDS, GOAL_QUATERNION, 7);
 
         // send mission completion
         api.reportMissionCompletion("Mission Complete!");
