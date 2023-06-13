@@ -17,5 +17,5 @@ out/
 .gradletasknamecache
 local.properties
 
-gradle-wrapper.properties
+gradle/wrapper/.
 build.gradle
