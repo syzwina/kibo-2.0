@@ -112,7 +112,6 @@ public class YourService extends KiboRpcService {
 
         // move bee from KIZ2 to KIZ1 by moving to bottom right of KIZ2 (KIZ1 xyz min + KIZ2 xyz max)/2
         moveBee(new Point(10.4, -9.9, 4.50), POINT1_QUATERNION, 0);
-
         int counter = 0;
         // 4 phase
         while ( (counter < 4) && (api.getTimeRemaining().get(1) > 120 * 1000) ) {
@@ -120,7 +119,7 @@ public class YourService extends KiboRpcService {
             counter++;
 
             current_target = api.getActiveTargets();
-            Log.i("target acquisition", "getting active targets");
+            Log.i("target acquisition", "getting active targets which are : " + current_target.toString());
 
 
             // move bee to point 1
@@ -134,18 +133,24 @@ public class YourService extends KiboRpcService {
             // turn off flashlight
             api.flashlightControlFront((float) 0);
 
+
             // check if there's second point in one phase
             if (current_target.size() >= 2) {
-                // move bee to point 2
-                moveBee(POINTS_COORDS.get(current_target.get(1)-1), POINTS_QUARTENIONS.get(current_target.get(1)-1), current_target.get(1)); // -1 as index start at 0
-                // turn on flashlight to improve accuracy, value taken from page 33 in manual
-                api.flashlightControlFront((float) 0.5);
-                // optimize center using image processing the corners
-                optimizeCenter(current_target.get(1));
-                // irradiate with laser
-                laserBeam(current_target.get(1));
-                // turn off flashlight
-                api.flashlightControlFront((float) 0);
+
+                // check if phase still on going
+                if (current_target.get(0) == api.getActiveTargets().get(0)) {
+
+                    // move bee to point 2
+                    moveBee(POINTS_COORDS.get(current_target.get(1) - 1), POINTS_QUARTENIONS.get(current_target.get(1) - 1), current_target.get(1)); // -1 as index start at 0
+                    // turn on flashlight to improve accuracy, value taken from page 33 in manual
+                    api.flashlightControlFront((float) 0.5);
+                    // optimize center using image processing the corners
+                    optimizeCenter(current_target.get(1));
+                    // irradiate with laser
+                    laserBeam(current_target.get(1));
+                    // turn off flashlight
+                    api.flashlightControlFront((float) 0);
+                }
             }
 
         }
@@ -156,7 +161,7 @@ public class YourService extends KiboRpcService {
 //        api.takeTargetSnapshot(1);
 
         // move bee to target 7
-        moveBee(POINT7_COORDS, POINT7_QUATERNION, 7);
+/*        moveBee(POINT7_COORDS, POINT7_QUATERNION, 7);
         // turn on flashlight to improve accuracy, value taken from page 33 in manual
         api.flashlightControlFront( (float) 0.5);
         // optimize center using image processing the corners
@@ -164,7 +169,7 @@ public class YourService extends KiboRpcService {
         // read QR code dummy function, not yet implemented
         readQR();
         // turn off flashlight
-        api.flashlightControlFront((float) 0);
+        api.flashlightControlFront((float) 0);*/
 
         api.notifyGoingToGoal();
         moveBee(GOAL_COORDS, GOAL_QUATERNION, 8);
@@ -210,7 +215,7 @@ public class YourService extends KiboRpcService {
         int img_process_counter = 0;
         while (img_process_counter < 2) {
             imageProcessing(dictionary, corners, detectorParameters, ids, targetID);
-            moveCloserToArucoMarker(inspectCorners(corners));
+            moveCloserToArucoMarker(inspectCorners(corners), targetID);
             corners.clear();
             img_process_counter++;
         }
@@ -485,7 +490,7 @@ public class YourService extends KiboRpcService {
         return aruco_middle;
     }
 
-    private void moveCloserToArucoMarker(double[] aruco_middle) {
+    private void moveCloserToArucoMarker(double[] aruco_middle, int current_target) {
 
         final double middle_x = 1280/2;
         final double middle_y = 960/2;
@@ -507,29 +512,29 @@ public class YourService extends KiboRpcService {
 
         if (x_difference < -50) {
             new_point = new Point(point.getX(), point.getY() + 0.2, point.getZ());
-            moveBee(new_point, quaternion, 0); // move to right in y-axis
+            moveBee(new_point, quaternion, current_target); // move to right in y-axis
         }
         else if (x_difference > 50) {
             new_point = new Point(point.getX(), point.getY() - 0.2, point.getZ());
-            moveBee(new_point, quaternion, 0); // move to left in y-axis
+            moveBee(new_point, quaternion, current_target); // move to left in y-axis
         }
 
         if (x_difference < -30) {
             new_point = new Point(point.getX(), point.getY() + 0.1, point.getZ());
-            moveBee(new_point, quaternion, 0); // move to right in y-axis
+            moveBee(new_point, quaternion, current_target); // move to right in y-axis
         }
         else if (x_difference > 30) {
             new_point = new Point(point.getX(), point.getY() - 0.1, point.getZ());
-            moveBee(new_point, quaternion, 0); // move to left in y-axis
+            moveBee(new_point, quaternion, current_target); // move to left in y-axis
         }
 
         if (x_difference < -20) {
             new_point = new Point(point.getX(), point.getY() + 0.05, point.getZ());
-            moveBee(new_point, quaternion, 0); // move to right in y-axis
+            moveBee(new_point, quaternion, current_target); // move to right in y-axis
         }
         else if (x_difference > 20) {
             new_point = new Point(point.getX(), point.getY() - 0.05, point.getZ());
-            moveBee(new_point, quaternion, 0); // move to left in y-axis
+            moveBee(new_point, quaternion, current_target); // move to left in y-axis
         }
 
 
@@ -540,29 +545,29 @@ public class YourService extends KiboRpcService {
 
         if (y_difference <  -50) {
             new_point = new Point(point.getX() + 0.2, point.getY(), point.getZ());
-            moveBee(new_point, quaternion, 0); // move to down in x-axis
+            moveBee(new_point, quaternion, current_target); // move to down in x-axis
         }
         else if (y_difference > 50) {
             new_point = new Point(point.getX() - 0.2, point.getY(), point.getZ());
-            moveBee(new_point, quaternion, 0); // move to up in x-axis
+            moveBee(new_point, quaternion, current_target); // move to up in x-axis
         }
 
         if (y_difference <  -30) {
             new_point = new Point(point.getX() + 0.1, point.getY(), point.getZ());
-            moveBee(new_point, quaternion, 0); // move to down in x-axis
+            moveBee(new_point, quaternion, current_target); // move to down in x-axis
         }
         else if (y_difference > 30) {
             new_point = new Point(point.getX() - 0.1, point.getY(), point.getZ());
-            moveBee(new_point, quaternion, 0); // move to up in x-axis
+            moveBee(new_point, quaternion, current_target); // move to up in x-axis
         }
 
         if (y_difference <  -20) {
             new_point = new Point(point.getX() + 0.05, point.getY(), point.getZ());
-            moveBee(new_point, quaternion, 0); // move to down in x-axis
+            moveBee(new_point, quaternion, current_target); // move to down in x-axis
         }
         else if (y_difference > 20) {
             new_point = new Point(point.getX() - 0.05, point.getY(), point.getZ());
-            moveBee(new_point, quaternion, 0); // move to up in x-axis
+            moveBee(new_point, quaternion, current_target); // move to up in x-axis
         }
     }
 
