@@ -208,8 +208,8 @@ public class YourService extends KiboRpcService {
 
     private void optimizeCenter(int targetID){
         int img_process_counter = 0;
-        imageProcessing(dictionary, corners, detectorParameters, ids, targetID);
         while (img_process_counter < 2) {
+            imageProcessing(dictionary, corners, detectorParameters, ids, targetID);
             moveCloserToArucoMarker(inspectCorners(corners));
             corners.clear();
             img_process_counter++;
@@ -459,16 +459,26 @@ public class YourService extends KiboRpcService {
         double[] bottomleft;
         double[] bottomright;
 
+        double aruco_middle_x = 0.0;
+        double aruco_middle_y = 0.0;
+
         final int x_coords = 0;
         final int y_coords = 1;
+
+        try{
 
         bottomleft  = corners.get(0).get(0, 2);
         bottomright = corners.get(0).get(0, 3);
         topleft     = corners.get(0).get(0, 1);
         topright    = corners.get(0).get(0, 0);
 
-        double aruco_middle_x = (bottomleft[x_coords] + bottomright[x_coords] + topleft[x_coords] + topright[x_coords])/4;
-        double aruco_middle_y = (bottomleft[y_coords] + bottomright[y_coords] + topleft[y_coords] + topright[y_coords])/4;
+        aruco_middle_x = (bottomleft[x_coords] + bottomright[x_coords] + topleft[x_coords] + topright[x_coords])/4;
+        aruco_middle_y = (bottomleft[y_coords] + bottomright[y_coords] + topleft[y_coords] + topright[y_coords])/4;
+        
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
 
         double[] aruco_middle = {aruco_middle_x, aruco_middle_y};
 
@@ -556,10 +566,11 @@ public class YourService extends KiboRpcService {
         }
     }
 
+    int imageProcessing_called = 0;
     private void imageProcessing(Dictionary dictionary, List<Mat> corners, DetectorParameters detectorParameters, Mat ids, int targetID) {
 
         Mat grayImage = api.getMatNavCam();
-        api.saveMatImage(grayImage, "nearTarget" + targetID + ".png");
+        api.saveMatImage(grayImage, "nearTarget" + targetID + "_" + imageProcessing_called + ".png");
 
         Mat colorImage = new Mat();
         // Convert the grayscale image to color
@@ -569,9 +580,10 @@ public class YourService extends KiboRpcService {
         Aruco.detectMarkers(colorImage, dictionary, corners, ids, detectorParameters);
         Aruco.drawDetectedMarkers(colorImage, corners, ids, new Scalar( 0, 255, 0 ));
 
-         Imgproc.putText(colorImage, "Aruco:"+ Arrays.toString(ids.get(0,0)), new org.opencv.core.Point(30.0, 80.0), 3, 0.5, new Scalar(255, 0, 0, 255), 1);
+        Imgproc.putText(colorImage, "Aruco:"+ Arrays.toString(ids.get(0,0)), new org.opencv.core.Point(30.0, 80.0), 3, 0.5, new Scalar(255, 0, 0, 255), 1);
 
-        api.saveMatImage(colorImage, "processedNearTarget" + current_target + ".png");
+        api.saveMatImage(colorImage, "processedNearTarget" + current_target + "_" + imageProcessing_called+ ".png");
+        imageProcessing_called++;
 
     }
 
