@@ -115,7 +115,7 @@ public class YourService extends KiboRpcService {
 
         int counter = 0;
         // 4 phase
-        while (counter < 4 && api.getTimeRemaining().get(1) > 10 * 1000 ) {
+        while ( (counter < 4) && (api.getTimeRemaining().get(1) > 120 * 1000) ) {
             Log.i(TAG, "TIME REMAINING:" + api.getTimeRemaining().get(1));
             counter++;
 
@@ -208,22 +208,81 @@ public class YourService extends KiboRpcService {
 
     private void optimizeCenter(int targetID){
         int img_process_counter = 0;
+        imageProcessing(dictionary, corners, detectorParameters, ids, targetID);
         while (img_process_counter < 2) {
-            imageProcessing(dictionary, corners, detectorParameters, ids, targetID);
             moveCloserToArucoMarker(inspectCorners(corners));
             corners.clear();
             img_process_counter++;
         }
     }
 
-    private void laserBeam(int laserTargetID){
-        // turn on laser
-        Log.i("laser", "laser turned on");
-        api.laserControl(true);
-        Mat colorImage = new Mat();
-        api.saveMatImage(colorImage, "LaserSnapshotImage" + current_target + ".png");
-        api.takeTargetSnapshot(laserTargetID);
+    private void laserBeam(int current_target){
+        // compensate for laser pointer offset from navcam in plane that contains navcam/laser pointer by getting orientation first
+        // yz axis offset value with local point origin at astrobee FROM NAVCAM under upright orientation ie x-axis as front to back axis (with front being
+        // front view of astrobee in Figure 8-2
+        double y_offset = -0.0422 - 0.0572;
+        double z_offset = -0.0826 - (-0.1111);
+        currentQuaternion = api.getRobotKinematics().getOrientation();
+        Log.i("laserBeam", "current Robot Position before offset compensation laser pointer: " + api.getRobotKinematics().getPosition().toString());
+        api.relativeMoveTo(new Point(0, y_offset,z_offset), currentQuaternion, true);
+        Log.i("laserBeam", "current Robot Position after offset compensation laser pointer: " + api.getRobotKinematics().getPosition().toString());
 
+        //commented for now as not known needed or not
+/*        if (cubeOrientation(currentQuaternion) == 'x'){
+            // move relative to yz axis
+            api.relativeMoveTo()
+        }
+        else if (cubeOrientation(currentQuaternion) == 'y'){
+            // move relative to xz axis
+
+        }
+        else if (cubeOrientation(currentQuaternion) == 'z'){
+            // move relative to xy axis
+
+        }
+        else {
+            Log.e("laserBeam", "cubeOrientation is fked up");
+        }*/
+        // turn on laser
+        Log.i("laserBeam", "laser turned on");
+        api.laserControl(true);
+
+        // take laser image
+        Mat grayImage = api.getMatNavCam();
+        api.saveMatImage(grayImage, "LaserSnapshotBW" + current_target + ".png");
+        Mat colorImage = new Mat();
+        // Convert the grayscale image to color
+        Imgproc.cvtColor(grayImage, colorImage, Imgproc.COLOR_GRAY2BGR);
+        api.saveMatImage(colorImage, "LaserSnapshotImage" + current_target + ".png");
+
+        api.takeTargetSnapshot(current_target);
+
+    }
+
+    // not sure needed or not
+    private char cubeOrientation(Quaternion quaternion){
+                // quaternion values
+                double x = quaternion.getX();
+                double y = quaternion.getY();
+                double z = quaternion.getZ();
+                double w = quaternion.getW();
+
+                // Determine the axis the cube is facing
+                double largestComponent = Math.max(Math.abs(x), Math.max(Math.abs(y), Math.abs(z)));
+                if (largestComponent == Math.abs(x)) {
+                    Log.i("cubeOrientation", "Cube face is on x axis");
+                    return 'x';
+                } else if (largestComponent == Math.abs(y)) {
+                    Log.i("cubeOrientation", "Cube face is on y axis");
+                    return 'y';
+                } else if (largestComponent == Math.abs(z)){
+                    Log.i("cubeOrientation", "Cube face is on z axis");
+                    return 'z';
+                }
+                else {
+                    Log.e("cubeOrientation", "Cube face is facing somewhere not aligned to axes???");
+                    return 'F';
+                }
     }
 
     private void readQR(){
@@ -272,12 +331,12 @@ public class YourService extends KiboRpcService {
         currentQuaternion = quaternion;
         if (checksForKOZ(point)) Log.i(TAG, "point " + pointNumber + " is NOT in KOZ");
         else {
-            Log.e(TAG, "point " + pointNumber + " is in KOZ: " + currentKOZ.toString());
+            Log.e("moveBee", "point " + pointNumber + " is in KOZ: " + currentKOZ.toString());
             pathfind();
         }
         if (checksForKIZ(point)) Log.i(TAG, "point " + pointNumber + " is in KIZ");
-        else Log.e(TAG, "point " + pointNumber + " is NOT in KIZ");
-        Log.i(TAG, "move to point " + pointNumber);
+        else Log.e("moveBee", "point " + pointNumber + " is NOT in KIZ");
+        Log.i("moveBee", "move to point " + pointNumber);
         Result result = api.moveTo(point, quaternion, false);
 
         // check result and loop while moveTo api is not succeeded
