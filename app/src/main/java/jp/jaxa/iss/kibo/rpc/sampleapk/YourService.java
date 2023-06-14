@@ -44,7 +44,7 @@ public class YourService extends KiboRpcService {
     private final KeepInZone KIZ01 = new KeepInZone(10.3f, -10.2f, 4.32f, 11.55f, -6.0f, 5.57f);
     private final KeepInZone KIZ02 = new KeepInZone(9.5f, -10.5f, 4.02f, 10.5f, -9.6f, 4.8f);
 
-    private int current_target = 0;
+    private List<Integer> current_target;
 
 
     /**
@@ -62,6 +62,9 @@ public class YourService extends KiboRpcService {
     private final Point POINT5_COORDS = new Point(11.114, -7.9756, 5.3393);
     private final Point POINT6_COORDS = new Point(11.355, -8.9929, 4.7818);
     private final Point POINT7_COORDS = new Point(11.369, -8.5518, 4.48);
+    List<Point> POINTS_COORDS = Arrays.asList(POINT1_COORDS, POINT2_COORDS, POINT3_COORDS,
+            POINT4_COORDS, POINT5_COORDS, POINT6_COORDS, POINT7_COORDS);
+
     private final Point TARGET1_COORDS = new Point(11.2625, -10.58, 5.3625);
     private final Point TARGET2_COORDS = new Point(10.513384, -9.085172, 3.76203);
     private final Point TARGET3_COORDS = new Point(10.6031, -7.71007, 3.76093);
@@ -80,6 +83,9 @@ public class YourService extends KiboRpcService {
     private final Quaternion POINT5_QUATERNION = new Quaternion((float) -0.5, (float) -0.5, (float) -0.5, (float) 0.5);
     private final Quaternion POINT6_QUATERNION = new Quaternion((float) 0, (float) 0, (float) 0, (float) 1);
     private final Quaternion POINT7_QUATERNION = new Quaternion((float) 0, (float) 0.707, (float) 0, (float) 0.707);
+    List<Quaternion> POINTS_QUARTENIONS = Arrays.asList(POINT1_QUATERNION, POINT2_QUATERNION, POINT3_QUATERNION,
+            POINT4_QUATERNION, POINT5_QUATERNION, POINT6_QUATERNION, POINT7_QUATERNION);
+
     private final Quaternion TARGET1_QUATERNION = new Quaternion((float) 0.707, (float) 0, (float) 0, (float) 0.707);
     private final Quaternion TARGET2_QUATERNION = new Quaternion((float) 0, (float) 0, (float) 0, (float) 1);
     private final Quaternion TARGET3_QUATERNION = new Quaternion((float) 0.707, (float) 0, (float) 0, (float) 0.707);
@@ -103,42 +109,46 @@ public class YourService extends KiboRpcService {
         // the mission starts
         api.startMission();
         Log.i(TAG, "start mission!");
-        // technically i could just use while loop and count to 6 or 6 target, but this is not optimal as there will be only 2 target active at a time
-        // so revise this for sure, rn just checking if it moving according to what i think it'll move
-        //api.getActiveTargets()
-        // commented out the while loop for thinking later as im writing the pathrun manually in sequence
-        //int counter = 0;
-        //while (counter < 5 && api.getTimeRemaining().get(1) > 10 * 1000) {
-            Log.i(TAG, "TIME REMAINING:" + api.getTimeRemaining().get(1));
-            //counter++;
 
-            // move bee from KIZ2 to KIZ1 by moving to bottom right of KIZ2
-            moveBee(new Point(10.4, -9.9, 4.50), POINT1_QUATERNION, 0);
+        // move bee from KIZ2 to KIZ1 by moving to bottom right of KIZ2 (KIZ1 xyz min + KIZ2 xyz max)/2
+        moveBee(new Point(10.4, -9.9, 4.50), POINT1_QUATERNION, 0);
+
+        int counter = 0;
+        // 4 phase
+        while (counter < 4 && api.getTimeRemaining().get(1) > 10 * 1000 ) {
+            Log.i(TAG, "TIME REMAINING:" + api.getTimeRemaining().get(1));
+            counter++;
+
+            current_target = api.getActiveTargets();
+            Log.i("target acquisition", "getting active targets");
+
 
             // move bee to point 1
-            moveBee(POINT1_COORDS, POINT1_QUATERNION, 1);
+            moveBee(POINTS_COORDS.get(current_target.get(0)-1), POINTS_QUARTENIONS.get(current_target.get(0)-1), current_target.get(0)); // -1 as index start at 0
             // turn on flashlight to improve accuracy, value taken from page 33 in manual
-            api.flashlightControlFront( (float) 0.5);
+            api.flashlightControlFront((float) 0.5);
             // optimize center using image processing the corners
-            optimizeCenter();
+            optimizeCenter(current_target.get(0));
             // irradiate with laser
-            laserBeam(current_target);
+            laserBeam(current_target.get(0));
             // turn off flashlight
             api.flashlightControlFront((float) 0);
 
-            // move bee to point 2
-            moveBee(POINT2_COORDS, POINT2_QUATERNION, current_target);
-            // turn on flashlight to improve accuracy, value taken from page 33 in manual
-            api.flashlightControlFront( (float) 0.5);
-            // optimize center using image processing the corners
-            optimizeCenter();
-            // irradiate with laser
-            laserBeam(current_target);
-            // turn off flashlight
-            api.flashlightControlFront((float) 0);
+            // check if there's second point in one phase
+            if (current_target.size() >= 2) {
+                // move bee to point 2
+                moveBee(POINTS_COORDS.get(current_target.get(1)-1), POINTS_QUARTENIONS.get(current_target.get(1)-1), current_target.get(1)); // -1 as index start at 0
+                // turn on flashlight to improve accuracy, value taken from page 33 in manual
+                api.flashlightControlFront((float) 0.5);
+                // optimize center using image processing the corners
+                optimizeCenter(current_target.get(1));
+                // irradiate with laser
+                laserBeam(current_target.get(1));
+                // turn off flashlight
+                api.flashlightControlFront((float) 0);
+            }
 
-            // previously had repetition of above codes till point 6 but removed temporarily for brevity
-        //}
+        }
 
 
         // take target1 snapshots
@@ -146,18 +156,18 @@ public class YourService extends KiboRpcService {
 //        api.takeTargetSnapshot(1);
 
         // move bee to target 7
-        moveBee(POINT7_COORDS, POINT7_QUATERNION, current_target);
+        moveBee(POINT7_COORDS, POINT7_QUATERNION, 7);
         // turn on flashlight to improve accuracy, value taken from page 33 in manual
         api.flashlightControlFront( (float) 0.5);
         // optimize center using image processing the corners
-        optimizeCenter();
+        optimizeCenter(7);
         // read QR code dummy function, not yet implemented
         readQR();
         // turn off flashlight
         api.flashlightControlFront((float) 0);
 
         api.notifyGoingToGoal();
-        moveBee(GOAL_COORDS, GOAL_QUATERNION, current_target);
+        moveBee(GOAL_COORDS, GOAL_QUATERNION, 8);
 
         // send mission completion
         api.reportMissionCompletion("Mission Complete!");
@@ -196,25 +206,24 @@ public class YourService extends KiboRpcService {
 
     }
 
-    private void optimizeCenter(){
+    private void optimizeCenter(int targetID){
         int img_process_counter = 0;
-        while (img_process_counter < 10) {
-            imageProcessing(dictionary, corners, detectorParameters, ids);
+        while (img_process_counter < 2) {
+            imageProcessing(dictionary, corners, detectorParameters, ids, targetID);
             moveCloserToArucoMarker(inspectCorners(corners));
             corners.clear();
             img_process_counter++;
         }
     }
 
-    private void laserBeam(int current_target){
+    private void laserBeam(int laserTargetID){
         // turn on laser
+        Log.i("laser", "laser turned on");
         api.laserControl(true);
-        try {
-            Thread.sleep(500); // Sleep for 1 second, not sure need or not, reconfirm this
-        } catch (InterruptedException e) {
-            // Handle the exception if necessary
-        }
-        api.takeTargetSnapshot(current_target);
+        Mat colorImage = new Mat();
+        api.saveMatImage(colorImage, "LaserSnapshotImage" + current_target + ".png");
+        api.takeTargetSnapshot(laserTargetID);
+
     }
 
     private void readQR(){
@@ -347,7 +356,7 @@ public class YourService extends KiboRpcService {
         Vector3D newPosition = currentPosition.add(direction.scalarMultiply(ratio));
         //currentPosition = newPosition;
         Point newPoint = new Point(newPosition.getX(),newPosition.getY(),newPosition.getZ());
-        moveBee(newPoint, currentQuaternion, current_target);
+        moveBee(newPoint, currentQuaternion, 666); // random number?
         System.out.println("Moved towards goal: " + newPosition);
     }
 
@@ -373,7 +382,7 @@ public class YourService extends KiboRpcService {
         Vector3D newPosition = currentPosition.add(direction.scalarMultiply(ratio));
         //currentPosition = newPosition;
         Point newPoint = new Point(newPosition.getX(),newPosition.getY(),newPosition.getZ());
-        moveBee(newPoint, currentQuaternion, current_target);
+        moveBee(newPoint, currentQuaternion, 667); // random number again
         System.out.println("Moved along axis " + axis + ": " + newPosition);
     }
 
@@ -488,16 +497,16 @@ public class YourService extends KiboRpcService {
         }
     }
 
-    private void imageProcessing(Dictionary dictionary, List<Mat> corners, DetectorParameters detectorParameters, Mat ids) {
+    private void imageProcessing(Dictionary dictionary, List<Mat> corners, DetectorParameters detectorParameters, Mat ids, int targetID) {
 
         Mat grayImage = api.getMatNavCam();
-        api.saveMatImage(grayImage, "nearTarget" + current_target + ".png");
+        api.saveMatImage(grayImage, "nearTarget" + targetID + ".png");
 
         Mat colorImage = new Mat();
         // Convert the grayscale image to color
         Imgproc.cvtColor(grayImage, colorImage, Imgproc.COLOR_GRAY2BGR);
 
-        Log.i(TAG, "TARGET " + current_target + " image processing");
+        Log.i(TAG, "TARGET " + targetID + " image processing");
         Aruco.detectMarkers(colorImage, dictionary, corners, ids, detectorParameters);
         Aruco.drawDetectedMarkers(colorImage, corners, ids, new Scalar( 0, 255, 0 ));
 
