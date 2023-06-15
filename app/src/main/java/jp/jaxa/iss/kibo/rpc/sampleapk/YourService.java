@@ -15,6 +15,7 @@ import org.opencv.aruco.Dictionary;
 import org.opencv.core.Mat;
 import org.opencv.aruco.Aruco;
 import org.opencv.core.Scalar;
+import org.opencv.core.*;
 import org.opencv.core.Size;
 //import org.opencv.core.Point;
 
@@ -242,7 +243,7 @@ public class YourService extends KiboRpcService {
         // yz axis offset value with local point origin at astrobee FROM NAVCAM under upright orientation ie x-axis as front to back axis (with front being
         // front view of astrobee in Figure 8-2
         double y_offset = -0.0994; // -0.0422 - 0.0572   //ie side/left/right offset
-        double z_offset = 0.0285; // -0.0826 - (-0.1111) //ie up down offset
+        double z_offset = 0.0285; // -0.0826 - (-0.1111) //ie up down offset //x in this case is front/back which not needed
         //currentQuaternion = api.getRobotKinematics().getOrientation();
         //probably need orientation check as well, cus now theres target in ceiling etc
         Log.i(TAG+"/laserBeam", "current Robot Position before offset compensation laser pointer: " + api.getRobotKinematics().getPosition().toString());
@@ -275,6 +276,7 @@ public class YourService extends KiboRpcService {
         Imgproc.cvtColor(grayImage, colorImage, Imgproc.COLOR_GRAY2BGR);
 
         Log.i(TAG+"/readQR", "QR image processing");
+        Core.rotate(colorImage,colorImage, Core.ROTATE_180); // rotate image 180 deg as quartenion given is upside down, cba to find correct quartenion
         api.saveMatImage(colorImage, "QR_color_image.png");
 
 
