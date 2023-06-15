@@ -247,7 +247,7 @@ public class YourService extends KiboRpcService {
         //currentQuaternion = api.getRobotKinematics().getOrientation();
         //probably need orientation check as well, cus now theres target in ceiling etc
         Log.i(TAG+"/laserBeam", "current Robot Position before offset compensation laser pointer: " + api.getRobotKinematics().getPosition().toString());
-        api.relativeMoveTo(new Point(y_offset, z_offset, 0), pointQuartenion, true); //testing hypothesis on target 3
+        api.relativeMoveTo(new Point(z_offset, y_offset, 0), pointQuartenion, true); //testing hypothesis on target 3
         Log.i(TAG+"/laserBeam", "current Robot Position after offset compensation laser pointer: " + api.getRobotKinematics().getPosition().toString());
 
 
