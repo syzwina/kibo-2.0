@@ -114,9 +114,13 @@ public class YourService extends KiboRpcService {
 
         // move bee from KIZ2 to KIZ1 by moving to bottom right of KIZ2 (KIZ1 xyz min + KIZ2 xyz max)/2
         moveBee(new Point(10.4, -9.9, 4.50), POINT1_QUATERNION, 0);
+
+        // move bee to middle point of all points that not have KOZ on the way
+        moveBee(new Point(POINT4_COORDS.getX(), POINT7_COORDS.getY(), POINT5_COORDS.getZ()), POINT1_QUATERNION, 666);
+
         int counter = 0;
         // 4 phase
-        /*while ( (counter < 4) && (api.getTimeRemaining().get(1) > 120 * 1000) ) {
+        while ( (counter < 4) && (api.getTimeRemaining().get(1) > 120 * 1000) ) {
             Log.i(TAG+"/runPlan1", "at start of counter = "+counter+", TIME REMAINING:" + api.getTimeRemaining().get(1));
             counter++;
 
@@ -157,7 +161,7 @@ public class YourService extends KiboRpcService {
                 }
             }
 
-        }*/
+        }
 
         // move bee to target 7
        moveBee(POINT7_COORDS, POINT7_QUATERNION, 7);
