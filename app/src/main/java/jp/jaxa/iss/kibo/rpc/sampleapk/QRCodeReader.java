@@ -6,7 +6,6 @@ import org.opencv.objdetect.QRCodeDetector;
 
 public class QRCodeReader
 {
-    static { System.loadLibrary(Core.NATIVE_LIBRARY_NAME); }
 
     public String readQR(Mat img)
     {

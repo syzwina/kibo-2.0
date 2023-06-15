@@ -146,6 +146,10 @@ public class YourService extends KiboRpcService {
                 // check if phase still on going
                 if (current_target.get(0) == api.getActiveTargets().get(0)) {
 
+                    if (api.getTimeRemaining().get(1) < 120*1000){
+                        break;
+                    }
+
                     // move bee to middle point of all points that not have KOZ on the way
                     moveBee(new Point(POINT4_COORDS.getX(), POINT7_COORDS.getY(), POINT5_COORDS.getZ()), POINT1_QUATERNION, 1000 + current_target.get(1));
 
