@@ -109,20 +109,21 @@ public class YourService extends KiboRpcService {
 
         // the mission starts
         api.startMission();
-        Log.i(TAG, "start mission!");
+        Log.i(TAG+"/runPlan1", "start mission!");
 
         // move bee from KIZ2 to KIZ1 by moving to bottom right of KIZ2 (KIZ1 xyz min + KIZ2 xyz max)/2
         moveBee(new Point(10.4, -9.9, 4.50), POINT1_QUATERNION, 0);
         int counter = 0;
         // 4 phase
         while ( (counter < 4) && (api.getTimeRemaining().get(1) > 120 * 1000) ) {
-            Log.i(TAG, "TIME REMAINING:" + api.getTimeRemaining().get(1));
+            Log.i(TAG+"/runPlan1", "at start of counter = "+counter+", TIME REMAINING:" + api.getTimeRemaining().get(1));
             counter++;
 
             current_target = api.getActiveTargets();
-            Log.i("target acquisition", "getting active targets which are : " + current_target.toString());
+            Log.i("/runPlan1", "getting active targets which are : " + current_target.toString());
 
 
+            Log.i(TAG+"/runPlan1", "before going to point = "+current_target.get(0)+", TIME REMAINING:" + api.getTimeRemaining().get(1));
             // move bee to point 1
             moveBee(POINTS_COORDS.get(current_target.get(0)-1), POINTS_QUARTENIONS.get(current_target.get(0)-1), current_target.get(0)); // -1 as index start at 0
             // turn on flashlight to improve accuracy, value taken from page 33 in manual
@@ -141,6 +142,7 @@ public class YourService extends KiboRpcService {
                 // check if phase still on going
                 if (current_target.get(0) == api.getActiveTargets().get(0)) {
 
+                    Log.i(TAG+"/runPlan1", "before going to point = "+current_target.get(1)+", TIME REMAINING:" + api.getTimeRemaining().get(1));
                     // move bee to point 2
                     moveBee(POINTS_COORDS.get(current_target.get(1) - 1), POINTS_QUARTENIONS.get(current_target.get(1) - 1), current_target.get(1)); // -1 as index start at 0
                     // turn on flashlight to improve accuracy, value taken from page 33 in manual
@@ -156,26 +158,21 @@ public class YourService extends KiboRpcService {
 
         }
 
-
-        // take target1 snapshots
-//        Log.i(TAG, "take target 1 snapshot");
-//        api.takeTargetSnapshot(1);
-
         // move bee to target 7
-/*        moveBee(POINT7_COORDS, POINT7_QUATERNION, 7);
+       moveBee(POINT7_COORDS, POINT7_QUATERNION, 7);
         // turn on flashlight to improve accuracy, value taken from page 33 in manual
         api.flashlightControlFront( (float) 0.5);
         // read QR code dummy function, not yet implemented
         readQR();
         // turn off flashlight
-        api.flashlightControlFront((float) 0);*/
+        api.flashlightControlFront((float) 0);
 
         api.notifyGoingToGoal();
         moveBee(GOAL_COORDS, GOAL_QUATERNION, 8);
 
         // send mission completion
         api.reportMissionCompletion("Mission Complete!");
-        Log.i(TAG, "reported mission completion");
+        Log.i(TAG+"/runPlan1", "reported mission completion");
 
     }
 
@@ -228,22 +225,18 @@ public class YourService extends KiboRpcService {
         double z_offset = 0.0285; // -0.0826 - (-0.1111) //ie up down offset
         //currentQuaternion = api.getRobotKinematics().getOrientation();
         //probably need orientation check as well, cus now theres target in ceiling etc
-        Log.i("laserBeam", "current Robot Position before offset compensation laser pointer: " + api.getRobotKinematics().getPosition().toString());
+        Log.i(TAG+"/laserBeam", "current Robot Position before offset compensation laser pointer: " + api.getRobotKinematics().getPosition().toString());
         api.relativeMoveTo(new Point(0, y_offset, z_offset), pointQuartenion, true);
-        Log.i("laserBeam", "current Robot Position after offset compensation laser pointer: " + api.getRobotKinematics().getPosition().toString());
+        Log.i(TAG+"/laserBeam", "current Robot Position after offset compensation laser pointer: " + api.getRobotKinematics().getPosition().toString());
 
 
         // turn on laser
-        Log.i("laserBeam", "laser turned on");
+        Log.i(TAG+"/laserBeam", "laser turned on");
         api.laserControl(true);
 
         // take laser image
         Mat grayImage = api.getMatNavCam();
-        api.saveMatImage(grayImage, "LaserSnapshotBW" + current_target + ".png");
-        Mat colorImage = new Mat();
-        // Convert the grayscale image to color
-        Imgproc.cvtColor(grayImage, colorImage, Imgproc.COLOR_GRAY2BGR);
-        api.saveMatImage(colorImage, "LaserSnapshotImage" + current_target + ".png");
+        api.saveMatImage(grayImage, "LaserSnapshot" + current_target + ".png");
 
         api.takeTargetSnapshot(current_target);
 
@@ -295,14 +288,14 @@ public class YourService extends KiboRpcService {
         currentGoalCoords = point;
         currentQuaternion = quaternion;
         // probably not needed as all point is in KIZ
-        if (checksForKOZ(point)) Log.i(TAG, "point " + pointNumber + " is NOT in KOZ");
+        if (checksForKOZ(point)) Log.i(TAG+"/moveBee", "point " + pointNumber + " is NOT in KOZ");
         else {
-            Log.e("moveBee", "point " + pointNumber + " is in KOZ: " + currentKOZ.toString());
+            Log.e(TAG+"/moveBee", "point " + pointNumber + " is in KOZ: " + currentKOZ.toString());
         }
 
-        if (checksForKIZ(point)) Log.i(TAG, "point " + pointNumber + " is in KIZ");
-        else Log.e("moveBee", "point " + pointNumber + " is NOT in KIZ");
-        Log.i("moveBee", "move to point " + pointNumber);
+        if (checksForKIZ(point)) Log.i(TAG+"/moveBee", "point " + pointNumber + " is in KIZ");
+        else Log.e(TAG+"/moveBee", "point " + pointNumber + " is NOT in KIZ");
+        Log.i(TAG+"/moveBee", "move to point " + pointNumber);
         Result result = api.moveTo(point, quaternion, true);
         Log.i(TAG+"/moveBee", "moveTo status:" + result.hasSucceeded());
 
@@ -315,8 +308,8 @@ public class YourService extends KiboRpcService {
             ++loopCounter;
         }
         if (result.hasSucceeded()) Log.i(TAG, "successfully moved to point " + pointNumber);
-        else Log.e(TAG, "failed to move to point " + pointNumber);
-        Log.i("coords", "point: x = " + point.getX() + ", y = " + point.getY() + ", z = " + point.getZ());
+        else Log.e(TAG+"/moveBee", "failed to move to point " + pointNumber);
+        Log.i(TAG+"/moveBee/coords", "point: x = " + point.getX() + ", y = " + point.getY() + ", z = " + point.getZ());
     }
 
 
@@ -452,7 +445,7 @@ public class YourService extends KiboRpcService {
         // Convert the grayscale image to color
         Imgproc.cvtColor(grayImage, colorImage, Imgproc.COLOR_GRAY2BGR);
 
-        Log.i(TAG, "TARGET " + targetID + " image processing");
+        Log.i(TAG+"/imageProcessing", "TARGET " + targetID + " image processing");
         Aruco.detectMarkers(colorImage, dictionary, corners, ids, detectorParameters);
         Aruco.drawDetectedMarkers(colorImage, corners, ids, new Scalar( 0, 255, 0 ));
 
