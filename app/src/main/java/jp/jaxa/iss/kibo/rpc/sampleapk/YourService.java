@@ -246,7 +246,7 @@ public class YourService extends KiboRpcService {
         //currentQuaternion = api.getRobotKinematics().getOrientation();
         //probably need orientation check as well, cus now theres target in ceiling etc
         Log.i(TAG+"/laserBeam", "current Robot Position before offset compensation laser pointer: " + api.getRobotKinematics().getPosition().toString());
-        api.relativeMoveTo(new Point(0, y_offset, z_offset), pointQuartenion, true);
+        api.relativeMoveTo(new Point(y_offset, z_offset, 0), pointQuartenion, true); //testing hypothesis on target 3
         Log.i(TAG+"/laserBeam", "current Robot Position after offset compensation laser pointer: " + api.getRobotKinematics().getPosition().toString());
 
 
@@ -280,6 +280,7 @@ public class YourService extends KiboRpcService {
 
         QRCodeReader qrCodeReader = new QRCodeReader();
         key = qrCodeReader.readQR(colorImage);
+        Log.i(TAG+"/readQR", "QRCode key is: " + key);
         return qrCodeMapper.getValue(key);
     }
 
