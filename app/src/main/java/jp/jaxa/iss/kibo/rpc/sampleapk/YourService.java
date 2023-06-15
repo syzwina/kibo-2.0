@@ -124,22 +124,22 @@ public class YourService extends KiboRpcService {
 
             // move bee to point 1
             moveBee(POINTS_COORDS.get(current_target.get(0)-1), POINTS_QUARTENIONS.get(current_target.get(0)-1), current_target.get(0)); // -1 as index start at 0
-            Log.i(TAG, "Bee moved to:" + current_target.get(0));
+            Log.i(TAG+"/runPlan1", "Bee moved to:" + current_target.get(0));
 
             //The normal procedure for pointing laser
             // turn on flashlight to improve accuracy, value taken from page 33 in manual
-            Log.i(TAG, "Turning on flashlight to improve accuracy");
+            Log.i(TAG+"/runPlan1", "Turning on flashlight to improve accuracy");
             api.flashlightControlFront((float) 0.5);
-            Log.i(TAG, "Flashlight Turned On");
+            Log.i(TAG+"/runPlan1", "Flashlight Turned On");
             // optimize center using image processing the corners
             optimizeCenter(current_target.get(0));
-            Log.i(TAG, "Centre Optimized For Point" +current_target.get(0));
+            Log.i(TAG+"/runPlan1", "Centre Optimized For Point" +current_target.get(0));
             // irradiate with laser
             laserBeam(current_target.get(0));
-            Log.i(TAG, "Laser irradiated");
+            Log.i(TAG+"/runPlan1", "Laser irradiated");
             // turn off flashlight
             api.flashlightControlFront((float) 0);
-            Log.i(TAG, "Flashlight Turned Off");
+            Log.i(TAG+"/runPlan1", "Flashlight Turned Off");
 
 
             // check if there's second point in one phase
@@ -150,18 +150,21 @@ public class YourService extends KiboRpcService {
 
                     // move bee to point 2
                     moveBee(POINTS_COORDS.get(current_target.get(1) - 1), POINTS_QUARTENIONS.get(current_target.get(1) - 1), current_target.get(1)); // -1 as index start at 0
+                    Log.i(TAG+"/runPlan1", "Bee moved to:" + current_target.get(1));
+
                     // turn on flashlight to improve accuracy, value taken from page 33 in manual
-                    Log.i(TAG, "Turning on flashlight to improve accuracy");
+                    Log.i(TAG+"/runPlan1", "Turning on flashlight to improve accuracy");
                     api.flashlightControlFront((float) 0.5);
-                    Log.i(TAG, "Flashlight Turned On");
+                    Log.i(TAG+"/runPlan1", "Flashlight Turned On");
                     // optimize center using image processing the corners
                     optimizeCenter(current_target.get(1));
-                    Log.i(TAG, "Centre Optimized For Point" +current_target.get(0));
+                    Log.i(TAG+"/runPlan1", "Centre Optimized For Point" +current_target.get(1));
                     // irradiate with laser
                     laserBeam(current_target.get(1));
+                    Log.i(TAG+"/runPlan1", "Laser irradiated");
                     // turn off flashlight
                     api.flashlightControlFront((float) 0);
-                    Log.i(TAG, "Flashlight Turned Off");
+                    Log.i(TAG+"/runPlan1", "Flashlight Turned Off");
                 }
             }
 
@@ -185,11 +188,11 @@ public class YourService extends KiboRpcService {
 
         api.notifyGoingToGoal();
         moveBee(GOAL_COORDS, GOAL_QUATERNION, 8);
-        Log.i(TAG, "Bee moved to:" + current_target.get(0));
+        Log.i(TAG+"/runPlan1", "Bee moved to Goal");
 
         // send mission completion
         api.reportMissionCompletion("Mission Complete!");
-        Log.i(TAG, "reported mission completion");
+        Log.i(TAG+"/runPlan1", "reported mission completion");
 
     }
 
@@ -236,8 +239,9 @@ public class YourService extends KiboRpcService {
         int img_process_counter = 0;
         while (img_process_counter < 2) {
             imageProcessing(dictionary, corners, detectorParameters, ids, targetID);
-            Log.i(TAG+"/optimizeCentre", "Image Processing, run "+img_process_counter);
+            Log.i(TAG+"/optimizeCentre", "Image Processing, run "+ img_process_counter);
             moveCloserToArucoMarker(inspectCorners(corners), targetID);
+            Log.i(TAG+"/optimizeCentre", "Target ID is: "+ targetID);
             corners.clear();
             img_process_counter++;
         }
@@ -250,9 +254,9 @@ public class YourService extends KiboRpcService {
         double y_offset = -0.0422 - 0.0572;
         double z_offset = -0.0826 - (-0.1111);
         currentQuaternion = api.getRobotKinematics().getOrientation();
-        Log.i("laserBeam", "current Robot Position before offset compensation laser pointer: " + api.getRobotKinematics().getPosition().toString());
+        Log.i(TAG+"/laserBeam", "current Robot Position before offset compensation laser pointer: " + api.getRobotKinematics().getPosition().toString());
         api.relativeMoveTo(new Point(0, y_offset,z_offset), currentQuaternion, true);
-        Log.i("laserBeam", "current Robot Position after offset compensation laser pointer: " + api.getRobotKinematics().getPosition().toString());
+        Log.i(TAG+"/laserBeam", "current Robot Position after offset compensation laser pointer: " + api.getRobotKinematics().getPosition().toString());
 
         //commented for now as not known needed or not
 /*        if (cubeOrientation(currentQuaternion) == 'x'){
@@ -271,7 +275,7 @@ public class YourService extends KiboRpcService {
             Log.e("laserBeam", "cubeOrientation is fked up");
         }*/
         // turn on laser
-        Log.i("laserBeam", "laser turned on");
+        Log.i(TAG+"/laserBeam", "laser turned on");
         api.laserControl(true);
 
         // take laser image
@@ -297,17 +301,17 @@ public class YourService extends KiboRpcService {
                 // Determine the axis the cube is facing
                 double largestComponent = Math.max(Math.abs(x), Math.max(Math.abs(y), Math.abs(z)));
                 if (largestComponent == Math.abs(x)) {
-                    Log.i("cubeOrientation", "Cube face is on x axis");
+                    Log.i(TAG+"/cubeOrientation", "Cube face is on x axis");
                     return 'x';
                 } else if (largestComponent == Math.abs(y)) {
-                    Log.i("cubeOrientation", "Cube face is on y axis");
+                    Log.i(TAG+"/cubeOrientation", "Cube face is on y axis");
                     return 'y';
                 } else if (largestComponent == Math.abs(z)){
-                    Log.i("cubeOrientation", "Cube face is on z axis");
+                    Log.i(TAG+"/cubeOrientation", "Cube face is on z axis");
                     return 'z';
                 }
                 else {
-                    Log.e("cubeOrientation", "Cube face is facing somewhere not aligned to axes???");
+                    Log.e(TAG+"/cubeOrientation", "Cube face is facing somewhere not aligned to axes???");
                     return 'F';
                 }
     }
@@ -322,22 +326,27 @@ public class YourService extends KiboRpcService {
         float z = (float) point.getZ();
         if (KOZ01.contains(x,y,z)) {
             currentKOZ = KOZ01;
+            Log.i(TAG+"/checksForKOZ", "Currently in Keep Out Zone 1");
             return false;
         }
         else if (KOZ02.contains(x,y,z)){
             currentKOZ = KOZ02;
+            Log.i(TAG+"/checksForKOZ", "Currently in Keep Out Zone 2");
             return false;
         }
         else if (KOZ03.contains(x,y,z)){
             currentKOZ = KOZ03;
+            Log.i(TAG+"/checksForKOZ", "Currently in Keep Out Zone 3");
             return false;
         }
         else if (KOZ04.contains(x,y,z)){
             currentKOZ = KOZ04;
+            Log.i(TAG+"/checksForKOZ", "Currently in Keep Out Zone 4");
             return false;
         }
         else if (KOZ05.contains(x,y,z)){
             currentKOZ = KOZ05;
+            Log.i(TAG+"/checksForKOZ", "Currently in Keep Out Zone 5");
             return false;
         }
         else return true;
@@ -347,7 +356,10 @@ public class YourService extends KiboRpcService {
         float x = (float) point.getX();
         float y = (float) point.getY();
         float z = (float) point.getZ();
-        if (KIZ01.contains(x,y,z) || KIZ02.contains(x,y,z)) return true;
+        if (KIZ01.contains(x,y,z) || KIZ02.contains(x,y,z)) {
+            Log.i(TAG+"/checksForKIZ", "Currently in Keep In Zone");
+            return true;
+        }
         return false;
     }
 
@@ -356,14 +368,14 @@ public class YourService extends KiboRpcService {
         final int LOOP_MAX = 5;
         currentGoalCoords = point;
         currentQuaternion = quaternion;
-        if (checksForKOZ(point)) Log.i(TAG, "point " + pointNumber + " is NOT in KOZ");
+        if (checksForKOZ(point)) Log.i(TAG+"/moveBee", "point " + pointNumber + " is NOT in KOZ");
         else {
-            Log.e("moveBee", "point " + pointNumber + " is in KOZ: " + currentKOZ.toString());
+            Log.e(TAG+"/moveBee", "point " + pointNumber + " is in KOZ: " + currentKOZ.toString());
             pathfind();
         }
-        if (checksForKIZ(point)) Log.i(TAG, "point " + pointNumber + " is in KIZ");
-        else Log.e("moveBee", "point " + pointNumber + " is NOT in KIZ");
-        Log.i("moveBee", "move to point " + pointNumber);
+        if (checksForKIZ(point)) Log.i(TAG+"/moveBee", "point " + pointNumber + " is in KIZ");
+        else Log.e(TAG+"/moveBee", "point " + pointNumber + " is NOT in KIZ");
+        Log.i(TAG+"/moveBee", "move to point " + pointNumber);
         Result result = api.moveTo(point, quaternion, false);
 
         // check result and loop while moveTo api is not succeeded
@@ -371,33 +383,37 @@ public class YourService extends KiboRpcService {
         while(!result.hasSucceeded() && loopCounter < LOOP_MAX){
             // retry
             result = api.moveTo(point, quaternion, false);
+            Log.i(TAG+"/moveBee", "Attempt: " + loopCounter + " Move to Point: " + pointNumber);
             ++loopCounter;
         }
-        if (result.hasSucceeded()) Log.i(TAG, "successfully moved to point " + pointNumber);
-        else Log.e(TAG, "failed to move to point " + pointNumber);
-        Log.i("coords", "point: x = " + point.getX() + ", y = " + point.getY() + ", z = " + point.getZ());
+        if (result.hasSucceeded()) Log.i(TAG+"/moveBee", "successfully moved to point " + pointNumber);
+        else Log.e(TAG+"/moveBee", "failed to move to point " + pointNumber);
+        Log.i(TAG+"/moveBee/coords", "point: x = " + point.getX() + ", y = " + point.getY() + ", z = " + point.getZ());
     }
 
     private void pathfind(){
-        Log.i("pathfind", "Pathfinding activated");
+        Log.i(TAG+"/pathfind", "Pathfinding activated");
         if (api.getRobotKinematics().getConfidence() == Kinematics.Confidence.GOOD) {
             currentCoords = api.getRobotKinematics().getPosition();
-            Log.i("pathfind", "current coords is: x = " + currentCoords.getX() + ", y = " + currentCoords.getY() + ", z = " + currentCoords.getZ());
+            Log.i(TAG+"/pathfind", "current coords is: x = " + currentCoords.getX() + ", y = " + currentCoords.getY() + ", z = " + currentCoords.getZ());
             Quaternion currentOrientation = api.getRobotKinematics().getOrientation();
-            Log.i("pathfind", "current orient is: w = " + currentOrientation.getW() + " x = " + currentOrientation.getX() + ", y = " + currentOrientation.getY() + ", z = " + currentOrientation.getZ());
+            Log.i(TAG+"/pathfind", "current orient is: w = " + currentOrientation.getW() + " x = " + currentOrientation.getX() + ", y = " + currentOrientation.getY() + ", z = " + currentOrientation.getZ());
             //try move out of corresponding KOZ
 
             Vector3D currentPosition = new Vector3D(currentCoords.getX(),currentCoords.getY(),currentCoords.getZ());
             Vector3D goalPosition = new Vector3D(currentGoalCoords.getX(),currentGoalCoords.getY(),currentGoalCoords.getZ());
+            Log.i(TAG+"/pathfind", "Goal Position is: x = " + currentGoalCoords.getX() + ", y = " + currentGoalCoords.getY() + ", z = " + currentGoalCoords.getZ());
             while (!reachedGoal(currentPosition, goalPosition)){
                 int obstructedAxis = findObstructedAxis(currentPosition, goalPosition);
 
                 if (obstructedAxis == -1) {
                     // No obstructed axis, move directly towards the goal
                     moveTowardsGoal(currentPosition,goalPosition);
+                    Log.i(TAG+"/pathfind", "Able to move directly towards goal");
                 } else {
                     // Move along the axis with the least obstruction
                     moveAlongAxis(obstructedAxis,currentPosition,goalPosition);
+                    Log.i(TAG+"/pathfind", "No obstruction, can move along axis");
                 }
             }
         }
@@ -407,6 +423,7 @@ public class YourService extends KiboRpcService {
         // Check if the current position is close enough to the goal
         double threshold = 0.1;
         double distance = currentPosition.distance(goalPosition);
+        Log.i(TAG+"/reachedGoal", "Calculating distance between current position and goal position");
 
         return distance < threshold;
     }
@@ -421,12 +438,16 @@ public class YourService extends KiboRpcService {
         double dz = Math.abs(currentPosition.getZ() - goalPosition.getZ());
 
         if (dx < dy && dx < dz) {
+            Log.i(TAG+"/findObstructedAxis", "dx < dy and dx < dz, X-axis is obstructed");
             return 0; // X-axis is obstructed
         } else if (dy < dx && dy < dz) {
+            Log.i(TAG+"/findObstructedAxis", "dy < dx and dy < dz, Y-axis is obstructed");
             return 1; // Y-axis is obstructed
         } else if (dz < dx && dz < dy) {
+            Log.i(TAG+"/findObstructedAxis", "dz < dx and dz < dy, Z-axis is obstructed");
             return 2; // Z-axis is obstructed
         } else {
+            Log.i(TAG+"/findObstructedAxis", "No axis is obstructed OR they are obstructed equally");
             return -1; // No axis is obstructed or they are obstructed equally
         }
     }
