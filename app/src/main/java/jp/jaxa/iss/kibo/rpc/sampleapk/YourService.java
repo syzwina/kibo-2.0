@@ -115,9 +115,6 @@ public class YourService extends KiboRpcService {
         // move bee from KIZ2 to KIZ1 by moving to bottom right of KIZ2 (KIZ1 xyz min + KIZ2 xyz max)/2
         moveBee(new Point(10.4, -9.9, 4.50), POINT1_QUATERNION, 0);
 
-        // move bee to middle point of all points that not have KOZ on the way
-        moveBee(new Point(POINT4_COORDS.getX(), POINT7_COORDS.getY(), POINT5_COORDS.getZ()), POINT1_QUATERNION, 666);
-
         int counter = 0;
         // 4 phase
         while ( (counter < 4) && (api.getTimeRemaining().get(1) > 120 * 1000) ) {
@@ -127,6 +124,8 @@ public class YourService extends KiboRpcService {
             current_target = api.getActiveTargets();
             Log.i("/runPlan1", "getting active targets which are : " + current_target.toString());
 
+            // move bee to middle point of all points that not have KOZ on the way
+            moveBee(new Point(POINT4_COORDS.getX(), POINT7_COORDS.getY(), POINT5_COORDS.getZ()), POINT1_QUATERNION, 1000 + current_target.get(0));
 
             Log.i(TAG+"/runPlan1", "before going to point = "+current_target.get(0)+", TIME REMAINING:" + api.getTimeRemaining().get(1));
             // move bee to point 1
@@ -147,6 +146,9 @@ public class YourService extends KiboRpcService {
                 // check if phase still on going
                 if (current_target.get(0) == api.getActiveTargets().get(0)) {
 
+                    // move bee to middle point of all points that not have KOZ on the way
+                    moveBee(new Point(POINT4_COORDS.getX(), POINT7_COORDS.getY(), POINT5_COORDS.getZ()), POINT1_QUATERNION, 1000 + current_target.get(1));
+
                     Log.i(TAG+"/runPlan1", "before going to point = "+current_target.get(1)+", TIME REMAINING:" + api.getTimeRemaining().get(1));
                     // move bee to point 2
                     moveBee(POINTS_COORDS.get(current_target.get(1) - 1), POINTS_QUARTENIONS.get(current_target.get(1) - 1), current_target.get(1)); // -1 as index start at 0
@@ -163,6 +165,11 @@ public class YourService extends KiboRpcService {
 
         }
 
+
+
+        // move bee to middle point of all points that not have KOZ on the way
+        moveBee(new Point(POINT4_COORDS.getX(), POINT7_COORDS.getY(), POINT5_COORDS.getZ()), POINT1_QUATERNION, 1007);
+
         // move bee to target 7
        moveBee(POINT7_COORDS, POINT7_QUATERNION, 7);
         // turn on flashlight to improve accuracy, value taken from page 33 in manual
@@ -173,6 +180,10 @@ public class YourService extends KiboRpcService {
         api.flashlightControlFront((float) 0);
 
         api.notifyGoingToGoal();
+
+        // move bee to middle point of all points that not have KOZ on the way
+        moveBee(new Point(POINT4_COORDS.getX(), POINT7_COORDS.getY(), POINT5_COORDS.getZ()), POINT1_QUATERNION, 1008);
+
         moveBee(GOAL_COORDS, GOAL_QUATERNION, 8);
 
         // send mission completion
