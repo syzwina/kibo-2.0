@@ -227,7 +227,7 @@ public class YourService extends KiboRpcService {
         int img_process_counter = 0;
         while (img_process_counter < 2) {
             imageProcessing(dictionary, corners, detectorParameters, ids, targetID);
-            moveCloserToArucoMarker(inspectCorners(corners), targetID);
+            //moveCloserToArucoMarker(inspectCorners(corners), targetID);
             corners.clear();
             img_process_counter++;
         }
