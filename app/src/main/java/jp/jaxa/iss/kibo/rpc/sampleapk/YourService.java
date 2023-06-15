@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 // for pathfinding
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -115,7 +116,7 @@ public class YourService extends KiboRpcService {
         moveBee(new Point(10.4, -9.9, 4.50), POINT1_QUATERNION, 0);
         int counter = 0;
         // 4 phase
-        while ( (counter < 4) && (api.getTimeRemaining().get(1) > 120 * 1000) ) {
+        /*while ( (counter < 4) && (api.getTimeRemaining().get(1) > 120 * 1000) ) {
             Log.i(TAG+"/runPlan1", "at start of counter = "+counter+", TIME REMAINING:" + api.getTimeRemaining().get(1));
             counter++;
 
@@ -127,7 +128,7 @@ public class YourService extends KiboRpcService {
             // move bee to point 1
             moveBee(POINTS_COORDS.get(current_target.get(0)-1), POINTS_QUARTENIONS.get(current_target.get(0)-1), current_target.get(0)); // -1 as index start at 0
             // turn on flashlight to improve accuracy, value taken from page 33 in manual
-            api.flashlightControlFront((float) 0.5);
+            api.flashlightControlFront((float) 0.05f);
             // optimize center using image processing the corners
             optimizeCenter(current_target.get(0));
             // irradiate with laser
@@ -146,7 +147,7 @@ public class YourService extends KiboRpcService {
                     // move bee to point 2
                     moveBee(POINTS_COORDS.get(current_target.get(1) - 1), POINTS_QUARTENIONS.get(current_target.get(1) - 1), current_target.get(1)); // -1 as index start at 0
                     // turn on flashlight to improve accuracy, value taken from page 33 in manual
-                    api.flashlightControlFront((float) 0.5);
+                    api.flashlightControlFront((float) 0.05f);
                     // optimize center using image processing the corners
                     optimizeCenter(current_target.get(1));
                     // irradiate with laser
@@ -156,14 +157,14 @@ public class YourService extends KiboRpcService {
                 }
             }
 
-        }
+        }*/
 
         // move bee to target 7
        moveBee(POINT7_COORDS, POINT7_QUATERNION, 7);
         // turn on flashlight to improve accuracy, value taken from page 33 in manual
-        api.flashlightControlFront( (float) 0.5);
+        api.flashlightControlFront( (float) 0.05f);
         // read QR code dummy function, not yet implemented
-        readQR();
+        String QRstring = readQR();
         // turn off flashlight
         api.flashlightControlFront((float) 0);
 
@@ -171,7 +172,7 @@ public class YourService extends KiboRpcService {
         moveBee(GOAL_COORDS, GOAL_QUATERNION, 8);
 
         // send mission completion
-        api.reportMissionCompletion("Mission Complete!");
+        api.reportMissionCompletion(QRstring);
         Log.i(TAG+"/runPlan1", "reported mission completion");
 
     }
@@ -243,8 +244,24 @@ public class YourService extends KiboRpcService {
     }
 
 
-    private void readQR(){
+    private String readQR(){
+        QRCodeMapper qrCodeMapper = new QRCodeMapper();
+        String key = "";
 
+        Mat grayImage = api.getMatNavCam();
+        api.saveMatImage(grayImage, "QRImage.png");
+
+        Mat colorImage = new Mat();
+        // Convert the grayscale image to color
+        Imgproc.cvtColor(grayImage, colorImage, Imgproc.COLOR_GRAY2BGR);
+
+        Log.i(TAG+"/readQR", "QR image processing");
+        api.saveMatImage(colorImage, "QR_color_image.png");
+
+
+        QRCodeReader qrCodeReader = new QRCodeReader();
+        key = qrCodeReader.readQR(colorImage);
+        return qrCodeMapper.getValue(key);
     }
 
     private boolean checksForKOZ(Point point){
