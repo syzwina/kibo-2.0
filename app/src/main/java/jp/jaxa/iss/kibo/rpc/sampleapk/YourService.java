@@ -108,30 +108,38 @@ public class YourService extends KiboRpcService {
 
         // the mission starts
         api.startMission();
-        Log.i(TAG, "start mission!");
+        Log.i(TAG+"/runPlan1", "start mission!");
 
         // move bee from KIZ2 to KIZ1 by moving to bottom right of KIZ2 (KIZ1 xyz min + KIZ2 xyz max)/2
         moveBee(new Point(10.4, -9.9, 4.50), POINT1_QUATERNION, 0);
         int counter = 0;
         // 4 phase
         while ( (counter < 4) && (api.getTimeRemaining().get(1) > 120 * 1000) ) {
-            Log.i(TAG, "TIME REMAINING:" + api.getTimeRemaining().get(1));
+            Log.i(TAG+"/runPlan1", "TIME REMAINING:" + api.getTimeRemaining().get(1));
             counter++;
 
             current_target = api.getActiveTargets();
-            Log.i("target acquisition", "getting active targets which are : " + current_target.toString());
+            Log.i(TAG+"/runPlan1/target acquisition", "getting active targets which are : " + current_target.toString());
 
 
             // move bee to point 1
             moveBee(POINTS_COORDS.get(current_target.get(0)-1), POINTS_QUARTENIONS.get(current_target.get(0)-1), current_target.get(0)); // -1 as index start at 0
+            Log.i(TAG, "Bee moved to:" + current_target.get(0));
+
+            //The normal procedure for pointing laser
             // turn on flashlight to improve accuracy, value taken from page 33 in manual
+            Log.i(TAG, "Turning on flashlight to improve accuracy");
             api.flashlightControlFront((float) 0.5);
+            Log.i(TAG, "Flashlight Turned On");
             // optimize center using image processing the corners
             optimizeCenter(current_target.get(0));
+            Log.i(TAG, "Centre Optimized For Point" +current_target.get(0));
             // irradiate with laser
             laserBeam(current_target.get(0));
+            Log.i(TAG, "Laser irradiated");
             // turn off flashlight
             api.flashlightControlFront((float) 0);
+            Log.i(TAG, "Flashlight Turned Off");
 
 
             // check if there's second point in one phase
@@ -143,13 +151,17 @@ public class YourService extends KiboRpcService {
                     // move bee to point 2
                     moveBee(POINTS_COORDS.get(current_target.get(1) - 1), POINTS_QUARTENIONS.get(current_target.get(1) - 1), current_target.get(1)); // -1 as index start at 0
                     // turn on flashlight to improve accuracy, value taken from page 33 in manual
+                    Log.i(TAG, "Turning on flashlight to improve accuracy");
                     api.flashlightControlFront((float) 0.5);
+                    Log.i(TAG, "Flashlight Turned On");
                     // optimize center using image processing the corners
                     optimizeCenter(current_target.get(1));
+                    Log.i(TAG, "Centre Optimized For Point" +current_target.get(0));
                     // irradiate with laser
                     laserBeam(current_target.get(1));
                     // turn off flashlight
                     api.flashlightControlFront((float) 0);
+                    Log.i(TAG, "Flashlight Turned Off");
                 }
             }
 
@@ -173,6 +185,7 @@ public class YourService extends KiboRpcService {
 
         api.notifyGoingToGoal();
         moveBee(GOAL_COORDS, GOAL_QUATERNION, 8);
+        Log.i(TAG, "Bee moved to:" + current_target.get(0));
 
         // send mission completion
         api.reportMissionCompletion("Mission Complete!");
@@ -208,6 +221,14 @@ public class YourService extends KiboRpcService {
         arucoTargets.put(14,4);
         arucoTargets.put(15,4);
         arucoTargets.put(16,4);
+        arucoTargets.put(17,5);
+        arucoTargets.put(18,5);
+        arucoTargets.put(19,5);
+        arucoTargets.put(20,5);
+        arucoTargets.put(21,6);
+        arucoTargets.put(22,6);
+        arucoTargets.put(23,6);
+        arucoTargets.put(24,6);
 
     }
 
@@ -215,6 +236,7 @@ public class YourService extends KiboRpcService {
         int img_process_counter = 0;
         while (img_process_counter < 2) {
             imageProcessing(dictionary, corners, detectorParameters, ids, targetID);
+            Log.i(TAG+"/optimizeCentre", "Image Processing, run "+img_process_counter);
             moveCloserToArucoMarker(inspectCorners(corners), targetID);
             corners.clear();
             img_process_counter++;
