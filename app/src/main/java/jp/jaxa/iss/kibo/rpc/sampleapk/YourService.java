@@ -118,7 +118,7 @@ public class YourService extends KiboRpcService {
 
         int counter = 0;
         // 4 phase
-        while ( (counter < 4) && (api.getTimeRemaining().get(1) > 120 * 1000) ) {
+        while ( (counter < 4) && (api.getTimeRemaining().get(1) > 130 * 1000) ) {
             Log.i(TAG+"/runPlan1", "at start of counter = "+counter+", TIME REMAINING:" + api.getTimeRemaining().get(1));
             counter++;
 
@@ -147,7 +147,7 @@ public class YourService extends KiboRpcService {
                 // check if phase still on going
                 if (current_target.get(0) == api.getActiveTargets().get(0)) {
 
-                    if (api.getTimeRemaining().get(1) < 120*1000){
+                    if (api.getTimeRemaining().get(1) < 130*1000){
                         break;
                     }
 
@@ -188,6 +188,9 @@ public class YourService extends KiboRpcService {
 
         // move bee to middle point of all points that not have KOZ on the way
         moveBee(new Point(POINT4_COORDS.getX(), POINT7_COORDS.getY(), POINT5_COORDS.getZ()), POINT1_QUATERNION, 1008);
+
+        // to avoid KOZ from common point
+        moveBee(POINT4_COORDS,POINT4_QUATERNION,1018);
 
         moveBee(GOAL_COORDS, GOAL_QUATERNION, 8);
 
