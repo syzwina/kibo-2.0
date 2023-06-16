@@ -15,6 +15,7 @@ import org.opencv.aruco.Dictionary;
 import org.opencv.core.Mat;
 import org.opencv.aruco.Aruco;
 import org.opencv.core.Scalar;
+import org.opencv.core.*;
 import org.opencv.core.Size;
 //import org.opencv.core.Point;
 
@@ -22,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 // for pathfinding
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -113,21 +115,24 @@ public class YourService extends KiboRpcService {
 
         // move bee from KIZ2 to KIZ1 by moving to bottom right of KIZ2 (KIZ1 xyz min + KIZ2 xyz max)/2
         moveBee(new Point(10.4, -9.9, 4.50), POINT1_QUATERNION, 0);
+
         int counter = 0;
         // 4 phase
-        while ( (counter < 4) && (api.getTimeRemaining().get(1) > 120 * 1000) ) {
+        while ( (counter < 4) && (api.getTimeRemaining().get(1) > 130 * 1000) ) {
             Log.i(TAG+"/runPlan1", "at start of counter = "+counter+", TIME REMAINING:" + api.getTimeRemaining().get(1));
             counter++;
 
             current_target = api.getActiveTargets();
             Log.i("/runPlan1", "getting active targets which are : " + current_target.toString());
 
+            // move bee to middle point of all points that not have KOZ on the way
+            moveBee(new Point(POINT4_COORDS.getX(), POINT7_COORDS.getY(), POINT5_COORDS.getZ()), POINT1_QUATERNION, 1000 + current_target.get(0));
 
             Log.i(TAG+"/runPlan1", "before going to point = "+current_target.get(0)+", TIME REMAINING:" + api.getTimeRemaining().get(1));
             // move bee to point 1
             moveBee(POINTS_COORDS.get(current_target.get(0)-1), POINTS_QUARTENIONS.get(current_target.get(0)-1), current_target.get(0)); // -1 as index start at 0
             // turn on flashlight to improve accuracy, value taken from page 33 in manual
-            api.flashlightControlFront((float) 0.5);
+            api.flashlightControlFront((float) 0.05f);
             // optimize center using image processing the corners
             optimizeCenter(current_target.get(0));
             // irradiate with laser
@@ -142,11 +147,18 @@ public class YourService extends KiboRpcService {
                 // check if phase still on going
                 if (current_target.get(0) == api.getActiveTargets().get(0)) {
 
+                    if (api.getTimeRemaining().get(1) < 130*1000){
+                        break;
+                    }
+
+                    // move bee to middle point of all points that not have KOZ on the way
+                    moveBee(new Point(POINT4_COORDS.getX(), POINT7_COORDS.getY(), POINT5_COORDS.getZ()), POINT1_QUATERNION, 1000 + current_target.get(1));
+
                     Log.i(TAG+"/runPlan1", "before going to point = "+current_target.get(1)+", TIME REMAINING:" + api.getTimeRemaining().get(1));
                     // move bee to point 2
                     moveBee(POINTS_COORDS.get(current_target.get(1) - 1), POINTS_QUARTENIONS.get(current_target.get(1) - 1), current_target.get(1)); // -1 as index start at 0
                     // turn on flashlight to improve accuracy, value taken from page 33 in manual
-                    api.flashlightControlFront((float) 0.5);
+                    api.flashlightControlFront((float) 0.05f);
                     // optimize center using image processing the corners
                     optimizeCenter(current_target.get(1));
                     // irradiate with laser
@@ -158,20 +170,32 @@ public class YourService extends KiboRpcService {
 
         }
 
+
+
+        // move bee to middle point of all points that not have KOZ on the way
+        moveBee(new Point(POINT4_COORDS.getX(), POINT7_COORDS.getY(), POINT5_COORDS.getZ()), POINT1_QUATERNION, 1007);
+
         // move bee to target 7
        moveBee(POINT7_COORDS, POINT7_QUATERNION, 7);
         // turn on flashlight to improve accuracy, value taken from page 33 in manual
-        api.flashlightControlFront( (float) 0.5);
+        api.flashlightControlFront( (float) 0.05f);
         // read QR code dummy function, not yet implemented
-        readQR();
+        String QRstring = readQR();
         // turn off flashlight
         api.flashlightControlFront((float) 0);
 
         api.notifyGoingToGoal();
+
+        // move bee to middle point of all points that not have KOZ on the way
+        moveBee(new Point(POINT4_COORDS.getX(), POINT7_COORDS.getY(), POINT5_COORDS.getZ()), POINT1_QUATERNION, 1008);
+
+        // to avoid KOZ from common point
+        moveBee(POINT4_COORDS,POINT4_QUATERNION,1018);
+
         moveBee(GOAL_COORDS, GOAL_QUATERNION, 8);
 
         // send mission completion
-        api.reportMissionCompletion("Mission Complete!");
+        api.reportMissionCompletion(QRstring);
         Log.i(TAG+"/runPlan1", "reported mission completion");
 
     }
@@ -211,7 +235,7 @@ public class YourService extends KiboRpcService {
         int img_process_counter = 0;
         while (img_process_counter < 2) {
             imageProcessing(dictionary, corners, detectorParameters, ids, targetID);
-            moveCloserToArucoMarker(inspectCorners(corners), targetID);
+            //moveCloserToArucoMarker(inspectCorners(corners), targetID);
             corners.clear();
             img_process_counter++;
         }
@@ -223,10 +247,29 @@ public class YourService extends KiboRpcService {
         // front view of astrobee in Figure 8-2
         double y_offset = -0.0994; // -0.0422 - 0.0572   //ie side/left/right offset
         double z_offset = 0.0285; // -0.0826 - (-0.1111) //ie up down offset
+        // x in this case is front/back which not needed
         //currentQuaternion = api.getRobotKinematics().getOrientation();
         //probably need orientation check as well, cus now theres target in ceiling etc
         Log.i(TAG+"/laserBeam", "current Robot Position before offset compensation laser pointer: " + api.getRobotKinematics().getPosition().toString());
-        api.relativeMoveTo(new Point(0, y_offset, z_offset), pointQuartenion, true);
+
+        if (current_target == 1) {
+            api.relativeMoveTo(new Point(y_offset, 0, z_offset), pointQuartenion, true); //test target 1, +ve
+        }
+        if (current_target == 2){
+            api.relativeMoveTo(new Point(y_offset, -z_offset, 0), pointQuartenion, true); //test target 2, correct wall now
+        }
+        if (current_target == 3) {
+            api.relativeMoveTo(new Point(z_offset, y_offset, 0), pointQuartenion, true); //testing hypothesis on target 3, works!
+        }
+        if (current_target == 4) {
+            api.relativeMoveTo(new Point(0, -y_offset, z_offset), pointQuartenion, true); //+ve y to go left,
+        }
+        if (current_target == 5) {
+            api.relativeMoveTo(new Point(y_offset, z_offset, 0), pointQuartenion, true); // test
+        }
+        if (current_target == 6) {
+            api.relativeMoveTo(new Point(0, y_offset, z_offset), pointQuartenion, true); // hopefully correct
+        }
         Log.i(TAG+"/laserBeam", "current Robot Position after offset compensation laser pointer: " + api.getRobotKinematics().getPosition().toString());
 
 
@@ -243,8 +286,26 @@ public class YourService extends KiboRpcService {
     }
 
 
-    private void readQR(){
+    private String readQR(){
+        QRCodeMapper qrCodeMapper = new QRCodeMapper();
+        String key = "";
 
+        Mat grayImage = api.getMatNavCam();
+        api.saveMatImage(grayImage, "QRImage.png");
+
+        Mat colorImage = new Mat();
+        // Convert the grayscale image to color
+        Imgproc.cvtColor(grayImage, colorImage, Imgproc.COLOR_GRAY2BGR);
+
+        Log.i(TAG+"/readQR", "QR image processing");
+        Core.rotate(colorImage,colorImage, Core.ROTATE_180); // rotate image 180 deg as quartenion given is upside down, cba to find correct quartenion
+        api.saveMatImage(colorImage, "QR_color_image.png");
+
+
+        QRCodeReader qrCodeReader = new QRCodeReader();
+        key = qrCodeReader.readQR(colorImage);
+        Log.i(TAG+"/readQR", "QRCode key is: " + key);
+        return qrCodeMapper.getValue(key);
     }
 
     private boolean checksForKOZ(Point point){
