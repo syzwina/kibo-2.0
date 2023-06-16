@@ -243,11 +243,30 @@ public class YourService extends KiboRpcService {
         // yz axis offset value with local point origin at astrobee FROM NAVCAM under upright orientation ie x-axis as front to back axis (with front being
         // front view of astrobee in Figure 8-2
         double y_offset = -0.0994; // -0.0422 - 0.0572   //ie side/left/right offset
-        double z_offset = 0.0285; // -0.0826 - (-0.1111) //ie up down offset //x in this case is front/back which not needed
+        double z_offset = 0.0285; // -0.0826 - (-0.1111) //ie up down offset
+        // x in this case is front/back which not needed
         //currentQuaternion = api.getRobotKinematics().getOrientation();
         //probably need orientation check as well, cus now theres target in ceiling etc
         Log.i(TAG+"/laserBeam", "current Robot Position before offset compensation laser pointer: " + api.getRobotKinematics().getPosition().toString());
-        api.relativeMoveTo(new Point(z_offset, y_offset, 0), pointQuartenion, true); //testing hypothesis on target 3
+
+        if (current_target == 1) {
+            api.relativeMoveTo(new Point(y_offset, 0, z_offset), pointQuartenion, true); //test target 1, +ve
+        }
+        if (current_target == 2){
+            api.relativeMoveTo(new Point(y_offset, -z_offset, 0), pointQuartenion, true); //test target 2, correct wall now
+        }
+        if (current_target == 3) {
+            api.relativeMoveTo(new Point(z_offset, y_offset, 0), pointQuartenion, true); //testing hypothesis on target 3, works!
+        }
+        if (current_target == 4) {
+            api.relativeMoveTo(new Point(0, -y_offset, z_offset), pointQuartenion, true); //+ve y to go left,
+        }
+        if (current_target == 5) {
+            api.relativeMoveTo(new Point(y_offset, z_offset, 0), pointQuartenion, true); // test
+        }
+        if (current_target == 6) {
+            api.relativeMoveTo(new Point(0, y_offset, z_offset), pointQuartenion, true); // hopefully correct
+        }
         Log.i(TAG+"/laserBeam", "current Robot Position after offset compensation laser pointer: " + api.getRobotKinematics().getPosition().toString());
 
 
