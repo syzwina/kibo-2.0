@@ -116,6 +116,8 @@ public class YourService extends KiboRpcService {
         // move bee from KIZ2 to KIZ1 by moving to bottom right of KIZ2 (KIZ1 xyz min + KIZ2 xyz max)/2
         moveBee(new Point(10.4, -9.9, 4.50), POINT1_QUATERNION, 0);
 
+        // count number of laser had been activated
+        int laserCounter = 0;
         int counter = 0;
         // 4 phase
         while ( (counter < 4) && (api.getTimeRemaining().get(1) > 130 * 1000) ) {
@@ -125,8 +127,18 @@ public class YourService extends KiboRpcService {
             current_target = api.getActiveTargets();
             Log.i("/runPlan1", "getting active targets which are : " + current_target.toString());
 
+            if (api.getTimeRemaining().get(1) < 130*1000){
+                Log.e(TAG+"/runPlan1/OutOfTime", "Sequence broken as not enough time, TIME REMAINING: " +api.getTimeRemaining().get(1));
+                break;
+            }
+
             // move bee to middle point of all points that not have KOZ on the way
             moveBee(new Point(POINT4_COORDS.getX(), POINT7_COORDS.getY(), POINT5_COORDS.getZ()), POINT1_QUATERNION, 1000 + current_target.get(0));
+
+            if (api.getTimeRemaining().get(1) < 130*1000){
+                Log.e(TAG+"/runPlan1/OutOfTime", "Sequence broken as not enough time, TIME REMAINING: " +api.getTimeRemaining().get(1));
+                break;
+            }
 
             Log.i(TAG+"/runPlan1", "before going to point = "+current_target.get(0)+", TIME REMAINING:" + api.getTimeRemaining().get(1));
             // move bee to point 1
@@ -137,6 +149,8 @@ public class YourService extends KiboRpcService {
             optimizeCenter(current_target.get(0));
             // irradiate with laser
             laserBeam(current_target.get(0), POINTS_QUARTENIONS.get(current_target.get(0)-1));
+            laserCounter++;
+            Log.i("/runPlan1/laserCounter", "laserCounter value is: " + laserCounter);
             // turn off flashlight
             api.flashlightControlFront((float) 0);
 
@@ -149,12 +163,17 @@ public class YourService extends KiboRpcService {
                 if (current_target.get(0) == api.getActiveTargets().get(0)) {
 
                     if (api.getTimeRemaining().get(1) < 130*1000){
-                        Log.e(TAG+"/runPlan1/OutOfTime", "Loop broken as not enough time, TIME REMAINING: " +api.getTimeRemaining().get(1));
+                        Log.e(TAG+"/runPlan1/OutOfTime", "Sequence broken as not enough time, TIME REMAINING: " +api.getTimeRemaining().get(1));
                         break;
                     }
 
                     // move bee to middle point of all points that not have KOZ on the way
                     moveBee(new Point(POINT4_COORDS.getX(), POINT7_COORDS.getY(), POINT5_COORDS.getZ()), POINT1_QUATERNION, 1000 + current_target.get(0));
+
+                    if (api.getTimeRemaining().get(1) < 130*1000){
+                        Log.e(TAG+"/runPlan1/OutOfTime", "Sequence broken as not enough time, TIME REMAINING: " +api.getTimeRemaining().get(1));
+                        break;
+                    }
 
                     Log.i(TAG+"/runPlan1", "before going to point = "+current_target.get(1)+", TIME REMAINING:" + api.getTimeRemaining().get(0));
                     // move bee to point 2
@@ -165,6 +184,8 @@ public class YourService extends KiboRpcService {
                     optimizeCenter(current_target.get(0));
                     // irradiate with laser
                     laserBeam(current_target.get(1), POINTS_QUARTENIONS.get(current_target.get(0)-1));
+                    laserCounter++;
+                    Log.i("/runPlan1/laserCounter", "laserCounter value is: " + laserCounter);
                     // turn off flashlight
                     api.flashlightControlFront((float) 0);
                 }
