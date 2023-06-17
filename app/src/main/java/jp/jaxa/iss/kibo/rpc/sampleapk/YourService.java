@@ -97,6 +97,8 @@ public class YourService extends KiboRpcService {
     private final Quaternion TARGET6_QUATERNION = new Quaternion((float) 0.5, (float) 0.5, (float) -0.5, (float) -0.5);
     private final Quaternion QR_CODE_QUATERNION = new Quaternion((float) 0, (float) 0, (float) 0, (float) 1);
 
+    private final int TIME_FOR_QR_AND_GOAL = 130 * 1000;
+
     HashMap<Integer, Integer> arucoTargets;
     DetectorParameters detectorParameters;
     List<Mat> corners;
@@ -120,14 +122,14 @@ public class YourService extends KiboRpcService {
         int laserCounter = 0;
         int counter = 0;
         // 4 phase
-        while ( (counter < 4) && (api.getTimeRemaining().get(1) > 130 * 1000) ) {
+        while ( (counter < 4) && (api.getTimeRemaining().get(1) > TIME_FOR_QR_AND_GOAL) ) {
             Log.i(TAG+"/runPlan1", "at start of counter = "+counter+", TIME REMAINING:" + api.getTimeRemaining().get(1));
             counter++;
 
             current_target = api.getActiveTargets();
             Log.i("/runPlan1", "getting active targets which are : " + current_target.toString());
 
-            if (api.getTimeRemaining().get(1) < 130*1000){
+            if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL){
                 Log.e(TAG+"/runPlan1/OutOfTime", "Sequence broken as not enough time, TIME REMAINING: " +api.getTimeRemaining().get(1));
                 break;
             }
@@ -135,7 +137,7 @@ public class YourService extends KiboRpcService {
             // move bee to middle point of all points that not have KOZ on the way
             moveBee(new Point(POINT4_COORDS.getX(), POINT7_COORDS.getY(), POINT5_COORDS.getZ()), POINT1_QUATERNION, 1000 + current_target.get(0));
 
-            if (api.getTimeRemaining().get(1) < 130*1000){
+            if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL){
                 Log.e(TAG+"/runPlan1/OutOfTime", "Sequence broken as not enough time, TIME REMAINING: " +api.getTimeRemaining().get(1));
                 break;
             }
@@ -144,7 +146,7 @@ public class YourService extends KiboRpcService {
             // move bee to point 1
             moveBee(POINTS_COORDS.get(current_target.get(0)-1), POINTS_QUARTENIONS.get(current_target.get(0)-1), current_target.get(0)); // -1 as index start at 0
             // turn on flashlight to improve accuracy, value taken from page 33 in manual
-            api.flashlightControlFront((float) 0.05f);
+            api.flashlightControlFront( 0.05f);
             // optimize center using image processing the corners
             optimizeCenter(current_target.get(0));
             // irradiate with laser
@@ -162,7 +164,7 @@ public class YourService extends KiboRpcService {
                 // check if phase still on going
                 if (current_target.get(0) == api.getActiveTargets().get(0)) {
 
-                    if (api.getTimeRemaining().get(1) < 130*1000){
+                    if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL){
                         Log.e(TAG+"/runPlan1/OutOfTime", "Sequence broken as not enough time, TIME REMAINING: " +api.getTimeRemaining().get(1));
                         break;
                     }
@@ -170,20 +172,20 @@ public class YourService extends KiboRpcService {
                     // move bee to middle point of all points that not have KOZ on the way
                     moveBee(new Point(POINT4_COORDS.getX(), POINT7_COORDS.getY(), POINT5_COORDS.getZ()), POINT1_QUATERNION, 1000 + current_target.get(0));
 
-                    if (api.getTimeRemaining().get(1) < 130*1000){
+                    if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL){
                         Log.e(TAG+"/runPlan1/OutOfTime", "Sequence broken as not enough time, TIME REMAINING: " +api.getTimeRemaining().get(1));
                         break;
                     }
 
-                    Log.i(TAG+"/runPlan1", "before going to point = "+current_target.get(1)+", TIME REMAINING:" + api.getTimeRemaining().get(0));
+                    Log.i(TAG+"/runPlan1", "before going to point = "+current_target.get(0)+", TIME REMAINING:" + api.getTimeRemaining().get(0));
                     // move bee to point 2
                     moveBee(POINTS_COORDS.get(current_target.get(0) - 1), POINTS_QUARTENIONS.get(current_target.get(0) - 1), current_target.get(0)); // -1 as index start at 0
                     // turn on flashlight to improve accuracy, value taken from page 33 in manual
-                    api.flashlightControlFront((float) 0.05f);
+                    api.flashlightControlFront( 0.05f);
                     // optimize center using image processing the corners
                     optimizeCenter(current_target.get(0));
                     // irradiate with laser
-                    laserBeam(current_target.get(1), POINTS_QUARTENIONS.get(current_target.get(0)-1));
+                    laserBeam(current_target.get(0), POINTS_QUARTENIONS.get(current_target.get(0)-1));
                     laserCounter++;
                     Log.i("/runPlan1/laserCounter", "laserCounter value is: " + laserCounter);
                     // turn off flashlight
