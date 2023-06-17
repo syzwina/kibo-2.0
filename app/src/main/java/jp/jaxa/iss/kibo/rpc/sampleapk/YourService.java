@@ -54,19 +54,23 @@ public class YourService extends KiboRpcService {
      * Constants defined from RULEBOOK
      */
 
+    //recalculating optimal coords using POINT4 and TARGET4 as reference (yz axis)
+    private double Y_COORDS_OFFSET = -0.044528; // -6.7185--6.673972 //to use= target + offset, // facing the target, it move to the right, ie -ve of y-axis.
+    private double Z_COORDS_OFFSET = 0.08509; // 5.1804-5.09531 //to use= target + offset,
+
+
+    //oldPoint refers to original point given in rulebook
     private Point currentCoords = new Point(0,0,0);
     private Point currentGoalCoords = new Point(0,0,0);
     private final Point START_COORDS = new Point(9.815, -9.806, 4.293);
     private final Point GOAL_COORDS = new Point(11.143, -6.7607, 4.9654);
-    private final Point POINT1_COORDS = new Point(11.2746, -9.92284, 5.2988);
-    private final Point POINT2_COORDS = new Point(10.612, -9.0709, 4.48);
+    private final Point oldPOINT1_COORDS = new Point(11.2746, -9.92284, 5.2988);
+    private final Point oldPOINT2_COORDS = new Point(10.612, -9.0709, 4.48);
     private final Point POINT3_COORDS = new Point(10.71, -7.7, 4.48);
     private final Point POINT4_COORDS = new Point(10.51, -6.7185, 5.1804);
     private final Point POINT5_COORDS = new Point(11.114, -7.9756, 5.3393);
-    private final Point POINT6_COORDS = new Point(11.355, -8.9929, 4.7818);
+    private final Point oldPOINT6_COORDS = new Point(11.355, -8.9929, 4.7818);
     private final Point POINT7_COORDS = new Point(11.369, -8.5518, 4.48);
-    List<Point> POINTS_COORDS = Arrays.asList(POINT1_COORDS, POINT2_COORDS, POINT3_COORDS,
-            POINT4_COORDS, POINT5_COORDS, POINT6_COORDS, POINT7_COORDS);
 
     private final Point TARGET1_COORDS = new Point(11.2625, -10.58, 5.3625);
     private final Point TARGET2_COORDS = new Point(10.513384, -9.085172, 3.76203);
@@ -75,6 +79,15 @@ public class YourService extends KiboRpcService {
     private final Point TARGET5_COORDS = new Point(11.102, -8.0304, 5.9076);
     private final Point TARGET6_COORDS = new Point(12.023, -8.989, 4.8305);
     private final Point QR_CODE_COORDS = new Point(11.381944, -8.566172, 3.76203);
+
+
+    // new POINT_COORDS optimized from POINT4 and target4 reference
+    private final Point POINT1_COORDS = new Point(TARGET1_COORDS.getX() - Y_COORDS_OFFSET, TARGET1_COORDS.getY(), TARGET1_COORDS.getZ() + Z_COORDS_OFFSET);
+    private final Point POINT2_COORDS = new Point(TARGET2_COORDS.getX() + Y_COORDS_OFFSET, TARGET2_COORDS.getY() + Z_COORDS_OFFSET, TARGET2_COORDS.getZ());
+
+
+    List<Point> POINTS_COORDS = Arrays.asList(POINT1_COORDS, POINT2_COORDS, POINT3_COORDS,
+            POINT4_COORDS, POINT5_COORDS, oldPOINT6_COORDS, POINT7_COORDS);
 
     private Quaternion currentQuaternion = new Quaternion(0,0,0,0);
     private final Quaternion START_QUATERNION = new Quaternion((float) 1, (float) 0, (float) 0, (float) 0);
@@ -137,7 +150,7 @@ public class YourService extends KiboRpcService {
             // move bee to middle point of all points that not have KOZ on the way
             moveBee(new Point(POINT4_COORDS.getX(), POINT7_COORDS.getY(), POINT5_COORDS.getZ()), POINT1_QUATERNION, 1000 + current_target.get(0));
 
-            if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL){
+            if (api.getTimeRemaining().get(0) < TIME_FOR_QR_AND_GOAL){
                 Log.e(TAG+"/runPlan1/OutOfTime", "Sequence broken as not enough time, TIME REMAINING: " +api.getTimeRemaining().get(1));
                 break;
             }
@@ -211,11 +224,8 @@ public class YourService extends KiboRpcService {
 
         api.notifyGoingToGoal();
 
-        // move bee to middle point of all points that not have KOZ on the way
-        moveBee(new Point(POINT4_COORDS.getX(), POINT7_COORDS.getY(), POINT5_COORDS.getZ()), POINT1_QUATERNION, 1008);
-
-        // to avoid KOZ from common point
-        moveBee(POINT4_COORDS,POINT4_QUATERNION,1018);
+        // move to z axis of point 6 to avoid KOZ3
+        moveBee(new Point(POINT7_COORDS.getX(),POINT7_COORDS.getY(), oldPOINT6_COORDS.getZ()), GOAL_QUATERNION, 1008);
 
         moveBee(GOAL_COORDS, GOAL_QUATERNION, 8);
 
@@ -307,8 +317,13 @@ public class YourService extends KiboRpcService {
         Mat grayImage = api.getMatNavCam();
         api.saveMatImage(grayImage, "LaserSnapshot" + current_target + ".png");
 
-        api.takeTargetSnapshot(current_target);
-
+        // target 6 bug edge case, it expect target 0 instead?? so yea
+        if (current_target == 6){
+            api.takeTargetSnapshot(0);
+        }
+        else {
+            api.takeTargetSnapshot(current_target);
+        }
     }
 
 
