@@ -112,7 +112,7 @@ public class YourService extends KiboRpcService {
     private final Quaternion TARGET6_QUATERNION = new Quaternion((float) 0.5, (float) 0.5, (float) -0.5, (float) -0.5);
     private final Quaternion QR_CODE_QUATERNION = new Quaternion((float) 0, (float) 0, (float) 0, (float) 1);
 
-    private final int TIME_FOR_QR_AND_GOAL = 130 * 1000;
+    private int TIME_FOR_QR_AND_GOAL = 130 * 1000;
 
     HashMap<Integer, Integer> arucoTargets;
     DetectorParameters detectorParameters;
@@ -145,15 +145,19 @@ public class YourService extends KiboRpcService {
             Log.i("/runPlan1", "getting active targets which are : " + current_target.toString());
 
             if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL){
-                Log.e(TAG+"/runPlan1/OutOfTime", "Sequence broken as not enough time, TIME REMAINING: " +api.getTimeRemaining().get(1));
+                Log.e(TAG+"/runPlan1/OutOfTime", "Sequence1 broken as not enough time, TIME REMAINING: " +api.getTimeRemaining().get(1));
                 break;
             }
 
             // move bee to middle point of all points that not have KOZ on the way
             moveBee(new Point(POINT4_COORDS.getX(), POINT7_COORDS.getY(), POINT5_COORDS.getZ()), POINT1_QUATERNION, 1000 + current_target.get(0));
 
-            if (api.getTimeRemaining().get(0) < TIME_FOR_QR_AND_GOAL){
-                Log.e(TAG+"/runPlan1/OutOfTime", "Sequence broken as not enough time, TIME REMAINING: " +api.getTimeRemaining().get(1));
+            if (counter==4){
+                TIME_FOR_QR_AND_GOAL += 10*1000; // at last phase, increase time taken
+            }
+
+            if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL){
+                Log.e(TAG+"/runPlan1/OutOfTime", "Sequence2 broken as not enough time, TIME REMAINING: " +api.getTimeRemaining().get(1));
                 break;
             }
 
@@ -171,16 +175,17 @@ public class YourService extends KiboRpcService {
             // turn off flashlight
             api.flashlightControlFront((float) 0);
 
+            Log.i(TAG+"/runPlan1", "current_target after laser beam count: " +laserCounter+" are: "+current_target);
+            Log.i(TAG+"/runPlan1", "getActiveTargets return:"+api.getActiveTargets().toString());
+            // check if there's second point in one phase
 
-            // check if there's second point in one phase // changed from 2 to 1 as the first one is removed after deactivated.
-            current_target = api.getActiveTargets();
-            if (current_target.size() >= 1) {
+            if (current_target.size() > 1) {
 
                 // check if phase still on going
-                if (current_target.get(0) == api.getActiveTargets().get(0)) {
+                if (current_target.get(1) == api.getActiveTargets().get(0)) {
 
                     if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL){
-                        Log.e(TAG+"/runPlan1/OutOfTime", "Sequence broken as not enough time, TIME REMAINING: " +api.getTimeRemaining().get(1));
+                        Log.e(TAG+"/runPlan1/OutOfTime", "Sequence3 broken as not enough time, TIME REMAINING: " +api.getTimeRemaining().get(1));
                         break;
                     }
 
@@ -188,7 +193,7 @@ public class YourService extends KiboRpcService {
                     moveBee(new Point(POINT4_COORDS.getX(), POINT7_COORDS.getY(), POINT5_COORDS.getZ()), POINT1_QUATERNION, 1000 + current_target.get(0));
 
                     if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL){
-                        Log.e(TAG+"/runPlan1/OutOfTime", "Sequence broken as not enough time, TIME REMAINING: " +api.getTimeRemaining().get(1));
+                        Log.e(TAG+"/runPlan1/OutOfTime", "Sequence4 broken as not enough time, TIME REMAINING: " +api.getTimeRemaining().get(1));
                         break;
                     }
 
@@ -213,7 +218,7 @@ public class YourService extends KiboRpcService {
 
 
         // move bee to middle point of all points that not have KOZ on the way
-        moveBee(new Point(POINT4_COORDS.getX(), POINT7_COORDS.getY(), POINT5_COORDS.getZ()), POINT1_QUATERNION, 1007);
+        moveBee(new Point(POINT4_COORDS.getX(), POINT7_COORDS.getY(), POINT5_COORDS.getZ()), POINT7_QUATERNION, 1007);
 
         // move bee to target 7
        moveBee(POINT7_COORDS, POINT7_QUATERNION, 7);
