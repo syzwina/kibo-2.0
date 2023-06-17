@@ -174,7 +174,7 @@ public class YourService extends KiboRpcService {
                 // turn on flashlight to improve accuracy, value taken from page 33 in manual
                 api.flashlightControlFront(0.05f);
                 // optimize center using image processing the corners
-                optimizeCenter(current_target.get(targetCounter));
+                //optimizeCenter(current_target.get(targetCounter));
                 // to reset active id ??
                 api.getActiveTargets();
                 // irradiate with laser
@@ -253,7 +253,7 @@ public class YourService extends KiboRpcService {
 
     }
 
-    private void optimizeCenter(int targetID){
+/*    private void optimizeCenter(int targetID){
         int img_process_counter = 0;
         while (img_process_counter < 2) {
             imageProcessing(dictionary, corners, detectorParameters, ids, targetID);
@@ -262,7 +262,7 @@ public class YourService extends KiboRpcService {
             Log.i(TAG+"/optimizeCentre", "Optimizing Centre, attempt: " + img_process_counter);
             img_process_counter++;
         }
-    }
+    }*/
 
     private void laserBeam(int current_target, Quaternion pointQuartenion){
         // compensate for laser pointer offset from navcam in plane that contains navcam/laser pointer by getting orientation first
@@ -296,13 +296,13 @@ public class YourService extends KiboRpcService {
         Log.i(TAG+"/laserBeam", "current Robot Position after offset compensation laser pointer: " + api.getRobotKinematics().getPosition().toString());
 
 
-        // turn on laser
+/*        // turn on laser
         Log.i(TAG+"/laserBeam", "laser turned on");
         api.laserControl(true);
 
         // take laser image
         Mat grayImage = api.getMatNavCam();
-        api.saveMatImage(grayImage, "LaserSnapshot" + current_target + ".png");
+        api.saveMatImage(grayImage, "LaserSnapshot" + current_target + ".png");*/
 
         api.takeTargetSnapshot(current_target);
     }
@@ -339,7 +339,7 @@ public class YourService extends KiboRpcService {
         return qrCodeMapper.getValue(key);
     }
 
-    private boolean checksForKOZ(Point point){
+/*    private boolean checksForKOZ(Point point){
         float x = (float) point.getX();
         float y = (float) point.getY();
         float z = (float) point.getZ();
@@ -372,7 +372,7 @@ public class YourService extends KiboRpcService {
         float z = (float) point.getZ();
         if (KIZ01.contains(x,y,z) || KIZ02.contains(x,y,z)) return true;
         return false;
-    }
+    }*/
 
     private void moveBee(Point point, Quaternion quaternion, int pointNumber){
 
@@ -381,13 +381,13 @@ public class YourService extends KiboRpcService {
         currentGoalCoords = point;
         currentQuaternion = quaternion;
         // probably not needed as all point is in KIZ
-        if (checksForKOZ(point)) Log.i(TAG+"/moveBee", "point " + pointNumber + " is NOT in KOZ");
+        /*if (checksForKOZ(point)) Log.i(TAG+"/moveBee", "point " + pointNumber + " is NOT in KOZ");
         else {
             Log.e(TAG+"/moveBee", "point " + pointNumber + " is in KOZ: " + currentKOZ.toString());
         }
 
         if (checksForKIZ(point)) Log.i(TAG+"/moveBee", "point " + pointNumber + " is in KIZ");
-        else Log.e(TAG+"/moveBee", "point " + pointNumber + " is NOT in KIZ");
+        else Log.e(TAG+"/moveBee", "point " + pointNumber + " is NOT in KIZ");*/
         Log.i(TAG+"/moveBee", "move to point " + pointNumber);
         Result result = api.moveTo(point, quaternion, true);
         Log.i(TAG+"/moveBee", "moveTo status:" + result.hasSucceeded());
@@ -541,7 +541,7 @@ public class YourService extends KiboRpcService {
         }
     }
 
-    int imageProcessing_called = 0;
+/*    int imageProcessing_called = 0;
     private void imageProcessing(Dictionary dictionary, List<Mat> corners, DetectorParameters detectorParameters, Mat ids, int targetID) {
 
         Mat grayImage = api.getMatNavCam();
@@ -563,7 +563,7 @@ public class YourService extends KiboRpcService {
         Log.i(TAG+"imageProcessing", "Image has been saved in Colour");
         imageProcessing_called++;
 
-    }
+    }*/
 
 
 
