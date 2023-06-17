@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 
 // for pathfinding
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -91,6 +92,8 @@ public class YourService extends KiboRpcService {
     List<Point> POINTS_COORDS = Arrays.asList(POINT1_COORDS, POINT2_COORDS, POINT3_COORDS,
             POINT4_COORDS, POINT5_COORDS, POINT6_COORDS, POINT7_COORDS);
 
+    private final Point COMMON_COORDS = new Point(POINT4_COORDS.getX(), POINT7_COORDS.getY(), oldPOINT5_COORDS.getZ());
+
     private Quaternion currentQuaternion = new Quaternion(0,0,0,0);
     private final Quaternion START_QUATERNION = new Quaternion((float) 1, (float) 0, (float) 0, (float) 0);
     private final Quaternion GOAL_QUATERNION = new Quaternion((float) 0, (float) 0, (float) -0.707, (float) 0.707);
@@ -135,90 +138,57 @@ public class YourService extends KiboRpcService {
 
         // count number of laser had been activated
         int laserCounter = 0;
-        int counter = 0;
+        int phaseCounter = 0;
         // 4 phase
-        while ( (counter < 4) && (api.getTimeRemaining().get(1) > TIME_FOR_QR_AND_GOAL) ) {
-            Log.i(TAG+"/runPlan1", "at start of counter = "+counter+", TIME REMAINING:" + api.getTimeRemaining().get(1));
-            counter++;
+        while ( (phaseCounter < 4)) {
+            Log.i(TAG + "/runPlan1", "at start of Phase counter = " + phaseCounter + ", TIME REMAINING:" + api.getTimeRemaining().get(1));
+            phaseCounter++;
 
             current_target = api.getActiveTargets();
+            int targetCounter = 0;
             Log.i("/runPlan1", "getting active targets which are : " + current_target.toString());
 
-            if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL){
-                Log.e(TAG+"/runPlan1/OutOfTime", "Sequence1 broken as not enough time, TIME REMAINING: " +api.getTimeRemaining().get(1));
-                break;
-            }
+            while (targetCounter < current_target.size()) {
 
-            // move bee to middle point of all points that not have KOZ on the way
-            moveBee(new Point(POINT4_COORDS.getX(), POINT7_COORDS.getY(), POINT5_COORDS.getZ()), POINT1_QUATERNION, 1000 + current_target.get(0));
-
-            if (counter==4){
-                TIME_FOR_QR_AND_GOAL += 10*1000; // at last phase, increase time taken
-            }
-
-            if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL){
-                Log.e(TAG+"/runPlan1/OutOfTime", "Sequence2 broken as not enough time, TIME REMAINING: " +api.getTimeRemaining().get(1));
-                break;
-            }
-
-            Log.i(TAG+"/runPlan1", "before going to point = "+current_target.get(0)+", TIME REMAINING:" + api.getTimeRemaining().get(1));
-            // move bee to point 1
-            moveBee(POINTS_COORDS.get(current_target.get(0)-1), POINTS_QUARTENIONS.get(current_target.get(0)-1), current_target.get(0)); // -1 as index start at 0
-            // turn on flashlight to improve accuracy, value taken from page 33 in manual
-            api.flashlightControlFront( 0.05f);
-            // optimize center using image processing the corners
-            optimizeCenter(current_target.get(0));
-            // irradiate with laser
-            laserBeam(current_target.get(0), POINTS_QUARTENIONS.get(current_target.get(0)-1));
-            laserCounter++;
-            Log.i("/runPlan1/laserCounter", "laserCounter value is: " + laserCounter);
-            // turn off flashlight
-            api.flashlightControlFront((float) 0);
-
-            Log.i(TAG+"/runPlan1", "current_target after laser beam count: " +laserCounter+" are: "+current_target);
-            Log.i(TAG+"/runPlan1", "getActiveTargets return:"+api.getActiveTargets().toString());
-            // check if there's second point in one phase
-
-            if (current_target.size() > 1) {
-
-                // check if phase still on going
-                if (current_target.get(1) == api.getActiveTargets().get(0)) {
-
-                    if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL){
-                        Log.e(TAG+"/runPlan1/OutOfTime", "Sequence3 broken as not enough time, TIME REMAINING: " +api.getTimeRemaining().get(1));
-                        break;
-                    }
-
-                    // move bee to middle point of all points that not have KOZ on the way
-                    moveBee(new Point(POINT4_COORDS.getX(), POINT7_COORDS.getY(), POINT5_COORDS.getZ()), POINT1_QUATERNION, 1000 + current_target.get(0));
-
-                    if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL){
-                        Log.e(TAG+"/runPlan1/OutOfTime", "Sequence4 broken as not enough time, TIME REMAINING: " +api.getTimeRemaining().get(1));
-                        break;
-                    }
-
-                    Log.i(TAG+"/runPlan1", "before going to point = "+current_target.get(0)+", TIME REMAINING:" + api.getTimeRemaining().get(0));
-                    // move bee to point 2
-                    moveBee(POINTS_COORDS.get(current_target.get(0) - 1), POINTS_QUARTENIONS.get(current_target.get(0) - 1), current_target.get(0)); // -1 as index start at 0
-                    // turn on flashlight to improve accuracy, value taken from page 33 in manual
-                    api.flashlightControlFront( 0.05f);
-                    // optimize center using image processing the corners
-                    optimizeCenter(current_target.get(0));
-                    // irradiate with laser
-                    laserBeam(current_target.get(0), POINTS_QUARTENIONS.get(current_target.get(0)-1));
-                    laserCounter++;
-                    Log.i("/runPlan1/laserCounter", "laserCounter value is: " + laserCounter);
-                    // turn off flashlight
-                    api.flashlightControlFront((float) 0);
+                if (phaseCounter == 4) {
+                    TIME_FOR_QR_AND_GOAL += 10 * 1000; // at last phase, increase time taken
                 }
-            }
 
+                if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL) {
+                    Log.e(TAG + "/runPlan1/OutOfTime", "Sequence1 broken at targetCounter of " + targetCounter + " as not enough time, TIME REMAINING: " + api.getTimeRemaining().get(1));
+                    break;
+                }
+                // move bee to middle point of all points that not have KOZ on the way
+                moveBee(COMMON_COORDS, POINT1_QUATERNION, 1000 + current_target.get(0));
+
+                if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL) {
+                    Log.e(TAG + "/runPlan1/OutOfTime", "Sequence2 broken at targetCounter of " + targetCounter + " as not enough time, TIME REMAINING: " + api.getTimeRemaining().get(1));
+                    break;
+                }
+
+                Log.i(TAG + "/runPlan1", "before going to point = " + current_target.get(0) + ", TIME REMAINING:" + api.getTimeRemaining().get(1));
+                // move bee to point 1
+                moveBee(POINTS_COORDS.get(current_target.get(targetCounter) - 1), POINTS_QUARTENIONS.get(current_target.get(targetCounter) - 1), current_target.get(targetCounter)); // -1 as index start at 0
+                // turn on flashlight to improve accuracy, value taken from page 33 in manual
+                api.flashlightControlFront(0.05f);
+                // optimize center using image processing the corners
+                optimizeCenter(current_target.get(targetCounter));
+                // irradiate with laser
+                laserBeam(current_target.get(targetCounter), POINTS_QUARTENIONS.get(current_target.get(targetCounter) - 1));
+                laserCounter++;
+                Log.i("/runPlan1/laserCounter", "laserCounter value is: " + laserCounter);
+                // turn off flashlight
+                api.flashlightControlFront((float) 0);
+                Log.i(TAG + "/runPlan1", "current_target after laser beam count: " + laserCounter + " are: " + current_target);
+                Log.i(TAG + "/runPlan1", "getActiveTargets return:" + api.getActiveTargets().toString());
+
+                targetCounter++;
+            }
         }
 
 
-
         // move bee to middle point of all points that not have KOZ on the way
-        moveBee(new Point(POINT4_COORDS.getX(), POINT7_COORDS.getY(), POINT5_COORDS.getZ()), POINT7_QUATERNION, 1007);
+        moveBee(COMMON_COORDS   , POINT7_QUATERNION, 1007);
 
         // move bee to target 7
        moveBee(POINT7_COORDS, POINT7_QUATERNION, 7);
