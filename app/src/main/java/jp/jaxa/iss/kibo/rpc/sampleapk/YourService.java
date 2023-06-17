@@ -56,7 +56,7 @@ public class YourService extends KiboRpcService {
 
     //recalculating optimal coords using POINT4 and TARGET4 as reference (yz axis)
     private double Y_COORDS_OFFSET = -0.044528; // -6.7185--6.673972 //to use= target + offset, // facing the target, it move to the right, ie -ve of y-axis.
-    private double Z_COORDS_OFFSET = 0.08509; // 5.1804-5.09531 //to use= target + offset,
+    private double Z_COORDS_OFFSET = 0.08509; // 5.1804-5.09531 //to use= target + offset, // to move down, +ve of z-axis
 
 
     //oldPoint refers to original point given in rulebook
@@ -66,9 +66,9 @@ public class YourService extends KiboRpcService {
     private final Point GOAL_COORDS = new Point(11.143, -6.7607, 4.9654);
     private final Point oldPOINT1_COORDS = new Point(11.2746, -9.92284, 5.2988);
     private final Point oldPOINT2_COORDS = new Point(10.612, -9.0709, 4.48);
-    private final Point POINT3_COORDS = new Point(10.71, -7.7, 4.48);
+    private final Point oldPOINT3_COORDS = new Point(10.71, -7.7, 4.48);
     private final Point POINT4_COORDS = new Point(10.51, -6.7185, 5.1804);
-    private final Point POINT5_COORDS = new Point(11.114, -7.9756, 5.3393);
+    private final Point oldPOINT5_COORDS = new Point(11.114, -7.9756, 5.3393);
     private final Point oldPOINT6_COORDS = new Point(11.355, -8.9929, 4.7818);
     private final Point POINT7_COORDS = new Point(11.369, -8.5518, 4.48);
 
@@ -82,12 +82,14 @@ public class YourService extends KiboRpcService {
 
 
     // new POINT_COORDS optimized from POINT4 and target4 reference
-    private final Point POINT1_COORDS = new Point(TARGET1_COORDS.getX() - Y_COORDS_OFFSET, TARGET1_COORDS.getY(), TARGET1_COORDS.getZ() + Z_COORDS_OFFSET);
-    private final Point POINT2_COORDS = new Point(TARGET2_COORDS.getX() + Y_COORDS_OFFSET, TARGET2_COORDS.getY() + Z_COORDS_OFFSET, TARGET2_COORDS.getZ());
-
+    private final Point POINT1_COORDS = new Point(TARGET1_COORDS.getX() - Y_COORDS_OFFSET, oldPOINT1_COORDS.getY(), TARGET1_COORDS.getZ() + Z_COORDS_OFFSET);
+    private final Point POINT2_COORDS = new Point(TARGET2_COORDS.getX() - Y_COORDS_OFFSET, TARGET2_COORDS.getY() - Z_COORDS_OFFSET, oldPOINT2_COORDS.getZ());
+    private final Point POINT3_COORDS = new Point(TARGET2_COORDS.getX() + Z_COORDS_OFFSET, TARGET2_COORDS.getY() + Y_COORDS_OFFSET, TARGET2_COORDS.getZ());
+    private final Point POINT5_COORDS = new Point(TARGET2_COORDS.getX() + Y_COORDS_OFFSET, TARGET2_COORDS.getY() + Z_COORDS_OFFSET, TARGET2_COORDS.getZ());
+    private final Point POINT6_COORDS = new Point(TARGET2_COORDS.getX() + Y_COORDS_OFFSET, TARGET2_COORDS.getY() + Z_COORDS_OFFSET, TARGET2_COORDS.getZ());
 
     List<Point> POINTS_COORDS = Arrays.asList(POINT1_COORDS, POINT2_COORDS, POINT3_COORDS,
-            POINT4_COORDS, POINT5_COORDS, oldPOINT6_COORDS, POINT7_COORDS);
+            POINT4_COORDS, POINT5_COORDS, POINT6_COORDS, POINT7_COORDS);
 
     private Quaternion currentQuaternion = new Quaternion(0,0,0,0);
     private final Quaternion START_QUATERNION = new Quaternion((float) 1, (float) 0, (float) 0, (float) 0);
