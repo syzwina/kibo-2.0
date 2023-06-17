@@ -115,7 +115,7 @@ public class YourService extends KiboRpcService {
     private final Quaternion TARGET6_QUATERNION = new Quaternion((float) 0.5, (float) 0.5, (float) -0.5, (float) -0.5);
     private final Quaternion QR_CODE_QUATERNION = new Quaternion((float) 0, (float) 0, (float) 0, (float) 1);
 
-    private int TIME_FOR_QR_AND_GOAL = 130 * 1000;
+    private int TIME_FOR_QR_AND_GOAL = 135 * 1000;
 
     HashMap<Integer, Integer> arucoTargets;
     DetectorParameters detectorParameters;
@@ -150,6 +150,8 @@ public class YourService extends KiboRpcService {
 
             while (targetCounter < current_target.size()) {
 
+
+
                 if (phaseCounter == 4) {
                     TIME_FOR_QR_AND_GOAL += 10 * 1000; // at last phase, increase time taken
                 }
@@ -173,6 +175,8 @@ public class YourService extends KiboRpcService {
                 api.flashlightControlFront(0.05f);
                 // optimize center using image processing the corners
                 optimizeCenter(current_target.get(targetCounter));
+                // to reset active id ??
+                api.getActiveTargets();
                 // irradiate with laser
                 laserBeam(current_target.get(targetCounter), POINTS_QUARTENIONS.get(current_target.get(targetCounter) - 1));
                 laserCounter++;
@@ -294,13 +298,7 @@ public class YourService extends KiboRpcService {
         Mat grayImage = api.getMatNavCam();
         api.saveMatImage(grayImage, "LaserSnapshot" + current_target + ".png");
 
-        // target 6 bug edge case, it expect target 0 instead?? so yea
-        if (current_target == 6){
-            api.takeTargetSnapshot(0);
-        }
-        else {
-            api.takeTargetSnapshot(current_target);
-        }
+        api.takeTargetSnapshot(current_target);
     }
 
 
