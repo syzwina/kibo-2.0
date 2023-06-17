@@ -165,7 +165,7 @@ public class YourService extends KiboRpcService {
             // irradiate with laser
             laserBeam(current_target.get(0), POINTS_QUARTENIONS.get(current_target.get(0)-1));
             laserCounter++;
-            Log.i("/runPlan1/laserCounter", "laserCounter value is: " + laserCounter);
+            Log.i(TAG+"/runPlan1/laserCounter", "laserCounter value is: " + laserCounter);
             // turn off flashlight
             api.flashlightControlFront((float) 0);
 
@@ -326,7 +326,6 @@ public class YourService extends KiboRpcService {
         }
     }
 
-
     private String readQR(){
         QRCodeMapper qrCodeMapper = new QRCodeMapper();
         String key = "";
@@ -415,8 +414,6 @@ public class YourService extends KiboRpcService {
         else Log.e(TAG+"/moveBee", "failed to move to point " + pointNumber);
         Log.i(TAG+"/moveBee/coords", "point: x = " + point.getX() + ", y = " + point.getY() + ", z = " + point.getZ());
     }
-
-
 
     private double[] inspectCorners(List<Mat> corners) {
 
@@ -575,6 +572,28 @@ public class YourService extends KiboRpcService {
 
     }
 
-
+    public List<Point> findPath(Point start, Point goal) {
+        List<Point> path = new ArrayList<>();
+    
+        // Create a LazyThetaStar instance
+        LazyThetaStar lazyThetaStar = new LazyThetaStar();
+        
+        // Add obstacles to the octree (assuming you have a list of obstacles called "keepOutZones")
+        lazyThetaStar.addKeepOutZones(keepOutZones);
+        
+        // Initialize the start and goal nodes
+        Point startPoint = new Point(start.getX(), start.getY(), start.getZ());
+        Point goalPoint = new Point(goal.getX(), goal.getY(), goal.getZ());
+        
+        // Implement the Lazy Theta* algorithm
+        // You'll need to define the necessary data structures and implement the pathfinding logic
+        
+        // Add the start node to the path
+        path.add(startNode);
+        
+        // Return the computed path as a list of nodes
+        return path;
+    }
+    
 
 }
