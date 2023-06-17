@@ -260,6 +260,7 @@ public class YourService extends KiboRpcService {
             imageProcessing(dictionary, corners, detectorParameters, ids, targetID);
             //moveCloserToArucoMarker(inspectCorners(corners), targetID);
             corners.clear();
+            Log.i(TAG+"/optimizeCentre", "Optimizing Centre, attempt: " + img_process_counter);
             img_process_counter++;
         }
     }
@@ -463,28 +464,34 @@ public class YourService extends KiboRpcService {
         if (x_difference < -50) {
             new_point = new Point(point.getX(), point.getY() + 0.2, point.getZ());
             moveBee(new_point, quaternion, current_target + 10); // move to right in y-axis //added 10 to differentiate with first moveBee in point movement
+            Log.i(TAG+"/moveCloserToArucoMarker", "Moved to point: x = " + new_point.getX() + ", y = " + new_point.getY() + ", z = " + new_point.getZ());
         }
         else if (x_difference > 50) {
             new_point = new Point(point.getX(), point.getY() - 0.2, point.getZ());
             moveBee(new_point, quaternion, current_target +10); // move to left in y-axis
+            Log.i(TAG+"/moveCloserToArucoMarker", "Moved to point: x = " + new_point.getX() + ", y = " + new_point.getY() + ", z = " + new_point.getZ());
         }
 
         if (x_difference < -30) {
             new_point = new Point(point.getX(), point.getY() + 0.1, point.getZ());
             moveBee(new_point, quaternion, current_target +10); // move to right in y-axis
+            Log.i(TAG+"/moveCloserToArucoMarker", "Moved to point: x = " + new_point.getX() + ", y = " + new_point.getY() + ", z = " + new_point.getZ());
         }
         else if (x_difference > 30) {
             new_point = new Point(point.getX(), point.getY() - 0.1, point.getZ());
             moveBee(new_point, quaternion, current_target +10); // move to left in y-axis
+            Log.i(TAG+"/moveCloserToArucoMarker", "Moved to point: x = " + new_point.getX() + ", y = " + new_point.getY() + ", z = " + new_point.getZ());
         }
 
         if (x_difference < -20) {
             new_point = new Point(point.getX(), point.getY() + 0.05, point.getZ());
             moveBee(new_point, quaternion, current_target +10); // move to right in y-axis
+            Log.i(TAG+"/moveCloserToArucoMarker", "Moved to point: x = " + new_point.getX() + ", y = " + new_point.getY() + ", z = " + new_point.getZ());
         }
         else if (x_difference > 20) {
             new_point = new Point(point.getX(), point.getY() - 0.05, point.getZ());
             moveBee(new_point, quaternion, current_target +10); // move to left in y-axis
+            Log.i(TAG+"/moveCloserToArucoMarker", "Moved to point: x = " + new_point.getX() + ", y = " + new_point.getY() + ", z = " + new_point.getZ());
         }
 
 
@@ -496,28 +503,34 @@ public class YourService extends KiboRpcService {
         if (y_difference <  -50) {
             new_point = new Point(point.getX() + 0.2, point.getY(), point.getZ());
             moveBee(new_point, quaternion, current_target +100); // move to down in x-axis
+            Log.i(TAG+"/moveCloserToArucoMarker", "Moved to point: x = " + new_point.getX() + ", y = " + new_point.getY() + ", z = " + new_point.getZ());
         }
         else if (y_difference > 50) {
             new_point = new Point(point.getX() - 0.2, point.getY(), point.getZ());
             moveBee(new_point, quaternion, current_target +100); // move to up in x-axis
+            Log.i(TAG+"/moveCloserToArucoMarker", "Moved to point: x = " + new_point.getX() + ", y = " + new_point.getY() + ", z = " + new_point.getZ());
         }
 
         if (y_difference <  -30) {
             new_point = new Point(point.getX() + 0.1, point.getY(), point.getZ());
             moveBee(new_point, quaternion, current_target+100); // move to down in x-axis
+            Log.i(TAG+"/moveCloserToArucoMarker", "Moved to point: x = " + new_point.getX() + ", y = " + new_point.getY() + ", z = " + new_point.getZ());
         }
         else if (y_difference > 30) {
             new_point = new Point(point.getX() - 0.1, point.getY(), point.getZ());
             moveBee(new_point, quaternion, current_target +100); // move to up in x-axis
+            Log.i(TAG+"/moveCloserToArucoMarker", "Moved to point: x = " + new_point.getX() + ", y = " + new_point.getY() + ", z = " + new_point.getZ());
         }
 
         if (y_difference <  -20) {
             new_point = new Point(point.getX() + 0.05, point.getY(), point.getZ());
             moveBee(new_point, quaternion, current_target + 100); // move to down in x-axis
+            Log.i(TAG+"/moveCloserToArucoMarker", "Moved to point: x = " + new_point.getX() + ", y = " + new_point.getY() + ", z = " + new_point.getZ());
         }
         else if (y_difference > 20) {
             new_point = new Point(point.getX() - 0.05, point.getY(), point.getZ());
             moveBee(new_point, quaternion, current_target + 100); // move to up in x-axis
+            Log.i(TAG+"/moveCloserToArucoMarker", "Moved to point: x = " + new_point.getX() + ", y = " + new_point.getY() + ", z = " + new_point.getZ());
         }
     }
 
@@ -526,6 +539,7 @@ public class YourService extends KiboRpcService {
 
         Mat grayImage = api.getMatNavCam();
         api.saveMatImage(grayImage, "nearTarget" + targetID + "_" + imageProcessing_called + ".png");
+        Log.i(TAG+"/imageProcessing", "Image has been saved in Black and White");
 
         Mat colorImage = new Mat();
         // Convert the grayscale image to color
@@ -536,8 +550,10 @@ public class YourService extends KiboRpcService {
         Aruco.drawDetectedMarkers(colorImage, corners, ids, new Scalar( 0, 255, 0 ));
 
         Imgproc.putText(colorImage, "Aruco:"+ Arrays.toString(ids.get(0,0)), new org.opencv.core.Point(30.0, 80.0), 3, 0.5, new Scalar(255, 0, 0, 255), 1);
+        Log.i(TAG+"imageProcessing", "Aruco marker has been labeled");
 
         api.saveMatImage(colorImage, "processedNearTarget" + current_target + "_" + imageProcessing_called+ ".png");
+        Log.i(TAG+"imageProcessing", "Image has been saved in Colour");
         imageProcessing_called++;
 
     }
