@@ -84,9 +84,9 @@ public class YourService extends KiboRpcService {
     // new POINT_COORDS optimized from POINT4 and target4 reference
     private final Point POINT1_COORDS = new Point(TARGET1_COORDS.getX() - Y_COORDS_OFFSET, oldPOINT1_COORDS.getY(), TARGET1_COORDS.getZ() + Z_COORDS_OFFSET);
     private final Point POINT2_COORDS = new Point(TARGET2_COORDS.getX() - Y_COORDS_OFFSET, TARGET2_COORDS.getY() - Z_COORDS_OFFSET, oldPOINT2_COORDS.getZ());
-    private final Point POINT3_COORDS = new Point(TARGET2_COORDS.getX() + Z_COORDS_OFFSET, TARGET2_COORDS.getY() + Y_COORDS_OFFSET, TARGET2_COORDS.getZ());
-    private final Point POINT5_COORDS = new Point(TARGET2_COORDS.getX() + Y_COORDS_OFFSET, TARGET2_COORDS.getY() + Z_COORDS_OFFSET, TARGET2_COORDS.getZ());
-    private final Point POINT6_COORDS = new Point(TARGET2_COORDS.getX() + Y_COORDS_OFFSET, TARGET2_COORDS.getY() + Z_COORDS_OFFSET, TARGET2_COORDS.getZ());
+    private final Point POINT3_COORDS = new Point(TARGET3_COORDS.getX() + Z_COORDS_OFFSET, TARGET3_COORDS.getY() - Y_COORDS_OFFSET, oldPOINT3_COORDS.getZ());
+    private final Point POINT5_COORDS = new Point(TARGET5_COORDS.getX() - Y_COORDS_OFFSET, TARGET5_COORDS.getY() + Z_COORDS_OFFSET, oldPOINT5_COORDS.getZ());
+    private final Point POINT6_COORDS = new Point(oldPOINT6_COORDS.getX() + Y_COORDS_OFFSET, TARGET6_COORDS.getY() - Y_COORDS_OFFSET, TARGET6_COORDS.getZ() + Z_COORDS_OFFSET);
 
     List<Point> POINTS_COORDS = Arrays.asList(POINT1_COORDS, POINT2_COORDS, POINT3_COORDS,
             POINT4_COORDS, POINT5_COORDS, POINT6_COORDS, POINT7_COORDS);
