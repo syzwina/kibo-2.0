@@ -190,6 +190,12 @@ public class YourService extends KiboRpcService {
             }
         }
 
+        //doesnt work!
+/*        //also add notify to trick
+        api.notifyGoingToGoal();
+
+        // testing trying to trick the sim to think we are going to goal
+        moveBee(GOAL_COORDS, GOAL_QUATERNION, 8);*/
 
         // move bee to middle point of all points that not have KOZ on the way
         moveBee(COMMON_COORDS   , POINT7_QUATERNION, 1007);
@@ -197,11 +203,11 @@ public class YourService extends KiboRpcService {
         // move bee to target 7
        moveBee(POINT7_COORDS, POINT7_QUATERNION, 7);
         // turn on flashlight to improve accuracy, value taken from page 33 in manual
-        api.flashlightControlFront( (float) 0.05f);
+        api.flashlightControlFront(0.05f);
         // read QR code dummy function, not yet implemented
         String QRstring = readQR();
         // turn off flashlight
-        api.flashlightControlFront((float) 0);
+        api.flashlightControlFront(0);
 
         api.notifyGoingToGoal();
 
@@ -322,10 +328,13 @@ public class YourService extends KiboRpcService {
         int qrCounter = 0;
         key = qrCodeReader.readQR(colorImage);
         while (key == "NO QR" && qrCounter < 5) {
+            Log.e(TAG+"read/QR", "NO QR detected, rotating picture and retrying count:" + qrCounter);
+            api.saveMatImage(colorImage, "QR_color_image"+qrCounter+".png");
             Core.rotate(colorImage,colorImage,Core.ROTATE_90_CLOCKWISE);
         key = qrCodeReader.readQR(colorImage);
         qrCounter++;
         }
+
         Log.i(TAG+"/readQR", "QRCode key is: " + key);
         return qrCodeMapper.getValue(key);
     }
@@ -367,6 +376,7 @@ public class YourService extends KiboRpcService {
 
     private void moveBee(Point point, Quaternion quaternion, int pointNumber){
 
+
         final int LOOP_MAX = 5;
         currentGoalCoords = point;
         currentQuaternion = quaternion;
@@ -381,6 +391,7 @@ public class YourService extends KiboRpcService {
         Log.i(TAG+"/moveBee", "move to point " + pointNumber);
         Result result = api.moveTo(point, quaternion, true);
         Log.i(TAG+"/moveBee", "moveTo status:" + result.hasSucceeded());
+
 
         // check result and loop while moveTo api is not succeeded
         int loopCounter = 0;
