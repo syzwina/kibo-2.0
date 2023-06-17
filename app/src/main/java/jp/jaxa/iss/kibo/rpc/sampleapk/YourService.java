@@ -351,7 +351,13 @@ public class YourService extends KiboRpcService {
 
 
         QRCodeReader qrCodeReader = new QRCodeReader();
+        int qrCounter = 0;
         key = qrCodeReader.readQR(colorImage);
+        while (key == "NO QR" && qrCounter < 5) {
+            Core.rotate(colorImage,colorImage,Core.ROTATE_90_CLOCKWISE);
+        key = qrCodeReader.readQR(colorImage);
+        qrCounter++;
+        }
         Log.i(TAG+"/readQR", "QRCode key is: " + key);
         return qrCodeMapper.getValue(key);
     }
@@ -422,8 +428,6 @@ public class YourService extends KiboRpcService {
         else Log.e(TAG+"/moveBee", "failed to move to point " + pointNumber);
         Log.i(TAG+"/moveBee/coords", "point: x = " + point.getX() + ", y = " + point.getY() + ", z = " + point.getZ());
     }
-
-
 
     private double[] inspectCorners(List<Mat> corners) {
 
