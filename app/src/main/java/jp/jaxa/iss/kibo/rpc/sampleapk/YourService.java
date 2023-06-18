@@ -296,12 +296,12 @@ public class YourService extends KiboRpcService {
         Log.i(TAG+"/laserBeam", "current Robot Position after offset compensation laser pointer: " + api.getRobotKinematics().getPosition().toString());
 
 
-/*        // turn on laser
+        // turn on laser
         Log.i(TAG+"/laserBeam", "laser turned on");
         api.laserControl(true);
 
         // take laser image
-        Mat grayImage = api.getMatNavCam();
+/*        Mat grayImage = api.getMatNavCam();
         api.saveMatImage(grayImage, "LaserSnapshot" + current_target + ".png");*/
 
         api.takeTargetSnapshot(current_target);
