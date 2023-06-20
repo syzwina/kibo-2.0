@@ -315,26 +315,16 @@ public class YourService extends KiboRpcService {
         Mat grayImage = api.getMatNavCam();
         api.saveMatImage(grayImage, "QRImage.png");
 
-        Mat colorImage = new Mat();
-        // Convert the grayscale image to color
-        Imgproc.cvtColor(grayImage, colorImage, Imgproc.COLOR_GRAY2BGR);
-
         Log.i(TAG+"/readQR", "QR image processing");
-        Core.rotate(colorImage,colorImage, Core.ROTATE_180); // rotate image 180 deg as quartenion given is upside down, cba to find correct quartenion
-        api.saveMatImage(colorImage, "QR_color_image.png");
-
 
         QRCodeReader qrCodeReader = new QRCodeReader();
         int qrCounter = 0;
-        key = qrCodeReader.readQR(colorImage);
-        while (key == "NO QR" && qrCounter < 5) {
-            Log.e(TAG+"read/QR", "NO QR detected, rotating picture and retrying count:" + qrCounter);
-            api.saveMatImage(colorImage, "QR_color_image"+qrCounter+".png");
-            Core.rotate(colorImage,colorImage,Core.ROTATE_90_CLOCKWISE);
-        key = qrCodeReader.readQR(colorImage);
+        key = qrCodeReader.readQR(grayImage);
+        while ((key == "NO QR"|| key == "") && qrCounter < 5) {
+        key = qrCodeReader.readQR(grayImage);
         qrCounter++;
+        Log.i(TAG+"/readQR", "QRCode key is: " + key + " attempt: " + qrCounter);
         }
-
         Log.i(TAG+"/readQR", "QRCode key is: " + key);
         return qrCodeMapper.getValue(key);
     }
