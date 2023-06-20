@@ -10,11 +10,9 @@ public class QRCodeReader
     {
         // assumes input is a grayscale image
         QRCodeDetector decoder = new QRCodeDetector();
-        ImageThresholding thresholder = new ImageThresholding();
         Mat points = new Mat();
 
-        Mat thresholded = thresholder.applyThreshold(img);
-        String data = decoder.detectAndDecode(thresholded, points);
+        String data = decoder.detectAndDecodeCurved(img, points);
 
         if (!points.empty()) {
             return data;
