@@ -8,7 +8,7 @@ public class QRCodeReader
 
     public String readQR(Mat img)
     {
-
+        // assumes input is a grayscale image
         QRCodeDetector decoder = new QRCodeDetector();
         ImageThresholding thresholder = new ImageThresholding();
         Mat points = new Mat();
