@@ -305,11 +305,11 @@ public class YourService extends KiboRpcService {
         QRCodeReader qrCodeReader = new QRCodeReader();
         int qrCounter = 0;
         key = qrCodeReader.readQR(colorImage);
-        while (key == "NO QR" && qrCounter < 5) {
+        while ((key == "NO QR"|| key == "") && qrCounter < 5) {
         key = qrCodeReader.readQR(colorImage);
         qrCounter++;
-        }
         Log.i(TAG+"/readQR", "QRCode key is: " + key);
+        }
         return qrCodeMapper.getValue(key);
     }
 
