@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 
 // for pathfinding
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -54,19 +55,23 @@ public class YourService extends KiboRpcService {
      * Constants defined from RULEBOOK
      */
 
+    //recalculating optimal coords using POINT4 and TARGET4 as reference (yz axis)
+    private double Y_COORDS_OFFSET = -0.044528; // -6.7185--6.673972 //to use= target + offset, // facing the target, it move to the right, ie -ve of y-axis.
+    private double Z_COORDS_OFFSET = 0.08509; // 5.1804-5.09531 //to use= target + offset, // to move down, +ve of z-axis
+
+
+    //oldPoint refers to original point given in rulebook
     private Point currentCoords = new Point(0,0,0);
     private Point currentGoalCoords = new Point(0,0,0);
     private final Point START_COORDS = new Point(9.815, -9.806, 4.293);
     private final Point GOAL_COORDS = new Point(11.143, -6.7607, 4.9654);
-    private final Point POINT1_COORDS = new Point(11.2746, -9.92284, 5.2988);
-    private final Point POINT2_COORDS = new Point(10.612, -9.0709, 4.48);
-    private final Point POINT3_COORDS = new Point(10.71, -7.7, 4.48);
+    private final Point oldPOINT1_COORDS = new Point(11.2746, -9.92284, 5.2988);
+    private final Point oldPOINT2_COORDS = new Point(10.612, -9.0709, 4.48);
+    private final Point oldPOINT3_COORDS = new Point(10.71, -7.7, 4.48);
     private final Point POINT4_COORDS = new Point(10.51, -6.7185, 5.1804);
-    private final Point POINT5_COORDS = new Point(11.114, -7.9756, 5.3393);
-    private final Point POINT6_COORDS = new Point(11.355, -8.9929, 4.7818);
+    private final Point oldPOINT5_COORDS = new Point(11.114, -7.9756, 5.3393);
+    private final Point oldPOINT6_COORDS = new Point(11.355, -8.9929, 4.7818);
     private final Point POINT7_COORDS = new Point(11.369, -8.5518, 4.48);
-    List<Point> POINTS_COORDS = Arrays.asList(POINT1_COORDS, POINT2_COORDS, POINT3_COORDS,
-            POINT4_COORDS, POINT5_COORDS, POINT6_COORDS, POINT7_COORDS);
 
     private final Point TARGET1_COORDS = new Point(11.2625, -10.58, 5.3625);
     private final Point TARGET2_COORDS = new Point(10.513384, -9.085172, 3.76203);
@@ -75,6 +80,19 @@ public class YourService extends KiboRpcService {
     private final Point TARGET5_COORDS = new Point(11.102, -8.0304, 5.9076);
     private final Point TARGET6_COORDS = new Point(12.023, -8.989, 4.8305);
     private final Point QR_CODE_COORDS = new Point(11.381944, -8.566172, 3.76203);
+
+
+    // new POINT_COORDS optimized from POINT4 and target4 reference
+    private final Point POINT1_COORDS = new Point(TARGET1_COORDS.getX() - Y_COORDS_OFFSET, oldPOINT1_COORDS.getY(), TARGET1_COORDS.getZ() + Z_COORDS_OFFSET);
+    private final Point POINT2_COORDS = new Point(TARGET2_COORDS.getX() - Y_COORDS_OFFSET, TARGET2_COORDS.getY() - Z_COORDS_OFFSET, oldPOINT2_COORDS.getZ());
+    private final Point POINT3_COORDS = new Point(TARGET3_COORDS.getX() + Z_COORDS_OFFSET, TARGET3_COORDS.getY() - Y_COORDS_OFFSET, oldPOINT3_COORDS.getZ());
+    private final Point POINT5_COORDS = new Point(TARGET5_COORDS.getX() - Y_COORDS_OFFSET, TARGET5_COORDS.getY() + Z_COORDS_OFFSET, oldPOINT5_COORDS.getZ());
+    private final Point POINT6_COORDS = new Point(oldPOINT6_COORDS.getX() + Y_COORDS_OFFSET, TARGET6_COORDS.getY() - Y_COORDS_OFFSET, TARGET6_COORDS.getZ() + Z_COORDS_OFFSET);
+
+    List<Point> POINTS_COORDS = Arrays.asList(POINT1_COORDS, POINT2_COORDS, POINT3_COORDS,
+            POINT4_COORDS, POINT5_COORDS, POINT6_COORDS, POINT7_COORDS);
+
+    private final Point COMMON_COORDS = new Point(POINT4_COORDS.getX(), POINT7_COORDS.getY(), oldPOINT5_COORDS.getZ());
 
     private Quaternion currentQuaternion = new Quaternion(0,0,0,0);
     private final Quaternion START_QUATERNION = new Quaternion((float) 1, (float) 0, (float) 0, (float) 0);
@@ -97,6 +115,8 @@ public class YourService extends KiboRpcService {
     private final Quaternion TARGET6_QUATERNION = new Quaternion((float) 0.5, (float) 0.5, (float) -0.5, (float) -0.5);
     private final Quaternion QR_CODE_QUATERNION = new Quaternion((float) 0, (float) 0, (float) 0, (float) 1);
 
+    private int TIME_FOR_QR_AND_GOAL = 135 * 1000;
+
     HashMap<Integer, Integer> arucoTargets;
     DetectorParameters detectorParameters;
     List<Mat> corners;
@@ -116,81 +136,83 @@ public class YourService extends KiboRpcService {
         // move bee from KIZ2 to KIZ1 by moving to bottom right of KIZ2 (KIZ1 xyz min + KIZ2 xyz max)/2
         moveBee(new Point(10.4, -9.9, 4.50), POINT1_QUATERNION, 0);
 
-        int counter = 0;
+        // count number of laser had been activated
+        int laserCounter = 0;
+        int phaseCounter = 0;
         // 4 phase
-        while ( (counter < 4) && (api.getTimeRemaining().get(1) > 130 * 1000) ) {
-            Log.i(TAG+"/runPlan1", "at start of counter = "+counter+", TIME REMAINING:" + api.getTimeRemaining().get(1));
-            counter++;
+        while ( (phaseCounter < 4)) {
+            Log.i(TAG + "/runPlan1", "at start of Phase counter = " + phaseCounter + ", TIME REMAINING:" + api.getTimeRemaining().get(1));
+            phaseCounter++;
 
             current_target = api.getActiveTargets();
+            int targetCounter = 0;
             Log.i("/runPlan1", "getting active targets which are : " + current_target.toString());
 
-            // move bee to middle point of all points that not have KOZ on the way
-            moveBee(new Point(POINT4_COORDS.getX(), POINT7_COORDS.getY(), POINT5_COORDS.getZ()), POINT1_QUATERNION, 1000 + current_target.get(0));
-
-            Log.i(TAG+"/runPlan1", "before going to point = "+current_target.get(0)+", TIME REMAINING:" + api.getTimeRemaining().get(1));
-            // move bee to point 1
-            moveBee(POINTS_COORDS.get(current_target.get(0)-1), POINTS_QUARTENIONS.get(current_target.get(0)-1), current_target.get(0)); // -1 as index start at 0
-            // turn on flashlight to improve accuracy, value taken from page 33 in manual
-            api.flashlightControlFront((float) 0.05f);
-            // optimize center using image processing the corners
-            optimizeCenter(current_target.get(0));
-            // irradiate with laser
-            laserBeam(current_target.get(0), POINTS_QUARTENIONS.get(current_target.get(0)-1));
-            // turn off flashlight
-            api.flashlightControlFront((float) 0);
+            while (targetCounter < current_target.size()) {
 
 
-            // check if there's second point in one phase
-            if (current_target.size() >= 2) {
 
-                // check if phase still on going
-                if (current_target.get(0) == api.getActiveTargets().get(0)) {
-
-                    if (api.getTimeRemaining().get(1) < 130*1000){
-                        break;
-                    }
-
-                    // move bee to middle point of all points that not have KOZ on the way
-                    moveBee(new Point(POINT4_COORDS.getX(), POINT7_COORDS.getY(), POINT5_COORDS.getZ()), POINT1_QUATERNION, 1000 + current_target.get(1));
-
-                    Log.i(TAG+"/runPlan1", "before going to point = "+current_target.get(1)+", TIME REMAINING:" + api.getTimeRemaining().get(1));
-                    // move bee to point 2
-                    moveBee(POINTS_COORDS.get(current_target.get(1) - 1), POINTS_QUARTENIONS.get(current_target.get(1) - 1), current_target.get(1)); // -1 as index start at 0
-                    // turn on flashlight to improve accuracy, value taken from page 33 in manual
-                    api.flashlightControlFront((float) 0.05f);
-                    // optimize center using image processing the corners
-                    optimizeCenter(current_target.get(1));
-                    // irradiate with laser
-                    laserBeam(current_target.get(1), POINTS_QUARTENIONS.get(current_target.get(1)-1));
-                    // turn off flashlight
-                    api.flashlightControlFront((float) 0);
+                if (phaseCounter == 4) {
+                    TIME_FOR_QR_AND_GOAL += 10 * 1000; // at last phase, increase time taken
                 }
-            }
 
+                if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL) {
+                    Log.e(TAG + "/runPlan1/OutOfTime", "Sequence1 broken at targetCounter of " + targetCounter + " as not enough time, TIME REMAINING: " + api.getTimeRemaining().get(1));
+                    break;
+                }
+                // move bee to middle point of all points that not have KOZ on the way
+                moveBee(COMMON_COORDS, POINT1_QUATERNION, 1000 + current_target.get(0));
+
+                if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL) {
+                    Log.e(TAG + "/runPlan1/OutOfTime", "Sequence2 broken at targetCounter of " + targetCounter + " as not enough time, TIME REMAINING: " + api.getTimeRemaining().get(1));
+                    break;
+                }
+
+                Log.i(TAG + "/runPlan1", "before going to point = " + current_target.get(0) + ", TIME REMAINING:" + api.getTimeRemaining().get(1));
+                // move bee to point 1
+                moveBee(POINTS_COORDS.get(current_target.get(targetCounter) - 1), POINTS_QUARTENIONS.get(current_target.get(targetCounter) - 1), current_target.get(targetCounter)); // -1 as index start at 0
+                // turn on flashlight to improve accuracy, value taken from page 33 in manual
+                api.flashlightControlFront(0.05f);
+                // optimize center using image processing the corners
+                //optimizeCenter(current_target.get(targetCounter));
+                // to reset active id ??
+                api.getActiveTargets();
+                // irradiate with laser
+                laserBeam(current_target.get(targetCounter), POINTS_QUARTENIONS.get(current_target.get(targetCounter) - 1));
+                laserCounter++;
+                Log.i("/runPlan1/laserCounter", "laserCounter value is: " + laserCounter);
+                // turn off flashlight
+                api.flashlightControlFront((float) 0);
+                Log.i(TAG + "/runPlan1", "current_target after laser beam count: " + laserCounter + " are: " + current_target);
+                Log.i(TAG + "/runPlan1", "getActiveTargets return:" + api.getActiveTargets().toString());
+
+                targetCounter++;
+            }
         }
 
+        //doesnt work!
+/*        //also add notify to trick
+        api.notifyGoingToGoal();
 
+        // testing trying to trick the sim to think we are going to goal
+        moveBee(GOAL_COORDS, GOAL_QUATERNION, 8);*/
 
         // move bee to middle point of all points that not have KOZ on the way
-        moveBee(new Point(POINT4_COORDS.getX(), POINT7_COORDS.getY(), POINT5_COORDS.getZ()), POINT1_QUATERNION, 1007);
+        moveBee(COMMON_COORDS   , POINT7_QUATERNION, 1007);
 
         // move bee to target 7
        moveBee(POINT7_COORDS, POINT7_QUATERNION, 7);
         // turn on flashlight to improve accuracy, value taken from page 33 in manual
-        api.flashlightControlFront( (float) 0.05f);
+        api.flashlightControlFront(0.05f);
         // read QR code dummy function, not yet implemented
         String QRstring = readQR();
         // turn off flashlight
-        api.flashlightControlFront((float) 0);
+        api.flashlightControlFront(0);
 
         api.notifyGoingToGoal();
 
-        // move bee to middle point of all points that not have KOZ on the way
-        moveBee(new Point(POINT4_COORDS.getX(), POINT7_COORDS.getY(), POINT5_COORDS.getZ()), POINT1_QUATERNION, 1008);
-
-        // to avoid KOZ from common point
-        moveBee(POINT4_COORDS,POINT4_QUATERNION,1018);
+        // move to z axis of point 6 to avoid KOZ3
+        moveBee(new Point(POINT7_COORDS.getX(),POINT7_COORDS.getY(), oldPOINT6_COORDS.getZ()), GOAL_QUATERNION, 1008);
 
         moveBee(GOAL_COORDS, GOAL_QUATERNION, 8);
 
@@ -231,15 +253,16 @@ public class YourService extends KiboRpcService {
 
     }
 
-    private void optimizeCenter(int targetID){
+/*    private void optimizeCenter(int targetID){
         int img_process_counter = 0;
         while (img_process_counter < 2) {
             imageProcessing(dictionary, corners, detectorParameters, ids, targetID);
             //moveCloserToArucoMarker(inspectCorners(corners), targetID);
             corners.clear();
+            Log.i(TAG+"/optimizeCentre", "Optimizing Centre, attempt: " + img_process_counter);
             img_process_counter++;
         }
-    }
+    }*/
 
     private void laserBeam(int current_target, Quaternion pointQuartenion){
         // compensate for laser pointer offset from navcam in plane that contains navcam/laser pointer by getting orientation first
@@ -278,11 +301,10 @@ public class YourService extends KiboRpcService {
         api.laserControl(true);
 
         // take laser image
-        Mat grayImage = api.getMatNavCam();
-        api.saveMatImage(grayImage, "LaserSnapshot" + current_target + ".png");
+/*        Mat grayImage = api.getMatNavCam();
+        api.saveMatImage(grayImage, "LaserSnapshot" + current_target + ".png");*/
 
         api.takeTargetSnapshot(current_target);
-
     }
 
 
@@ -305,15 +327,19 @@ public class YourService extends KiboRpcService {
         QRCodeReader qrCodeReader = new QRCodeReader();
         int qrCounter = 0;
         key = qrCodeReader.readQR(colorImage);
-        while ((key == "NO QR"|| key == "") && qrCounter < 5) {
+        while (key == "NO QR" && qrCounter < 5) {
+            Log.e(TAG+"read/QR", "NO QR detected, rotating picture and retrying count:" + qrCounter);
+            api.saveMatImage(colorImage, "QR_color_image"+qrCounter+".png");
+            Core.rotate(colorImage,colorImage,Core.ROTATE_90_CLOCKWISE);
         key = qrCodeReader.readQR(colorImage);
         qrCounter++;
-        Log.i(TAG+"/readQR", "QRCode key is: " + key);
         }
+
+        Log.i(TAG+"/readQR", "QRCode key is: " + key);
         return qrCodeMapper.getValue(key);
     }
 
-    private boolean checksForKOZ(Point point){
+/*    private boolean checksForKOZ(Point point){
         float x = (float) point.getX();
         float y = (float) point.getY();
         float z = (float) point.getZ();
@@ -346,29 +372,33 @@ public class YourService extends KiboRpcService {
         float z = (float) point.getZ();
         if (KIZ01.contains(x,y,z) || KIZ02.contains(x,y,z)) return true;
         return false;
-    }
+    }*/
 
     private void moveBee(Point point, Quaternion quaternion, int pointNumber){
+
 
         final int LOOP_MAX = 5;
         currentGoalCoords = point;
         currentQuaternion = quaternion;
         // probably not needed as all point is in KIZ
-        if (checksForKOZ(point)) Log.i(TAG+"/moveBee", "point " + pointNumber + " is NOT in KOZ");
+        /*if (checksForKOZ(point)) Log.i(TAG+"/moveBee", "point " + pointNumber + " is NOT in KOZ");
         else {
             Log.e(TAG+"/moveBee", "point " + pointNumber + " is in KOZ: " + currentKOZ.toString());
         }
 
         if (checksForKIZ(point)) Log.i(TAG+"/moveBee", "point " + pointNumber + " is in KIZ");
-        else Log.e(TAG+"/moveBee", "point " + pointNumber + " is NOT in KIZ");
+        else Log.e(TAG+"/moveBee", "point " + pointNumber + " is NOT in KIZ");*/
         Log.i(TAG+"/moveBee", "move to point " + pointNumber);
         Result result = api.moveTo(point, quaternion, true);
         Log.i(TAG+"/moveBee", "moveTo status:" + result.hasSucceeded());
+
 
         // check result and loop while moveTo api is not succeeded
         int loopCounter = 0;
         while(!result.hasSucceeded() && loopCounter < LOOP_MAX){
             // retry
+
+
             result = api.moveTo(point, quaternion, true);
             Log.i(TAG+"/moveBee", "moveTo status:" + result.hasSucceeded());
             ++loopCounter;
@@ -441,28 +471,34 @@ public class YourService extends KiboRpcService {
         if (x_difference < -50) {
             new_point = new Point(point.getX(), point.getY() + 0.2, point.getZ());
             moveBee(new_point, quaternion, current_target + 10); // move to right in y-axis //added 10 to differentiate with first moveBee in point movement
+            Log.i(TAG+"/moveCloserToArucoMarker", "Moved to point: x = " + new_point.getX() + ", y = " + new_point.getY() + ", z = " + new_point.getZ());
         }
         else if (x_difference > 50) {
             new_point = new Point(point.getX(), point.getY() - 0.2, point.getZ());
             moveBee(new_point, quaternion, current_target +10); // move to left in y-axis
+            Log.i(TAG+"/moveCloserToArucoMarker", "Moved to point: x = " + new_point.getX() + ", y = " + new_point.getY() + ", z = " + new_point.getZ());
         }
 
         if (x_difference < -30) {
             new_point = new Point(point.getX(), point.getY() + 0.1, point.getZ());
             moveBee(new_point, quaternion, current_target +10); // move to right in y-axis
+            Log.i(TAG+"/moveCloserToArucoMarker", "Moved to point: x = " + new_point.getX() + ", y = " + new_point.getY() + ", z = " + new_point.getZ());
         }
         else if (x_difference > 30) {
             new_point = new Point(point.getX(), point.getY() - 0.1, point.getZ());
             moveBee(new_point, quaternion, current_target +10); // move to left in y-axis
+            Log.i(TAG+"/moveCloserToArucoMarker", "Moved to point: x = " + new_point.getX() + ", y = " + new_point.getY() + ", z = " + new_point.getZ());
         }
 
         if (x_difference < -20) {
             new_point = new Point(point.getX(), point.getY() + 0.05, point.getZ());
             moveBee(new_point, quaternion, current_target +10); // move to right in y-axis
+            Log.i(TAG+"/moveCloserToArucoMarker", "Moved to point: x = " + new_point.getX() + ", y = " + new_point.getY() + ", z = " + new_point.getZ());
         }
         else if (x_difference > 20) {
             new_point = new Point(point.getX(), point.getY() - 0.05, point.getZ());
             moveBee(new_point, quaternion, current_target +10); // move to left in y-axis
+            Log.i(TAG+"/moveCloserToArucoMarker", "Moved to point: x = " + new_point.getX() + ", y = " + new_point.getY() + ", z = " + new_point.getZ());
         }
 
 
@@ -474,36 +510,43 @@ public class YourService extends KiboRpcService {
         if (y_difference <  -50) {
             new_point = new Point(point.getX() + 0.2, point.getY(), point.getZ());
             moveBee(new_point, quaternion, current_target +100); // move to down in x-axis
+            Log.i(TAG+"/moveCloserToArucoMarker", "Moved to point: x = " + new_point.getX() + ", y = " + new_point.getY() + ", z = " + new_point.getZ());
         }
         else if (y_difference > 50) {
             new_point = new Point(point.getX() - 0.2, point.getY(), point.getZ());
             moveBee(new_point, quaternion, current_target +100); // move to up in x-axis
+            Log.i(TAG+"/moveCloserToArucoMarker", "Moved to point: x = " + new_point.getX() + ", y = " + new_point.getY() + ", z = " + new_point.getZ());
         }
 
         if (y_difference <  -30) {
             new_point = new Point(point.getX() + 0.1, point.getY(), point.getZ());
             moveBee(new_point, quaternion, current_target+100); // move to down in x-axis
+            Log.i(TAG+"/moveCloserToArucoMarker", "Moved to point: x = " + new_point.getX() + ", y = " + new_point.getY() + ", z = " + new_point.getZ());
         }
         else if (y_difference > 30) {
             new_point = new Point(point.getX() - 0.1, point.getY(), point.getZ());
             moveBee(new_point, quaternion, current_target +100); // move to up in x-axis
+            Log.i(TAG+"/moveCloserToArucoMarker", "Moved to point: x = " + new_point.getX() + ", y = " + new_point.getY() + ", z = " + new_point.getZ());
         }
 
         if (y_difference <  -20) {
             new_point = new Point(point.getX() + 0.05, point.getY(), point.getZ());
             moveBee(new_point, quaternion, current_target + 100); // move to down in x-axis
+            Log.i(TAG+"/moveCloserToArucoMarker", "Moved to point: x = " + new_point.getX() + ", y = " + new_point.getY() + ", z = " + new_point.getZ());
         }
         else if (y_difference > 20) {
             new_point = new Point(point.getX() - 0.05, point.getY(), point.getZ());
             moveBee(new_point, quaternion, current_target + 100); // move to up in x-axis
+            Log.i(TAG+"/moveCloserToArucoMarker", "Moved to point: x = " + new_point.getX() + ", y = " + new_point.getY() + ", z = " + new_point.getZ());
         }
     }
 
-    int imageProcessing_called = 0;
+/*    int imageProcessing_called = 0;
     private void imageProcessing(Dictionary dictionary, List<Mat> corners, DetectorParameters detectorParameters, Mat ids, int targetID) {
 
         Mat grayImage = api.getMatNavCam();
         api.saveMatImage(grayImage, "nearTarget" + targetID + "_" + imageProcessing_called + ".png");
+        Log.i(TAG+"/imageProcessing", "Image has been saved in Black and White");
 
         Mat colorImage = new Mat();
         // Convert the grayscale image to color
@@ -514,11 +557,14 @@ public class YourService extends KiboRpcService {
         Aruco.drawDetectedMarkers(colorImage, corners, ids, new Scalar( 0, 255, 0 ));
 
         Imgproc.putText(colorImage, "Aruco:"+ Arrays.toString(ids.get(0,0)), new org.opencv.core.Point(30.0, 80.0), 3, 0.5, new Scalar(255, 0, 0, 255), 1);
+        Log.i(TAG+"imageProcessing", "Aruco marker has been labeled");
 
         api.saveMatImage(colorImage, "processedNearTarget" + current_target + "_" + imageProcessing_called+ ".png");
+        Log.i(TAG+"imageProcessing", "Image has been saved in Colour");
         imageProcessing_called++;
 
-    }
+    }*/
+
 
 
 }
