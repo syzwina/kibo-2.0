@@ -298,7 +298,7 @@ public class YourService extends KiboRpcService {
         QRCodeReader qrCodeReader = new QRCodeReader();
         int qrCounter = 0;
         key = qrCodeReader.readQR(grayImage);
-        while ((key == "NO QR"|| key == "") && qrCounter < 5) {
+        while ((key.equals("NO QR")|| key.equals("")) && qrCounter < 5) {
         key = qrCodeReader.readQR(grayImage);
         qrCounter++;
         Log.i(TAG+"/readQR", "QRCode key is: " + key + " attempt: " + qrCounter);
