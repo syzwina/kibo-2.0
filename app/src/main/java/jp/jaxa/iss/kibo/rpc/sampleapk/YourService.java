@@ -92,6 +92,8 @@ public class YourService extends KiboRpcService {
     List<Point> POINTS_COORDS = Arrays.asList(POINT1_COORDS, POINT2_COORDS, POINT3_COORDS,
             POINT4_COORDS, POINT5_COORDS, POINT6_COORDS, POINT7_COORDS);
 
+    private final Point NO_MOVEMENT = new Point(0,0,0);
+
     private final Point COMMON_COORDS = new Point(POINT4_COORDS.getX(), POINT7_COORDS.getY(), oldPOINT5_COORDS.getZ());
 
     private Quaternion currentQuaternion = new Quaternion(0,0,0,0);
@@ -155,9 +157,13 @@ public class YourService extends KiboRpcService {
         api.startMission();
         Log.i(TAG+"/runPlan1", "start mission!");
 
+        // align for max speed first
+        api.relativeMoveTo(NO_MOVEMENT, new Quaternion((float)0.375758, (float) -0.382152, (float) 0.572491, (float) -0.620257), true);
         // move bee from KIZ2 to KIZ1 by moving to bottom right of KIZ2 (KIZ1 xyz min + KIZ2 xyz max)/2
         moveBee(new Point(10.4, -9.9, 4.50), new Quaternion((float)0.375758, (float) -0.382152, (float) 0.572491, (float) -0.620257), 0);
 
+        // align for max speed first
+        api.relativeMoveTo(NO_MOVEMENT, new Quaternion((float) 0.506253, (float) -0.04584, (float) 0.069849, (float) -0.858153), true);
         // move bee to middle point of all points that not have KOZ on the way
         moveBee(COMMON_COORDS, new Quaternion((float) 0.506253, (float) -0.04584, (float) 0.069849, (float) -0.858153), 1000 );
 
@@ -180,6 +186,8 @@ public class YourService extends KiboRpcService {
                 }
 
                 Log.i(TAG + "/runPlan1", "before going to point = " + current_target.get(0) + ", TIME REMAINING:" + api.getTimeRemaining().get(1));
+                // align for max speed first
+                api.relativeMoveTo(NO_MOVEMENT, CTP_QUARTENIONS.get(current_target.get(targetCounter) - 1), true);
                 // move bee to point 1
                 moveBee(POINTS_COORDS.get(current_target.get(targetCounter) - 1), CTP_QUARTENIONS.get(current_target.get(targetCounter) - 1), current_target.get(targetCounter)); // -1 as index start at 0
                 // turn on flashlight to improve accuracy, value taken from page 33 in manual
@@ -199,6 +207,8 @@ public class YourService extends KiboRpcService {
                 Log.i(TAG + "/runPlan1", "current_target after laser beam count: " + laserCounter + " are: " + current_target);
                 Log.i(TAG + "/runPlan1", "getActiveTargets return:" + api.getActiveTargets().toString());
 
+                // align for max speed first
+                api.relativeMoveTo(NO_MOVEMENT, PTC_QUARTENIONS.get(current_target.get(last_target) - 1), true);
                 // move bee to middle point of all points that not have KOZ on the way
                 moveBee(COMMON_COORDS, PTC_QUARTENIONS.get(last_target-1), 1000 + current_target.get(0));
 
@@ -218,6 +228,8 @@ public class YourService extends KiboRpcService {
         // testing trying to trick the sim to think we are going to goal
         moveBee(GOAL_COORDS, GOAL_QUATERNION, 8);*/
 
+        // align for max speed first
+        api.relativeMoveTo(NO_MOVEMENT, CTP7_QUATERNION, true);
         // move bee to target 7
        moveBee(POINT7_COORDS, CTP7_QUATERNION, 7);
         // turn on flashlight to improve accuracy, value taken from page 33 in manual
