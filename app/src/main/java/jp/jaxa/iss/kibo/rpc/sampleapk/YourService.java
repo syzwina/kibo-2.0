@@ -188,6 +188,8 @@ public class YourService extends KiboRpcService {
                 //optimizeCenter(current_target.get(targetCounter));
                 // to reset active id ??
                 api.getActiveTargets();
+                //get last target
+                int last_target = current_target.get(targetCounter);
                 // irradiate with laser
                 laserBeam(current_target.get(targetCounter), POINTS_QUARTENIONS.get(current_target.get(targetCounter) - 1));
                 laserCounter++;
@@ -197,13 +199,8 @@ public class YourService extends KiboRpcService {
                 Log.i(TAG + "/runPlan1", "current_target after laser beam count: " + laserCounter + " are: " + current_target);
                 Log.i(TAG + "/runPlan1", "getActiveTargets return:" + api.getActiveTargets().toString());
 
-
-                if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL) {
-                    Log.e(TAG + "/runPlan1/OutOfTime", "Sequence1 broken at targetCounter of " + targetCounter + " as not enough time, TIME REMAINING: " + api.getTimeRemaining().get(1));
-                    break;
-                }
                 // move bee to middle point of all points that not have KOZ on the way
-                moveBee(COMMON_COORDS, PTC_QUARTENIONS.get(current_target.get(0)-1), 1000 + current_target.get(0));
+                moveBee(COMMON_COORDS, PTC_QUARTENIONS.get(last_target-1), 1000 + current_target.get(0));
 
                 if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL) {
                     Log.e(TAG + "/runPlan1/OutOfTime", "Sequence2 broken at targetCounter of " + targetCounter + " as not enough time, TIME REMAINING: " + api.getTimeRemaining().get(1));
@@ -221,11 +218,8 @@ public class YourService extends KiboRpcService {
         // testing trying to trick the sim to think we are going to goal
         moveBee(GOAL_COORDS, GOAL_QUATERNION, 8);*/
 
-        // move bee to middle point of all points that not have KOZ on the way
-        moveBee(COMMON_COORDS   , POINT7_QUATERNION, 1007);
-
         // move bee to target 7
-       moveBee(POINT7_COORDS, POINT7_QUATERNION, 7);
+       moveBee(POINT7_COORDS, CTP7_QUATERNION, 7);
         // turn on flashlight to improve accuracy, value taken from page 33 in manual
         api.flashlightControlFront(0.05f);
         // read QR code dummy function, not yet implemented
