@@ -209,7 +209,7 @@ public class YourService extends KiboRpcService {
                 Log.i(TAG + "/runPlan1", "getActiveTargets return:" + api.getActiveTargets().toString());
 
                 // align for max speed first
-                api.relativeMoveTo(NO_MOVEMENT, PTC_QUARTENIONS.get(current_target.get(last_target) - 1), true);
+                api.relativeMoveTo(NO_MOVEMENT, PTC_QUARTENIONS.get(last_target - 1), true);
                 // move bee to middle point of all points that not have KOZ on the way
                 moveBee(COMMON_COORDS, PTC_QUARTENIONS.get(last_target-1), 1000 + current_target.get(0));
 
