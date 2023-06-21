@@ -29,6 +29,7 @@ import java.util.PriorityQueue;
 // for pathfinding
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
+
 /**
  * Class meant to handle commands from the Ground Data System and execute them in Astrobee
  */
