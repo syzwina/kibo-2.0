@@ -107,6 +107,28 @@ public class YourService extends KiboRpcService {
     List<Quaternion> POINTS_QUARTENIONS = Arrays.asList(POINT1_QUATERNION, POINT2_QUATERNION, POINT3_QUATERNION,
             POINT4_QUATERNION, POINT5_QUATERNION, POINT6_QUATERNION, POINT7_QUATERNION);
 
+    // CTP : common to point, PTC: point to common
+    // value got from Blender by manual alignment and rotation
+    private final Quaternion CTP1_QUATERNION = new Quaternion((float) -0.183144, (float) 0.682866, (float) -0.682867, (float) 0.183149);
+    private final Quaternion CTP2_QUATERNION = new Quaternion((float) -0.151144, (float) 0.952232, (float) -0.261505, (float) 0.041511);
+    private final Quaternion CTP3_QUATERNION = new Quaternion((float) -0.91527, (float) 0.123939, (float) -0.040926, (float) 0.380715);
+    private final Quaternion CTP4_QUATERNION = new Quaternion((float) 0.7642, (float) 0.022453, (float) -0.027484, (float) -0.643768);
+    private final Quaternion CTP5_QUATERNION = new Quaternion((float) -0.668936, (float) 0.24571, (float) -0.246337, (float) 0.656633);
+    private final Quaternion CTP6_QUATERNION = new Quaternion((float) 0.518686, (float) -0.717148, (float) 0.415003, (float) -0.210083);
+    private final Quaternion CTP7_QUATERNION = new Quaternion((float) 0.65661, (float) -0.655097, (float) 0.268957, (float) -0.258983);
+    List<Quaternion> CTP_QUARTENIONS = Arrays.asList(CTP1_QUATERNION, CTP2_QUATERNION, CTP3_QUATERNION,
+            CTP4_QUATERNION, CTP5_QUATERNION, CTP6_QUATERNION, CTP7_QUATERNION);
+
+    private final Quaternion PTC1_QUATERNION = new Quaternion((float) -0.683157, (float) -0.182064, (float) 0.184229, (float) 0.682574);
+    private final Quaternion PTC2_QUATERNION = new Quaternion((float) -0.041511, (float) -0.261505, (float) 0.952232, (float) -0.151144);
+    private final Quaternion PTC3_QUATERNION = new Quaternion((float) -0.380715, (float) 0.040926, (float) 0.123939, (float) -0.91527);
+    private final Quaternion PTC4_QUATERNION = new Quaternion((float) -0.025661, (float) 0.643843, (float) -0.764133, (float) 0.024617);
+    private final Quaternion PTC5_QUATERNION = new Quaternion((float) -0.246337, (float) -0.656633, (float) 0.668936, (float) 0.24571);
+    private final Quaternion PTC6_QUATERNION = new Quaternion((float) 0.415003, (float) 0.210083, (float) -0.518686, (float) -0.717148);
+    private final Quaternion PTC7_QUATERNION = new Quaternion((float) 0.268957, (float) 0.258983, (float) -0.65661, (float) -0.655097);
+    List<Quaternion> PTC_QUARTENIONS = Arrays.asList(PTC1_QUATERNION, PTC2_QUATERNION, PTC3_QUATERNION,
+            PTC4_QUATERNION, PTC5_QUATERNION, PTC6_QUATERNION, PTC7_QUATERNION);
+
     private final Quaternion TARGET1_QUATERNION = new Quaternion((float) 0.707, (float) 0, (float) 0, (float) 0.707);
     private final Quaternion TARGET2_QUATERNION = new Quaternion((float) 0, (float) 0, (float) 0, (float) 1);
     private final Quaternion TARGET3_QUATERNION = new Quaternion((float) 0.707, (float) 0, (float) 0, (float) 0.707);
@@ -134,13 +156,16 @@ public class YourService extends KiboRpcService {
         Log.i(TAG+"/runPlan1", "start mission!");
 
         // move bee from KIZ2 to KIZ1 by moving to bottom right of KIZ2 (KIZ1 xyz min + KIZ2 xyz max)/2
-        moveBee(new Point(10.4, -9.9, 4.50), POINT1_QUATERNION, 0);
+        moveBee(new Point(10.4, -9.9, 4.50), new Quaternion((float)0.375758, (float) -0.382152, (float) 0.572491, (float) -0.620257), 0);
+
+        // move bee to middle point of all points that not have KOZ on the way
+        moveBee(COMMON_COORDS, new Quaternion((float) 0.506253, (float) -0.04584, (float) 0.069849, (float) -0.858153), 1000 );
 
         // count number of laser had been activated
         int laserCounter = 0;
         int phaseCounter = 0;
         // 4 phase
-        while ( (phaseCounter < 4)) {
+        while ( (phaseCounter < 7)) {
             Log.i(TAG + "/runPlan1", "at start of Phase counter = " + phaseCounter + ", TIME REMAINING:" + api.getTimeRemaining().get(1));
             phaseCounter++;
 
@@ -150,27 +175,13 @@ public class YourService extends KiboRpcService {
 
             while (targetCounter < current_target.size()) {
 
-
-
                 if (phaseCounter == 4) {
                     TIME_FOR_QR_AND_GOAL += 10 * 1000; // at last phase, increase time taken
                 }
 
-                if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL) {
-                    Log.e(TAG + "/runPlan1/OutOfTime", "Sequence1 broken at targetCounter of " + targetCounter + " as not enough time, TIME REMAINING: " + api.getTimeRemaining().get(1));
-                    break;
-                }
-                // move bee to middle point of all points that not have KOZ on the way
-                moveBee(COMMON_COORDS, POINT1_QUATERNION, 1000 + current_target.get(0));
-
-                if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL) {
-                    Log.e(TAG + "/runPlan1/OutOfTime", "Sequence2 broken at targetCounter of " + targetCounter + " as not enough time, TIME REMAINING: " + api.getTimeRemaining().get(1));
-                    break;
-                }
-
                 Log.i(TAG + "/runPlan1", "before going to point = " + current_target.get(0) + ", TIME REMAINING:" + api.getTimeRemaining().get(1));
                 // move bee to point 1
-                moveBee(POINTS_COORDS.get(current_target.get(targetCounter) - 1), POINTS_QUARTENIONS.get(current_target.get(targetCounter) - 1), current_target.get(targetCounter)); // -1 as index start at 0
+                moveBee(POINTS_COORDS.get(current_target.get(targetCounter) - 1), CTP_QUARTENIONS.get(current_target.get(targetCounter) - 1), current_target.get(targetCounter)); // -1 as index start at 0
                 // turn on flashlight to improve accuracy, value taken from page 33 in manual
                 api.flashlightControlFront(0.05f);
                 // optimize center using image processing the corners
@@ -185,6 +196,19 @@ public class YourService extends KiboRpcService {
                 api.flashlightControlFront((float) 0);
                 Log.i(TAG + "/runPlan1", "current_target after laser beam count: " + laserCounter + " are: " + current_target);
                 Log.i(TAG + "/runPlan1", "getActiveTargets return:" + api.getActiveTargets().toString());
+
+
+                if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL) {
+                    Log.e(TAG + "/runPlan1/OutOfTime", "Sequence1 broken at targetCounter of " + targetCounter + " as not enough time, TIME REMAINING: " + api.getTimeRemaining().get(1));
+                    break;
+                }
+                // move bee to middle point of all points that not have KOZ on the way
+                moveBee(COMMON_COORDS, PTC_QUARTENIONS.get(current_target.get(0)-1), 1000 + current_target.get(0));
+
+                if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL) {
+                    Log.e(TAG + "/runPlan1/OutOfTime", "Sequence2 broken at targetCounter of " + targetCounter + " as not enough time, TIME REMAINING: " + api.getTimeRemaining().get(1));
+                    break;
+                }
 
                 targetCounter++;
             }
