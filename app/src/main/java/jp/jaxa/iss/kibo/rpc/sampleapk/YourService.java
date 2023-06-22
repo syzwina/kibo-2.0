@@ -180,9 +180,14 @@ public class YourService extends KiboRpcService {
             int targetCounter = 0;
             Log.i("/runPlan1", "getting active targets which are : " + current_target.toString());
 
+            if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL) {
+                Log.e(TAG + "/runPlan1/OutOfTime", "Sequence0 broken at targetCounter of " + targetCounter + " as not enough time, TIME REMAINING: " + api.getTimeRemaining().get(1));
+                break;
+            }
+
             while (targetCounter < current_target.size()) {
 
-                if (phaseCounter == 4) {
+                if (phaseCounter > 4) {
                     TIME_FOR_QR_AND_GOAL += 10 * 1000; // at last phase, increase time taken
                 }
 
@@ -214,11 +219,15 @@ public class YourService extends KiboRpcService {
                 moveBee(COMMON_COORDS, PTC_QUARTENIONS.get(last_target-1), 1000 + current_target.get(0));
 
                 if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL) {
-                    Log.e(TAG + "/runPlan1/OutOfTime", "Sequence2 broken at targetCounter of " + targetCounter + " as not enough time, TIME REMAINING: " + api.getTimeRemaining().get(1));
+                    Log.e(TAG + "/runPlan1/OutOfTime", "Sequence1 broken at targetCounter of " + targetCounter + " as not enough time, TIME REMAINING: " + api.getTimeRemaining().get(1));
                     break;
                 }
 
                 targetCounter++;
+            }
+            if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL) {
+                Log.e(TAG + "/runPlan1/OutOfTime", "Sequence2 broken at targetCounter of " + targetCounter + " as not enough time, TIME REMAINING: " + api.getTimeRemaining().get(1));
+                break;
             }
         }
 
@@ -232,7 +241,7 @@ public class YourService extends KiboRpcService {
         // align for max speed first
         api.relativeMoveTo(NO_MOVEMENT, CTP7_QUATERNION, true);
         // move bee to target 7
-       moveBee(POINT7_COORDS, CTP7_QUATERNION, 7);
+        moveBee(POINT7_COORDS, CTP7_QUATERNION, 7);
         // turn on flashlight to improve accuracy, value taken from page 33 in manual
         api.flashlightControlFront(0.05f);
         // read QR code dummy function, not yet implemented
