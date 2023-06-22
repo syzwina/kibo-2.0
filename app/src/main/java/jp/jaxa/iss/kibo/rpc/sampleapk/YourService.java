@@ -150,7 +150,7 @@ public class YourService extends KiboRpcService {
 
             while (targetCounter < current_target.size()) {
 
-                Log.i(TAG +"/runPlan1", "active phase time is: " + (api.getTimeRemaining().get(0)/1000) +" seconds." );
+                Log.i(TAG +"/runPlan1", "active phase time before common point move is: " + (api.getTimeRemaining().get(0)/1000) +" seconds." );
 
 
                 if (phaseCounter == 4) {
@@ -165,6 +165,21 @@ public class YourService extends KiboRpcService {
                 // move bee to middle point of all points that not have KOZ on the way
                 moveBee(COMMON_COORDS, POINT1_QUATERNION, 1000 + current_target.get(0));
 
+                // go to next phase if not enough time in current  phase (kinda illegal laser move lmao)
+                Log.i(TAG +"/runPlan1", "active phase time after common point move is: " + (api.getTimeRemaining().get(0)/1000) +" seconds." );
+                if (api.getTimeRemaining().get(0) < 60*1000){
+                    // to reset active id ??
+                    api.getActiveTargets();
+                    // irradiate with laser
+                    laserBeam(current_target.get(targetCounter), POINTS_QUARTENIONS.get(current_target.get(targetCounter) - 1));
+                    laserCounter++;
+                    Log.i(TAG+"/runPlan1/laserCounter", "laserCounter value is: " + laserCounter);
+                    // turn off flashlight
+                    // api.flashlightControlFront((float) 0);
+                    Log.i(TAG + "/runPlan1", "current_target after laser beam count: " + laserCounter + " are: " + current_target);
+                    Log.i(TAG + "/runPlan1", "getActiveTargets return:" + api.getActiveTargets().toString());
+                }
+
                 if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL + 5 *1000) {
                     Log.e(TAG + "/runPlan1/OutOfTime", "Sequence2 broken at targetCounter of " + targetCounter + " as not enough time, TIME REMAINING: " + api.getTimeRemaining().get(1));
                     lastSequence();
@@ -177,7 +192,7 @@ public class YourService extends KiboRpcService {
 
 
                 // turn on flashlight to improve accuracy, value taken from page 33 in manual
-                api.flashlightControlFront(0.05f);
+                // api.flashlightControlFront(0.05f); //not really needed
                 // optimize center using image processing the corners
                 //optimizeCenter(current_target.get(targetCounter));
                 // to reset active id ??
@@ -187,7 +202,7 @@ public class YourService extends KiboRpcService {
                 laserCounter++;
                 Log.i(TAG+"/runPlan1/laserCounter", "laserCounter value is: " + laserCounter);
                 // turn off flashlight
-                api.flashlightControlFront((float) 0);
+                // api.flashlightControlFront((float) 0);
                 Log.i(TAG + "/runPlan1", "current_target after laser beam count: " + laserCounter + " are: " + current_target);
                 Log.i(TAG + "/runPlan1", "getActiveTargets return:" + api.getActiveTargets().toString());
 
