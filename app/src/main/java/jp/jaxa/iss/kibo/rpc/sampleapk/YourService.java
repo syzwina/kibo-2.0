@@ -115,7 +115,7 @@ public class YourService extends KiboRpcService {
     private final Quaternion TARGET6_QUATERNION = new Quaternion((float) 0.5, (float) 0.5, (float) -0.5, (float) -0.5);
     private final Quaternion QR_CODE_QUATERNION = new Quaternion((float) 0, (float) 0, (float) 0, (float) 1);
 
-    private int TIME_FOR_QR_AND_GOAL = 120 * 1000;
+    private int TIME_FOR_QR_AND_GOAL = 110 * 1000;
 
     HashMap<Integer, Integer> arucoTargets;
     DetectorParameters detectorParameters;
@@ -146,17 +146,18 @@ public class YourService extends KiboRpcService {
 
             current_target = api.getActiveTargets();
             int targetCounter = 0;
-            Log.i("/runPlan1", "getting active targets which are : " + current_target.toString());
+            Log.i(TAG+"/runPlan1", "getting active targets which are : " + current_target.toString());
 
             while (targetCounter < current_target.size()) {
 
+                Log.i(TAG +"/runPlan1", "active phase time is: " + (api.getTimeRemaining().get(0)/1000) +" seconds." );
 
 
                 if (phaseCounter == 4) {
                     TIME_FOR_QR_AND_GOAL += 10 * 1000; // at last phase, increase time taken
                 }
 
-                if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL) {
+                if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL + 10 *1000) {
                     Log.e(TAG + "/runPlan1/OutOfTime", "Sequence1 broken at targetCounter of " + targetCounter + " as not enough time, TIME REMAINING: " + api.getTimeRemaining().get(1));
                     lastSequence();
                     break;
@@ -164,7 +165,7 @@ public class YourService extends KiboRpcService {
                 // move bee to middle point of all points that not have KOZ on the way
                 moveBee(COMMON_COORDS, POINT1_QUATERNION, 1000 + current_target.get(0));
 
-                if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL) {
+                if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL + 5 *1000) {
                     Log.e(TAG + "/runPlan1/OutOfTime", "Sequence2 broken at targetCounter of " + targetCounter + " as not enough time, TIME REMAINING: " + api.getTimeRemaining().get(1));
                     lastSequence();
                     break;
@@ -174,11 +175,6 @@ public class YourService extends KiboRpcService {
                 // move bee to point 1
                 moveBee(POINTS_COORDS.get(current_target.get(targetCounter) - 1), POINTS_QUARTENIONS.get(current_target.get(targetCounter) - 1), current_target.get(targetCounter)); // -1 as index start at 0
 
-                if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL) {
-                    Log.e(TAG + "/runPlan1/OutOfTime", "Sequence3 broken at targetCounter of " + targetCounter + " as not enough time, TIME REMAINING: " + api.getTimeRemaining().get(1));
-                    lastSequence();
-                    break;
-                }
 
                 // turn on flashlight to improve accuracy, value taken from page 33 in manual
                 api.flashlightControlFront(0.05f);
@@ -189,11 +185,18 @@ public class YourService extends KiboRpcService {
                 // irradiate with laser
                 laserBeam(current_target.get(targetCounter), POINTS_QUARTENIONS.get(current_target.get(targetCounter) - 1));
                 laserCounter++;
-                Log.i("/runPlan1/laserCounter", "laserCounter value is: " + laserCounter);
+                Log.i(TAG+"/runPlan1/laserCounter", "laserCounter value is: " + laserCounter);
                 // turn off flashlight
                 api.flashlightControlFront((float) 0);
                 Log.i(TAG + "/runPlan1", "current_target after laser beam count: " + laserCounter + " are: " + current_target);
                 Log.i(TAG + "/runPlan1", "getActiveTargets return:" + api.getActiveTargets().toString());
+
+
+                if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL) {
+                    Log.e(TAG + "/runPlan1/OutOfTime", "Sequence3 broken at targetCounter of " + targetCounter + " as not enough time, TIME REMAINING: " + api.getTimeRemaining().get(1));
+                    lastSequence();
+                    break;
+                }
 
                 targetCounter++;
             }
