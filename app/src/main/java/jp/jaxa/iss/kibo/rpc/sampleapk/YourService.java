@@ -168,6 +168,8 @@ public class YourService extends KiboRpcService {
         // move bee to middle point of all points that not have KOZ on the way
         moveBee(COMMON_COORDS, new Quaternion((float) 0.506253, (float) -0.04584, (float) 0.069849, (float) -0.858153), 1000 );
 
+        int last_target = 1;
+
         // count number of laser had been activated
         int laserCounter = 0;
         int phaseCounter = 0;
@@ -182,6 +184,7 @@ public class YourService extends KiboRpcService {
 
             if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL) {
                 Log.e(TAG + "/runPlan1/OutOfTime", "Sequence0 broken at targetCounter of " + targetCounter + " as not enough time, TIME REMAINING: " + api.getTimeRemaining().get(1));
+                lastSequence(last_target);
                 break;
             }
 
@@ -194,6 +197,13 @@ public class YourService extends KiboRpcService {
                 Log.i(TAG + "/runPlan1", "before going to point = " + current_target.get(0) + ", TIME REMAINING:" + api.getTimeRemaining().get(1));
                 // align for max speed first
                 api.relativeMoveTo(NO_MOVEMENT, CTP_QUARTENIONS.get(current_target.get(targetCounter) - 1), true);
+
+                if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL) {
+                    Log.e(TAG + "/runPlan1/OutOfTime", "Sequence3 broken at targetCounter of " + targetCounter + " as not enough time, TIME REMAINING: " + api.getTimeRemaining().get(1));
+                    lastSequence(last_target);
+                    break;
+                }
+
                 // move bee to point 1
                 moveBee(POINTS_COORDS.get(current_target.get(targetCounter) - 1), CTP_QUARTENIONS.get(current_target.get(targetCounter) - 1), current_target.get(targetCounter)); // -1 as index start at 0
                 // turn on flashlight to improve accuracy, value taken from page 33 in manual
@@ -203,7 +213,7 @@ public class YourService extends KiboRpcService {
                 // to reset active id ??
                 api.getActiveTargets();
                 //get last target
-                int last_target = current_target.get(targetCounter);
+                last_target = current_target.get(targetCounter);
                 // irradiate with laser
                 laserBeam(current_target.get(targetCounter), POINTS_QUARTENIONS.get(current_target.get(targetCounter) - 1));
                 laserCounter++;
@@ -215,11 +225,19 @@ public class YourService extends KiboRpcService {
 
                 // align for max speed first
                 api.relativeMoveTo(NO_MOVEMENT, PTC_QUARTENIONS.get(last_target - 1), true);
+
+                if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL) {
+                    Log.e(TAG + "/runPlan1/OutOfTime", "Sequence4 broken at targetCounter of " + targetCounter + " as not enough time, TIME REMAINING: " + api.getTimeRemaining().get(1));
+                    lastSequence(last_target);
+                    break;
+                }
+
                 // move bee to middle point of all points that not have KOZ on the way
                 moveBee(COMMON_COORDS, PTC_QUARTENIONS.get(last_target-1), 1000 + current_target.get(0));
 
                 if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL) {
                     Log.e(TAG + "/runPlan1/OutOfTime", "Sequence1 broken at targetCounter of " + targetCounter + " as not enough time, TIME REMAINING: " + api.getTimeRemaining().get(1));
+                    lastSequence(last_target);
                     break;
                 }
 
@@ -227,16 +245,26 @@ public class YourService extends KiboRpcService {
             }
             if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL) {
                 Log.e(TAG + "/runPlan1/OutOfTime", "Sequence2 broken at targetCounter of " + targetCounter + " as not enough time, TIME REMAINING: " + api.getTimeRemaining().get(1));
+                lastSequence(last_target);
                 break;
             }
         }
 
+
+    }
+
+    private void lastSequence(int last_target){
         //doesnt work!
 /*        //also add notify to trick
         api.notifyGoingToGoal();
 
         // testing trying to trick the sim to think we are going to goal
         moveBee(GOAL_COORDS, GOAL_QUATERNION, 8);*/
+
+        // align for max speed first
+        api.relativeMoveTo(NO_MOVEMENT, PTC_QUARTENIONS.get(last_target - 1), true);
+        // move bee to middle point of all points that not have KOZ on the way
+        moveBee(COMMON_COORDS, PTC_QUARTENIONS.get(last_target-1), 1000 + current_target.get(0));
 
         // align for max speed first
         api.relativeMoveTo(NO_MOVEMENT, CTP7_QUATERNION, true);
@@ -259,7 +287,6 @@ public class YourService extends KiboRpcService {
         // send mission completion
         api.reportMissionCompletion(QRstring);
         Log.i(TAG+"/runPlan1", "reported mission completion");
-
     }
 
     private void init() {
