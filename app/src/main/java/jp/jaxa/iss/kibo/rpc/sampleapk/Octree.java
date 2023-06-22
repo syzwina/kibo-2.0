@@ -21,17 +21,19 @@ public class Octree {
     // Implementation of OctreeNode class
     private class OctreeNode {
         private int depth;
-        private float x_min, y_min, z_min, x_max, y_max, z_max;
+        private final float x_min, y_min, z_min, x_max, y_max, z_max;
+        private final float minSize;
         private List<Zone> zones;
         private OctreeNode[] children;
 
-        public OctreeNode(float x_min, float y_min, float z_min, float x_max, float y_max, float z_max) {
+        public OctreeNode(float x_min, float y_min, float z_min, float x_max, float y_max, float z_max, float minSize) {
             this.x_min = x_min;
             this.y_min = y_min;
             this.z_min = z_min;
             this.x_max = x_max;
             this.y_max = y_max;
             this.z_max = z_max;
+            this.minSize = minSize;
             this.zones = new ArrayList<>();
             this.children = new OctreeNode[CHILDREN_COUNT];
         }
@@ -94,5 +96,47 @@ public class Octree {
                    z_min <= zone.z_max && z_max >= zone.z_min;
         }
         
+        public void divideAndAdd(float xMin, float yMin, float zMin, float xMax, float yMax, float zMax) {
+            if ((yMax - yMin) <= minSize) {
+                return;
+            }
+            
+            if (children == null) {
+                children = new OctreeNode[8];
+            }
+            
+            boolean dividing = false;
+            
+            float xMid = (xMin + xMax) / 2;
+            float yMid = (yMin + yMax) / 2;
+            float zMid = (zMin + zMax) / 2;
+            
+            children[0] = new OctreeNode(xMin, yMin, zMin, xMid, yMid, zMid);
+            children[1] = new OctreeNode(xMid, yMin, zMin, xMax, yMid, zMid);
+            children[2] = new OctreeNode(xMin, yMid, zMin, xMid, yMax, zMid);
+            children[3] = new OctreeNode(xMid, yMid, zMin, xMax, yMax, zMid);
+            children[4] = new OctreeNode(xMin, yMin, zMid, xMid, yMid, zMax);
+            children[5] = new OctreeNode(xMid, yMin, zMid, xMax, yMid, zMax);
+            children[6] = new OctreeNode(xMin, yMid, zMid, xMid, yMax, zMax);
+            children[7] = new OctreeNode(xMid, yMid, zMid, xMax, yMax, zMax);
+            
+            for (OctreeNode child : children) {
+                child.depth = depth + 1;
+            }
+            
+            for (int i = 0; i < 8; i++) {
+                if ((childBounds[i].yMax - childBounds[i].yMin) > minSize) {
+                    dividing = true;
+                    children[i].divideAndAdd(childBounds[i].xMin, childBounds[i].yMin, childBounds[i].zMin,
+                                             childBounds[i].xMax, childBounds[i].yMax, childBounds[i].zMax);
+                }
+            }
+            
+            if (!dividing) {
+                children = null;
+            }
+        }
+        
+
     }
 }
