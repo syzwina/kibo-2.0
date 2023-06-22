@@ -264,6 +264,34 @@ public class YourService extends KiboRpcService {
         arucoTargets.put(15,4);
         arucoTargets.put(16,4);
 
+        float minX = Float.MAX_VALUE;
+        float minY = Float.MAX_VALUE;
+        float minZ = Float.MAX_VALUE;
+        float maxX = Float.MIN_VALUE;
+        float maxY = Float.MIN_VALUE;
+        float maxZ = Float.MIN_VALUE;
+        
+        // Calculate minimum and maximum coordinates
+        minX = Math.min(minX, KIZ01.getMinX());
+        minY = Math.min(minY, KIZ01.getMinY());
+        minZ = Math.min(minZ, KIZ01.getMinZ());
+        maxX = Math.max(maxX, KIZ01.getMaxX());
+        maxY = Math.max(maxY, KIZ01.getMaxY());
+        maxZ = Math.max(maxZ, KIZ01.getMaxZ());
+        
+        minX = Math.min(minX, KIZ02.getMinX());
+        minY = Math.min(minY, KIZ02.getMinY());
+        minZ = Math.min(minZ, KIZ02.getMinZ());
+        maxX = Math.max(maxX, KIZ02.getMaxX());
+        maxY = Math.max(maxY, KIZ02.getMaxY());
+        maxZ = Math.max(maxZ, KIZ02.getMaxZ());
+        
+        // Add other KeepInZone objects as needed
+        
+        // Define the Octree with the calculated bounding box
+        Octree octree = new Octree(minX, minY, minZ, maxX, maxY, maxZ, minSize);
+        
+
     }
 
     private void optimizeCenter(int targetID){
