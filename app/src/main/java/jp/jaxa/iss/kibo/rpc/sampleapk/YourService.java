@@ -163,15 +163,20 @@ public class YourService extends KiboRpcService {
                     break;
                 }
                 // move bee to middle point of all points that not have KOZ on the way
-                moveBee(COMMON_COORDS, POINT1_QUATERNION, 1000 + current_target.get(0));
+                moveBee(COMMON_COORDS, POINTS_QUARTENIONS.get(current_target.get(targetCounter) - 1), 1000 + current_target.get(0));
 
                 // go to next phase if not enough time in current  phase (kinda illegal laser move lmao)
                 Log.i(TAG +"/runPlan1", "active phase time after common point move is: " + (api.getTimeRemaining().get(0)/1000) +" seconds." );
-                if (api.getTimeRemaining().get(0) < 60*1000){
+                if (api.getTimeRemaining().get(0) < 80*1000){
                     // to reset active id ??
                     api.getActiveTargets();
                     // irradiate with laser
-                    laserBeam(current_target.get(targetCounter), POINTS_QUARTENIONS.get(current_target.get(targetCounter) - 1));
+                    //laserBeam(current_target.get(targetCounter), POINTS_QUARTENIONS.get(current_target.get(targetCounter) - 1));
+
+                    // turn on laser
+                    Log.i(TAG+"/laserBeam", "laser hack turned on");
+                    api.laserControl(true);
+                    api.takeTargetSnapshot(current_target.get(targetCounter));
                     laserCounter++;
                     Log.i(TAG+"/runPlan1/laserCounter", "laserCounter value is: " + laserCounter);
                     // turn off flashlight
