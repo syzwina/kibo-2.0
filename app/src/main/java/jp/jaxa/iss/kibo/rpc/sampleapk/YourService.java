@@ -115,7 +115,7 @@ public class YourService extends KiboRpcService {
     private final Quaternion TARGET6_QUATERNION = new Quaternion((float) 0.5, (float) 0.5, (float) -0.5, (float) -0.5);
     private final Quaternion QR_CODE_QUATERNION = new Quaternion((float) 0, (float) 0, (float) 0, (float) 1);
 
-    private int TIME_FOR_QR_AND_GOAL = 110 * 1000;
+    private int TIME_FOR_QR_AND_GOAL = 120 * 1000;
 
     HashMap<Integer, Integer> arucoTargets;
     DetectorParameters detectorParameters;
