@@ -178,6 +178,7 @@ public class YourService extends KiboRpcService {
                     // api.flashlightControlFront((float) 0);
                     Log.i(TAG + "/runPlan1", "current_target after laser beam count: " + laserCounter + " are: " + current_target);
                     Log.i(TAG + "/runPlan1", "getActiveTargets return:" + api.getActiveTargets().toString());
+                    break;
                 }
 
                 if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL + 5 *1000) {
