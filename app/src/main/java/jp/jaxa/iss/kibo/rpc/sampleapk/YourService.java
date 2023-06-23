@@ -153,8 +153,8 @@ public class YourService extends KiboRpcService {
                 Log.i(TAG +"/runPlan1", "active phase time before common point move is: " + (api.getTimeRemaining().get(0)/1000) +" seconds." );
 
 
-                if (phaseCounter == 4) {
-                    TIME_FOR_QR_AND_GOAL += 10 * 1000; // at last phase, increase time taken
+                if (laserCounter == 3) {
+                    TIME_FOR_QR_AND_GOAL += 10 * 1000; // at 3rd target, increase time taken
                 }
 
                 if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL + 10 *1000) {
