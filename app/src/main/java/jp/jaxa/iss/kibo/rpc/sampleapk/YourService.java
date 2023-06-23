@@ -165,6 +165,7 @@ public class YourService extends KiboRpcService {
 
                 if (!moveBee(POINTS_COORDS.get(current_target.get(targetCounter) - 1), POINTS_QUARTENIONS.get(current_target.get(targetCounter) - 1), current_target.get(targetCounter))) // -1 as index start at 0
                 {// move bee to middle point of all points that not have KOZ on the way
+                    Log.i(TAG + "/runPlan1/moveToCommon", "Attempt to move to next point directly is unsuccessful");
                     moveBee(COMMON_COORDS, POINT1_QUATERNION, 1000 + current_target.get(0));
 
                     // go to next phase if not enough time in current  phase (kinda illegal laser move lmao)
