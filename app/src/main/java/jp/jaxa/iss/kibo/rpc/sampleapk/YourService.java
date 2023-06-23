@@ -162,21 +162,24 @@ public class YourService extends KiboRpcService {
                     lastSequence();
                     break;
                 }
-                // move bee to middle point of all points that not have KOZ on the way
-                moveBee(COMMON_COORDS, POINT1_QUATERNION, 1000 + current_target.get(0));
 
-                // go to next phase if not enough time in current  phase (kinda illegal laser move lmao)
-                Log.i(TAG +"/runPlan1", "active phase time after common point move is: " + (api.getTimeRemaining().get(0)/1000) +" seconds." );
+                if (!moveBee(POINTS_COORDS.get(current_target.get(targetCounter) - 1), POINTS_QUARTENIONS.get(current_target.get(targetCounter) - 1), current_target.get(targetCounter))) // -1 as index start at 0
+                {// move bee to middle point of all points that not have KOZ on the way
+                    moveBee(COMMON_COORDS, POINT1_QUATERNION, 1000 + current_target.get(0));
 
-                if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL + 5 *1000) {
-                    Log.e(TAG + "/runPlan1/OutOfTime", "Sequence2 broken at targetCounter of " + targetCounter + " as not enough time, TIME REMAINING: " + api.getTimeRemaining().get(1));
-                    lastSequence();
-                    break;
+                    // go to next phase if not enough time in current  phase (kinda illegal laser move lmao)
+                    Log.i(TAG + "/runPlan1", "active phase time after common point move is: " + (api.getTimeRemaining().get(0) / 1000) + " seconds.");
+
+                    if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL + 5 * 1000) {
+                        Log.e(TAG + "/runPlan1/OutOfTime", "Sequence2 broken at targetCounter of " + targetCounter + " as not enough time, TIME REMAINING: " + api.getTimeRemaining().get(1));
+                        lastSequence();
+                        break;
+                    }
+
+                    Log.i(TAG + "/runPlan1", "before going to point = " + current_target.get(0) + ", TIME REMAINING:" + api.getTimeRemaining().get(1));
+                    // move bee to point 1
+                    moveBee(POINTS_COORDS.get(current_target.get(targetCounter) - 1), POINTS_QUARTENIONS.get(current_target.get(targetCounter) - 1), current_target.get(targetCounter)); // -1 as index start at 0
                 }
-
-                Log.i(TAG + "/runPlan1", "before going to point = " + current_target.get(0) + ", TIME REMAINING:" + api.getTimeRemaining().get(1));
-                // move bee to point 1
-                moveBee(POINTS_COORDS.get(current_target.get(targetCounter) - 1), POINTS_QUARTENIONS.get(current_target.get(targetCounter) - 1), current_target.get(targetCounter)); // -1 as index start at 0
 
 
                 // turn on flashlight to improve accuracy, value taken from page 33 in manual
@@ -377,7 +380,7 @@ public class YourService extends KiboRpcService {
         return false;
     }*/
 
-    private void moveBee(Point point, Quaternion quaternion, int pointNumber){
+    private boolean moveBee(Point point, Quaternion quaternion, int pointNumber){
 
 
         final int LOOP_MAX = 5;
@@ -397,16 +400,14 @@ public class YourService extends KiboRpcService {
 
 
         // check result and loop while moveTo api is not succeeded
-        int loopCounter = 0;
-        while(!result.hasSucceeded() && loopCounter < LOOP_MAX){
-            // retry
-            result = api.moveTo(point, quaternion, true);
-            Log.i(TAG+"/moveBee", "moveTo status:" + result.hasSucceeded());
-            ++loopCounter;
-        }
+        result = api.moveTo(point, quaternion, true);
+        Log.i(TAG+"/moveBee", "moveTo status:" + result.hasSucceeded());
+        if (!result.hasSucceeded()) return false;
+
         if (result.hasSucceeded()) Log.i(TAG, "successfully moved to point " + pointNumber);
         else Log.e(TAG+"/moveBee", "failed to move to point " + pointNumber);
         Log.i(TAG+"/moveBee/coords", "point: x = " + point.getX() + ", y = " + point.getY() + ", z = " + point.getZ());
+        return true;
     }
 
     private double[] inspectCorners(List<Mat> corners) {
