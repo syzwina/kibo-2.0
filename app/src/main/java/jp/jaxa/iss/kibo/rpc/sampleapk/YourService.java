@@ -432,30 +432,4 @@ public class YourService extends KiboRpcService {
         }
     }
 
-/*    int imageProcessing_called = 0;
-    private void imageProcessing(Dictionary dictionary, List<Mat> corners, DetectorParameters detectorParameters, Mat ids, int targetID) {
-
-        Mat grayImage = api.getMatNavCam();
-        api.saveMatImage(grayImage, "nearTarget" + targetID + "_" + imageProcessing_called + ".png");
-        Log.i(TAG+"/imageProcessing", "Image has been saved in Black and White");
-
-        Mat colorImage = new Mat();
-        // Convert the grayscale image to color
-        Imgproc.cvtColor(grayImage, colorImage, Imgproc.COLOR_GRAY2BGR);
-
-        Log.i(TAG+"/imageProcessing", "TARGET " + targetID + " image processing");
-        Aruco.detectMarkers(colorImage, dictionary, corners, ids, detectorParameters);
-        Aruco.drawDetectedMarkers(colorImage, corners, ids, new Scalar( 0, 255, 0 ));
-
-        Imgproc.putText(colorImage, "Aruco:"+ Arrays.toString(ids.get(0,0)), new org.opencv.core.Point(30.0, 80.0), 3, 0.5, new Scalar(255, 0, 0, 255), 1);
-        Log.i(TAG+"imageProcessing", "Aruco marker has been labeled");
-
-        api.saveMatImage(colorImage, "processedNearTarget" + current_target + "_" + imageProcessing_called+ ".png");
-        Log.i(TAG+"imageProcessing", "Image has been saved in Colour");
-        imageProcessing_called++;
-
-    }*/
-
-
-
 }
