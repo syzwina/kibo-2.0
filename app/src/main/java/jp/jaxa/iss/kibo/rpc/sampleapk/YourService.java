@@ -335,41 +335,6 @@ public class YourService extends KiboRpcService {
         return qrCodeMapper.getValue(key);
     }
 
-/*    private boolean checksForKOZ(Point point){
-        float x = (float) point.getX();
-        float y = (float) point.getY();
-        float z = (float) point.getZ();
-        if (KOZ01.contains(x,y,z)) {
-            currentKOZ = KOZ01;
-            return false;
-        }
-        else if (KOZ02.contains(x,y,z)){
-            currentKOZ = KOZ02;
-            return false;
-        }
-        else if (KOZ03.contains(x,y,z)){
-            currentKOZ = KOZ03;
-            return false;
-        }
-        else if (KOZ04.contains(x,y,z)){
-            currentKOZ = KOZ04;
-            return false;
-        }
-        else if (KOZ05.contains(x,y,z)){
-            currentKOZ = KOZ05;
-            return false;
-        }
-        else return true;
-    }
-
-    private boolean checksForKIZ(Point point){
-        float x = (float) point.getX();
-        float y = (float) point.getY();
-        float z = (float) point.getZ();
-        if (KIZ01.contains(x,y,z) || KIZ02.contains(x,y,z)) return true;
-        return false;
-    }*/
-
     private boolean moveBee(Point point, Quaternion quaternion, int pointNumber){
 
 
