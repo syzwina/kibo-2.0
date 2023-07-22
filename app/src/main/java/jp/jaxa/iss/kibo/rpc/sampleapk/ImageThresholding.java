@@ -1,6 +1,6 @@
 package jp.jaxa.iss.kibo.rpc.sampleapk;
 
-import org.opencv.core.*;
+import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
 
 public class ImageThresholding {

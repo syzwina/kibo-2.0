@@ -9,25 +9,20 @@ import gov.nasa.arc.astrobee.Result;
 import gov.nasa.arc.astrobee.types.Point;
 import gov.nasa.arc.astrobee.types.Quaternion;
 
-import org.opencv.imgproc.Imgproc;
 import org.opencv.aruco.DetectorParameters;
 import org.opencv.aruco.Dictionary;
 import org.opencv.core.Mat;
 import org.opencv.aruco.Aruco;
 import org.opencv.core.Scalar;
-import org.opencv.core.*;
-import org.opencv.core.Size;
-//import org.opencv.core.Point;
+import org.opencv.core.Core;
+
+// not imported here due to naming conflicts
+// but used explicitly
+// import org.opencv.core.Point;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.PriorityQueue;
-
-// for pathfinding
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 /**
  * Class meant to handle commands from the Ground Data System and execute them in Astrobee
