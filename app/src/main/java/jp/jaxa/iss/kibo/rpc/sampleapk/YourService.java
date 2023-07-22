@@ -39,72 +39,11 @@ public class YourService extends KiboRpcService {
 
     private List<Integer> current_target;
 
-
-    /**
-     * Constants defined from RULEBOOK
-     */
-
-    //recalculating optimal coords using POINT4 and TARGET4 as reference (yz axis)
-    private double Y_COORDS_OFFSET = -0.044528; // -6.7185--6.673972 //to use= target + offset, // facing the target, it move to the right, ie -ve of y-axis.
-    private double Z_COORDS_OFFSET = 0.08509; // 5.1804-5.09531 //to use= target + offset, // to move down, +ve of z-axis
-
-
-    //oldPoint refers to original point given in rulebook
-    private Point currentCoords = new Point(0,0,0);
-    private Point currentGoalCoords = new Point(0,0,0);
-    private final Point START_COORDS = new Point(9.815, -9.806, 4.293);
-    private final Point GOAL_COORDS = new Point(11.143, -6.7607, 4.9654);
-    private final Point oldPOINT1_COORDS = new Point(11.2746, -9.92284, 5.2988);
-    private final Point oldPOINT2_COORDS = new Point(10.612, -9.0709, 4.48);
-    private final Point oldPOINT3_COORDS = new Point(10.71, -7.7, 4.48);
-    private final Point POINT4_COORDS = new Point(10.51, -6.7185, 5.1804);
-    private final Point oldPOINT5_COORDS = new Point(11.114, -7.9756, 5.3393);
-    private final Point oldPOINT6_COORDS = new Point(11.355, -8.9929, 4.7818);
-    private final Point POINT7_COORDS = new Point(11.369, -8.5518, 4.48);
-
-    private final Point TARGET1_COORDS = new Point(11.2625, -10.58, 5.3625);
-    private final Point TARGET2_COORDS = new Point(10.513384, -9.085172, 3.76203);
-    private final Point TARGET3_COORDS = new Point(10.6031, -7.71007, 3.76093);
-    private final Point TARGET4_COORDS = new Point(9.866984, -6.673972, 5.09531);
-    private final Point TARGET5_COORDS = new Point(11.102, -8.0304, 5.9076);
-    private final Point TARGET6_COORDS = new Point(12.023, -8.989, 4.8305);
-    private final Point QR_CODE_COORDS = new Point(11.381944, -8.566172, 3.76203);
-
-
-    // new POINT_COORDS optimized from POINT4 and target4 reference
-    private final Point POINT1_COORDS = new Point(TARGET1_COORDS.getX() - Y_COORDS_OFFSET, oldPOINT1_COORDS.getY(), TARGET1_COORDS.getZ() + Z_COORDS_OFFSET);
-    private final Point POINT2_COORDS = new Point(TARGET2_COORDS.getX() - Y_COORDS_OFFSET, TARGET2_COORDS.getY() - Z_COORDS_OFFSET, oldPOINT2_COORDS.getZ());
-    private final Point POINT3_COORDS = new Point(TARGET3_COORDS.getX() + Z_COORDS_OFFSET, TARGET3_COORDS.getY() - Y_COORDS_OFFSET, oldPOINT3_COORDS.getZ());
-    private final Point POINT5_COORDS = new Point(TARGET5_COORDS.getX() - Y_COORDS_OFFSET, TARGET5_COORDS.getY() + Z_COORDS_OFFSET, oldPOINT5_COORDS.getZ());
-    private final Point POINT6_COORDS = new Point(oldPOINT6_COORDS.getX() + Y_COORDS_OFFSET, TARGET6_COORDS.getY() - Y_COORDS_OFFSET, TARGET6_COORDS.getZ() + Z_COORDS_OFFSET);
-
-    List<Point> POINTS_COORDS = Arrays.asList(POINT1_COORDS, POINT2_COORDS, POINT3_COORDS,
-            POINT4_COORDS, POINT5_COORDS, POINT6_COORDS, POINT7_COORDS);
-
-    private final Point COMMON_COORDS = new Point(POINT4_COORDS.getX(), POINT7_COORDS.getY(), oldPOINT5_COORDS.getZ());
-
-    private Quaternion currentQuaternion = new Quaternion(0,0,0,0);
-    private final Quaternion START_QUATERNION = new Quaternion((float) 1, (float) 0, (float) 0, (float) 0);
-    private final Quaternion GOAL_QUATERNION = new Quaternion((float) 0, (float) 0, (float) -0.707, (float) 0.707);
-    private final Quaternion POINT1_QUATERNION = new Quaternion((float) 0, (float) 0, (float) -0.707, (float) 0.707);
-    private final Quaternion POINT2_QUATERNION = new Quaternion((float) 0.5, (float) 0.5, (float) -0.5, (float) 0.5);
-    private final Quaternion POINT3_QUATERNION = new Quaternion((float) 0, (float) 0.707, (float) 0, (float) 0.707);
-    private final Quaternion POINT4_QUATERNION = new Quaternion((float) 0, (float) 0, (float) -1, (float) 0);
-    private final Quaternion POINT5_QUATERNION = new Quaternion((float) -0.5, (float) -0.5, (float) -0.5, (float) 0.5);
-    private final Quaternion POINT6_QUATERNION = new Quaternion((float) 0, (float) 0, (float) 0, (float) 1);
-    private final Quaternion POINT7_QUATERNION = new Quaternion((float) 0, (float) 0.707, (float) 0, (float) 0.707);
-    List<Quaternion> POINTS_QUARTENIONS = Arrays.asList(POINT1_QUATERNION, POINT2_QUATERNION, POINT3_QUATERNION,
-            POINT4_QUATERNION, POINT5_QUATERNION, POINT6_QUATERNION, POINT7_QUATERNION);
-
-    private final Quaternion TARGET1_QUATERNION = new Quaternion((float) 0.707, (float) 0, (float) 0, (float) 0.707);
-    private final Quaternion TARGET2_QUATERNION = new Quaternion((float) 0, (float) 0, (float) 0, (float) 1);
-    private final Quaternion TARGET3_QUATERNION = new Quaternion((float) 0.707, (float) 0, (float) 0, (float) 0.707);
-    private final Quaternion TARGET4_QUATERNION = new Quaternion((float) -0.5, (float) 0.5, (float) -0.5, (float) 0.5);
-    private final Quaternion TARGET5_QUATERNION = new Quaternion((float) 1, (float) 0, (float) 0, (float) 0);
-    private final Quaternion TARGET6_QUATERNION = new Quaternion((float) 0.5, (float) 0.5, (float) -0.5, (float) -0.5);
-    private final Quaternion QR_CODE_QUATERNION = new Quaternion((float) 0, (float) 0, (float) 0, (float) 1);
-
     private int TIME_FOR_QR_AND_GOAL = 120 * 1000;
+
+    // used globally as a way to know which point is the current goal
+    private Point currentGoalCoords = new Point(0,0,0);
+    private Quaternion currentQuaternion = new Quaternion(0,0,0,0);
 
     HashMap<Integer, Integer> arucoTargets;
     DetectorParameters detectorParameters;
@@ -123,7 +62,7 @@ public class YourService extends KiboRpcService {
         Log.i(TAG+"/runPlan1", "start mission!");
 
         // move bee from KIZ2 to KIZ1 by moving to bottom right of KIZ2 (KIZ1 xyz min + KIZ2 xyz max)/2
-        moveBee(new Point(10.4, -9.9, 4.50), POINT1_QUATERNION, 0);
+        moveBee(new Point(10.4, -9.9, 4.50), PointConstants.POINT1_QUATERNION, 0);
 
         // count number of laser had been activated
         int laserCounter = 0;
@@ -152,10 +91,10 @@ public class YourService extends KiboRpcService {
                     break;
                 }
 
-                if (!moveBee(POINTS_COORDS.get(current_target.get(targetCounter) - 1), POINTS_QUARTENIONS.get(current_target.get(targetCounter) - 1), current_target.get(targetCounter))) // -1 as index start at 0
+                if (!moveBee(PointConstants.POINTS_COORDS.get(current_target.get(targetCounter) - 1), PointConstants.POINTS_QUATERNIONS.get(current_target.get(targetCounter) - 1), current_target.get(targetCounter))) // -1 as index start at 0
                 {// move bee to middle point of all points that not have KOZ on the way
                     Log.i(TAG + "/runPlan1/moveToCommon", "Attempt to move to next point directly is unsuccessful");
-                    moveBee(COMMON_COORDS, POINT1_QUATERNION, 1000 + current_target.get(0));
+                    moveBee(PointConstants.COMMON_COORDS, PointConstants.POINT1_QUATERNION, 1000 + current_target.get(0));
 
                     // go to next phase if not enough time in current  phase (kinda illegal laser move lmao)
                     Log.i(TAG + "/runPlan1", "active phase time after common point move is: " + (api.getTimeRemaining().get(0) / 1000) + " seconds.");
@@ -168,7 +107,7 @@ public class YourService extends KiboRpcService {
 
                     Log.i(TAG + "/runPlan1", "before going to point = " + current_target.get(0) + ", TIME REMAINING:" + api.getTimeRemaining().get(1));
                     // move bee to point 1
-                    moveBee(POINTS_COORDS.get(current_target.get(targetCounter) - 1), POINTS_QUARTENIONS.get(current_target.get(targetCounter) - 1), current_target.get(targetCounter)); // -1 as index start at 0
+                    moveBee(PointConstants.POINTS_COORDS.get(current_target.get(targetCounter) - 1), PointConstants.POINTS_QUATERNIONS.get(current_target.get(targetCounter) - 1), current_target.get(targetCounter)); // -1 as index start at 0
                 }
 
 
@@ -179,7 +118,7 @@ public class YourService extends KiboRpcService {
                 // to reset active id ??
                 api.getActiveTargets();
                 // irradiate with laser
-                laserBeam(current_target.get(targetCounter), POINTS_QUARTENIONS.get(current_target.get(targetCounter) - 1));
+                laserBeam(current_target.get(targetCounter), PointConstants.POINTS_QUATERNIONS.get(current_target.get(targetCounter) - 1));
                 laserCounter++;
                 Log.i(TAG+"/runPlan1/laserCounter", "laserCounter value is: " + laserCounter);
                 // turn off flashlight
@@ -203,10 +142,10 @@ public class YourService extends KiboRpcService {
     private void lastSequence(){
 
         // move bee to middle point of all points that not have KOZ on the way
-        moveBee(COMMON_COORDS   , POINT7_QUATERNION, 1007);
+        moveBee(PointConstants.COMMON_COORDS   , PointConstants.POINT7_QUATERNION, 1007);
 
         // move bee to target 7
-        moveBee(POINT7_COORDS, POINT7_QUATERNION, 7);
+        moveBee(PointConstants.POINT7_COORDS, PointConstants.POINT7_QUATERNION, 7);
         // turn on flashlight to improve accuracy, value taken from page 33 in manual
         api.flashlightControlFront(0.05f);
         // read QR code dummy function, not yet implemented
@@ -217,9 +156,9 @@ public class YourService extends KiboRpcService {
         api.notifyGoingToGoal();
 
         // move to z axis of point 6 to avoid KOZ3
-        moveBee(new Point(POINT7_COORDS.getX(),POINT7_COORDS.getY(), oldPOINT6_COORDS.getZ()), GOAL_QUATERNION, 1008);
+        moveBee(new Point(PointConstants.POINT7_COORDS.getX(),PointConstants.POINT7_COORDS.getY(), PointConstants.OLD_POINT6_COORDS.getZ()), PointConstants.GOAL_QUATERNION, 1008);
 
-        moveBee(GOAL_COORDS, GOAL_QUATERNION, 8);
+        moveBee(PointConstants.GOAL_COORDS, PointConstants.GOAL_QUATERNION, 8);
 
         // send mission completion
         api.reportMissionCompletion(QRstring);
