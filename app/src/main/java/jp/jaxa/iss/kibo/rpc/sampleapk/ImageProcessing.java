@@ -7,11 +7,17 @@ import org.opencv.aruco.Aruco;
 import org.opencv.core.Scalar;
 import org.opencv.aruco.DetectorParameters;
 
+import gov.nasa.arc.astrobee.Kinematics;
+import gov.nasa.arc.astrobee.types.Point;
+
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import android.util.Log;
 
+import gov.nasa.arc.astrobee.types.Quaternion;
 import jp.jaxa.iss.kibo.rpc.api.KiboRpcService;
 
 /**
@@ -29,6 +35,12 @@ public class ImageProcessing extends KiboRpcService {
      * Counter to keep track of how many times the imageProcessing method has been called.
      */
     private int imageProcessing_called = 0;
+
+    HashMap<Integer, Integer> arucoTargets;
+    DetectorParameters detectorParameters;
+    List<Mat> corners;
+    Dictionary dictionary;
+    Mat ids;
 
     /**
      * Processes the provided image using ArUco marker detection and labeling.
@@ -59,6 +71,183 @@ public class ImageProcessing extends KiboRpcService {
         api.saveMatImage(colorImage, "processedNearTarget" + targetID + "_" + imageProcessing_called+ ".png");
         Log.i(TAG+"imageProcessing", "Image has been saved in Colour");
         imageProcessing_called++;
+
+    }
+
+    private double[] inspectCorners(List<Mat> corners) {
+
+        // once you choose one ID
+        // decide which ID it is, and were it is relative to the centre of the circle
+        // and set the new 'centre' coordinate to 'aruco_middle'
+
+        // use mod 4 to get whether it is tl, tr, bl, br
+
+
+        double[] topright;
+        double[] topleft;
+        double[] bottomleft;
+        double[] bottomright;
+
+        double aruco_middle_x = 0.0;
+        double aruco_middle_y = 0.0;
+
+        final int x_coords = 0;
+        final int y_coords = 1;
+
+        try{
+
+        bottomleft  = corners.get(0).get(0, 2);
+        bottomright = corners.get(0).get(0, 3);
+        topleft     = corners.get(0).get(0, 1);
+        topright    = corners.get(0).get(0, 0);
+
+        aruco_middle_x = (bottomleft[x_coords] + bottomright[x_coords] + topleft[x_coords] + topright[x_coords])/4;
+        aruco_middle_y = (bottomleft[y_coords] + bottomright[y_coords] + topleft[y_coords] + topright[y_coords])/4;
+        
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        double[] aruco_middle = {aruco_middle_x, aruco_middle_y};
+
+        return aruco_middle;
+    }
+
+    private void optimizeCenter(int targetID){
+        int img_process_counter = 0;
+        while (img_process_counter < 2) {
+            imageProcessing(dictionary, corners, detectorParameters, ids, targetID);
+            //moveCloserToArucoMarker(inspectCorners(corners), targetID);
+            corners.clear();
+            Log.i(TAG+"/optimizeCentre", "Optimizing Centre, attempt: " + img_process_counter);
+            img_process_counter++;
+        }
+    }
+
+    /* 
+    private void moveCloserToArucoMarker(double[] aruco_middle, int current_target) {
+
+        final double middle_x = 1280/2;
+        final double middle_y = 960/2;
+
+        double aruco_middle_x = aruco_middle[0];
+        double aruco_middle_y = aruco_middle[1];
+
+        double x_difference = middle_x - aruco_middle_x;
+        double y_difference = middle_y - aruco_middle_y;
+
+        Kinematics kinematics;
+        Quaternion quaternion;
+        Point point;
+        Point new_point;
+
+        kinematics = api.getRobotKinematics();
+        quaternion = kinematics.getOrientation();
+        point = kinematics.getPosition();
+
+        if (x_difference < -50) {
+            new_point = new Point(point.getX(), point.getY() + 0.2, point.getZ());
+            moveBee(new_point, quaternion, current_target + 10); // move to right in y-axis //added 10 to differentiate with first moveBee in point movement
+            Log.i(TAG+"/moveCloserToArucoMarker", "Moved to point: x = " + new_point.getX() + ", y = " + new_point.getY() + ", z = " + new_point.getZ());
+        }
+        else if (x_difference > 50) {
+            new_point = new Point(point.getX(), point.getY() - 0.2, point.getZ());
+            moveBee(new_point, quaternion, current_target +10); // move to left in y-axis
+            Log.i(TAG+"/moveCloserToArucoMarker", "Moved to point: x = " + new_point.getX() + ", y = " + new_point.getY() + ", z = " + new_point.getZ());
+        }
+
+        if (x_difference < -30) {
+            new_point = new Point(point.getX(), point.getY() + 0.1, point.getZ());
+            moveBee(new_point, quaternion, current_target +10); // move to right in y-axis
+            Log.i(TAG+"/moveCloserToArucoMarker", "Moved to point: x = " + new_point.getX() + ", y = " + new_point.getY() + ", z = " + new_point.getZ());
+        }
+        else if (x_difference > 30) {
+            new_point = new Point(point.getX(), point.getY() - 0.1, point.getZ());
+            moveBee(new_point, quaternion, current_target +10); // move to left in y-axis
+            Log.i(TAG+"/moveCloserToArucoMarker", "Moved to point: x = " + new_point.getX() + ", y = " + new_point.getY() + ", z = " + new_point.getZ());
+        }
+
+        if (x_difference < -20) {
+            new_point = new Point(point.getX(), point.getY() + 0.05, point.getZ());
+            moveBee(new_point, quaternion, current_target +10); // move to right in y-axis
+            Log.i(TAG+"/moveCloserToArucoMarker", "Moved to point: x = " + new_point.getX() + ", y = " + new_point.getY() + ", z = " + new_point.getZ());
+        }
+        else if (x_difference > 20) {
+            new_point = new Point(point.getX(), point.getY() - 0.05, point.getZ());
+            moveBee(new_point, quaternion, current_target +10); // move to left in y-axis
+            Log.i(TAG+"/moveCloserToArucoMarker", "Moved to point: x = " + new_point.getX() + ", y = " + new_point.getY() + ", z = " + new_point.getZ());
+        }
+
+
+
+        kinematics = api.getRobotKinematics();
+        quaternion = kinematics.getOrientation(); //kinematics.getOrientation();
+        point = kinematics.getPosition();
+
+        if (y_difference <  -50) {
+            new_point = new Point(point.getX() + 0.2, point.getY(), point.getZ());
+            moveBee(new_point, quaternion, current_target +100); // move to down in x-axis
+            Log.i(TAG+"/moveCloserToArucoMarker", "Moved to point: x = " + new_point.getX() + ", y = " + new_point.getY() + ", z = " + new_point.getZ());
+        }
+        else if (y_difference > 50) {
+            new_point = new Point(point.getX() - 0.2, point.getY(), point.getZ());
+            moveBee(new_point, quaternion, current_target +100); // move to up in x-axis
+            Log.i(TAG+"/moveCloserToArucoMarker", "Moved to point: x = " + new_point.getX() + ", y = " + new_point.getY() + ", z = " + new_point.getZ());
+        }
+
+        if (y_difference <  -30) {
+            new_point = new Point(point.getX() + 0.1, point.getY(), point.getZ());
+            moveBee(new_point, quaternion, current_target+100); // move to down in x-axis
+            Log.i(TAG+"/moveCloserToArucoMarker", "Moved to point: x = " + new_point.getX() + ", y = " + new_point.getY() + ", z = " + new_point.getZ());
+        }
+        else if (y_difference > 30) {
+            new_point = new Point(point.getX() - 0.1, point.getY(), point.getZ());
+            moveBee(new_point, quaternion, current_target +100); // move to up in x-axis
+            Log.i(TAG+"/moveCloserToArucoMarker", "Moved to point: x = " + new_point.getX() + ", y = " + new_point.getY() + ", z = " + new_point.getZ());
+        }
+
+        if (y_difference <  -20) {
+            new_point = new Point(point.getX() + 0.05, point.getY(), point.getZ());
+            moveBee(new_point, quaternion, current_target + 100); // move to down in x-axis
+            Log.i(TAG+"/moveCloserToArucoMarker", "Moved to point: x = " + new_point.getX() + ", y = " + new_point.getY() + ", z = " + new_point.getZ());
+        }
+        else if (y_difference > 20) {
+            new_point = new Point(point.getX() - 0.05, point.getY(), point.getZ());
+            moveBee(new_point, quaternion, current_target + 100); // move to up in x-axis
+            Log.i(TAG+"/moveCloserToArucoMarker", "Moved to point: x = " + new_point.getX() + ", y = " + new_point.getY() + ", z = " + new_point.getZ());
+        }
+    }
+    */
+
+    private void init() {
+
+        // initialise aruco dictionary
+        dictionary = Aruco.getPredefinedDictionary(Aruco.DICT_5X5_250);
+
+        // initialise objects to be used in image processing
+        corners = new ArrayList<Mat>();
+        ids = new Mat(1, 4, 1, new Scalar( 0, 150, 250 ));
+        detectorParameters = DetectorParameters.create();
+
+        // initialise target to aruco marker hashmap
+        arucoTargets = new HashMap<Integer, Integer>();
+        arucoTargets.put(1,1);
+        arucoTargets.put(2,1);
+        arucoTargets.put(3,1);
+        arucoTargets.put(4,1);
+        arucoTargets.put(5,2);
+        arucoTargets.put(6,2);
+        arucoTargets.put(7,2);
+        arucoTargets.put(8,2);
+        arucoTargets.put(9,3);
+        arucoTargets.put(10,3);
+        arucoTargets.put(11,3);
+        arucoTargets.put(12,3);
+        arucoTargets.put(13,4);
+        arucoTargets.put(14,4);
+        arucoTargets.put(15,4);
+        arucoTargets.put(16,4);
 
     }
 
