@@ -289,8 +289,6 @@ public class YourService extends KiboRpcService {
 
 
         // check result and loop while moveTo api is not succeeded
-        result = api.moveTo(point, quaternion, true);
-        Log.i(TAG+"/moveBee", "moveTo status:" + result.hasSucceeded());
         if (!result.hasSucceeded()) return false;
 
         if (result.hasSucceeded()) Log.i(TAG, "successfully moved to point " + pointNumber);
