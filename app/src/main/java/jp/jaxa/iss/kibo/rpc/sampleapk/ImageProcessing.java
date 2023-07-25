@@ -24,7 +24,7 @@ import jp.jaxa.iss.kibo.rpc.api.KiboRpcService;
  * This class provides image processing functionalities for Near Target Identification.
  * It inherits from KiboRpcService to use the provided API for communication with the Kibo Robot Programming Challenge.
  */
-public class ImageProcessing extends KiboRpcService {
+public class ImageProcessing {
 
     /**
      * Tag used for logging purposes. It helps identify log messages from this class.
@@ -45,16 +45,11 @@ public class ImageProcessing extends KiboRpcService {
     /**
      * Processes the provided image using ArUco marker detection and labeling.
      *
-     * @param dictionary        The ArUco dictionary for marker detection.
-     * @param corners           List to store the detected marker corners.
-     * @param detectorParameters Parameters for the marker detector.
-     * @param ids               Matrix to store the detected marker IDs.
+     * @param grayImage         The input image for image processing
      * @param targetID          The target ID for which the image is being processed.
      */
-    private void imageProcessing(Dictionary dictionary, List<Mat> corners, DetectorParameters detectorParameters, Mat ids, int targetID) {
+    public Mat imageProcessing(Mat grayImage, int targetID) {
 
-        Mat grayImage = api.getMatNavCam();
-        api.saveMatImage(grayImage, "nearTarget" + targetID + "_" + imageProcessing_called + ".png");
         Log.i(TAG+"/imageProcessing", "Image has been saved in Black and White");
 
         Mat colorImage = new Mat();
@@ -68,13 +63,12 @@ public class ImageProcessing extends KiboRpcService {
         Imgproc.putText(colorImage, "Aruco:"+ Arrays.toString(ids.get(0,0)), new org.opencv.core.Point(30.0, 80.0), 3, 0.5, new Scalar(255, 0, 0, 255), 1);
         Log.i(TAG+"imageProcessing", "Aruco marker has been labeled");
 
-        api.saveMatImage(colorImage, "processedNearTarget" + targetID + "_" + imageProcessing_called+ ".png");
-        Log.i(TAG+"imageProcessing", "Image has been saved in Colour");
         imageProcessing_called++;
+        return colorImage;
 
     }
 
-    private double[] inspectCorners(List<Mat> corners) {
+    public double[] inspectCorners(List<Mat> corners) {
 
         // once you choose one ID
         // decide which ID it is, and were it is relative to the centre of the circle
@@ -114,19 +108,7 @@ public class ImageProcessing extends KiboRpcService {
         return aruco_middle;
     }
 
-    public void optimizeCenter(int targetID){
-        int img_process_counter = 0;
-        while (img_process_counter < 2) {
-            imageProcessing(dictionary, corners, detectorParameters, ids, targetID);
-            // code to align astrobee with target
-            moveCloserToArucoMarker(inspectCorners(corners), targetID);
-            corners.clear();
-            Log.i(TAG+"/optimizeCentre", "Optimizing Centre, attempt: " + img_process_counter);
-            img_process_counter++;
-        }
-    }
-
-    private void moveCloserToArucoMarker(double[] aruco_middle, int current_target){
+    public Point moveCloserToArucoMarker(Kinematics kinematics, double[] aruco_middle, int current_target){
         int counter_x = 0;
         int counter_y = 0;
         final double middle_x = 1280/2;
@@ -140,14 +122,13 @@ public class ImageProcessing extends KiboRpcService {
         double y_difference = middle_y - aruco_middle_y;
         Log.i(TAG+"/moveCloserToArucoMarker", "The y difference is: " + y_difference);
 
-        Kinematics kinematics;
-        Quaternion quaternion;
         Point point;
         Point new_point;
 
-        kinematics = api.getRobotKinematics();
-        quaternion = kinematics.getOrientation();
         point = kinematics.getPosition();
+
+        // initialize new_point
+        new_point = new Point (point.getX(), point.getY(), point.getZ());
 
         /* We want the bee to move closer, thus each 4 points might be a bit different
          * Thought process:
@@ -159,7 +140,6 @@ public class ImageProcessing extends KiboRpcService {
 
             /* get the new_point from the point constants */
             new_point = new Point (point.getX(), point.getY(), point.getZ());
-            api.moveTo(new_point, quaternion, true);
 
             x_difference -= 10;
             counter_x ++;
@@ -172,7 +152,6 @@ public class ImageProcessing extends KiboRpcService {
 
             /* get the new_point from the point constants */
             new_point = new Point (point.getX(), point.getY(), point.getZ());
-            api.moveTo(new_point, quaternion, true);
 
             y_difference -= 10;
             counter_y ++;
@@ -180,6 +159,7 @@ public class ImageProcessing extends KiboRpcService {
 
         }
 
+        return new_point;
 
     }
 
