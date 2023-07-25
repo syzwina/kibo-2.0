@@ -35,6 +35,8 @@ public class YourService extends KiboRpcService {
 
     private ImageProcessing imageProcessing = new ImageProcessing();
 
+    private int targetCounter = 0;
+
     @Override
     protected void runPlan1(){
 
@@ -52,7 +54,7 @@ public class YourService extends KiboRpcService {
         // 4 phase
         while ( (phaseCounter < 7)) {
 
-            int targetCounter = 0;
+            targetCounter = 0;
 
             // add code to estimate if it is worth to go through with this phase
             // or should we skip immediately to last sequence
