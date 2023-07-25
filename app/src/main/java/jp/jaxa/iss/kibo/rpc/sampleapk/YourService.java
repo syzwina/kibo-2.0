@@ -27,6 +27,9 @@ public class YourService extends KiboRpcService {
 
     private List<Integer> current_target;
 
+    // note: add 10 at 3rd target
+    // note: add 5
+    // TODO: add up all the extra time needed
     private int TIME_FOR_QR_AND_GOAL = 122 * 1000;
 
     // used globally as a way to know which point is the current goal
@@ -46,29 +49,32 @@ public class YourService extends KiboRpcService {
         // count number of laser had been activated
         int laserCounter = 0;
         int phaseCounter = 0;
+
         // 4 phase
         while ( (phaseCounter < 7)) {
-            Log.i(TAG + "/runPlan1", "at start of Phase counter = " + phaseCounter + ", TIME REMAINING:" + api.getTimeRemaining().get(1));
+
+            // add code to estimate if it is worth to go through with this phase
+            // or should we skip immediately to last sequence
+            //
+            if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL) {
+                Log.e(TAG + "/runPlan1/OutOfTime", "BREAK SEQUENCE, TARGET COUNTER: " + targetCounter + ", TIME REMAINING: " + api.getTimeRemaining().get(1));
+                lastSequence();
+                break;
+            }
+            //
+            //
+
+            Log.i(TAG + "/runPlan1", "PHASE COUNTER = " + phaseCounter + ", TIME REMAINING:" + api.getTimeRemaining().get(1));
             phaseCounter++;
 
             current_target = api.getActiveTargets();
             int targetCounter = 0;
-            Log.i(TAG+"/runPlan1", "getting active targets which are : " + current_target.toString());
+            Log.i(TAG+"/runPlan1", "ACTIVE TARGETS : " + current_target.toString());
 
+            // while the number of targets visited is less than the number of active targets
             while (targetCounter < current_target.size()) {
 
-                Log.i(TAG +"/runPlan1", "active phase time before common point move is: " + (api.getTimeRemaining().get(0)/1000) +" seconds." );
-
-
-                if (laserCounter == 3) {
-                    TIME_FOR_QR_AND_GOAL += 10 * 1000; // at 3rd target, increase time taken
-                }
-
-                if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL + 10 *1000) {
-                    Log.e(TAG + "/runPlan1/OutOfTime", "Sequence1 broken at targetCounter of " + targetCounter + " as not enough time, TIME REMAINING: " + api.getTimeRemaining().get(1));
-                    lastSequence();
-                    break;
-                }
+                Log.i(TAG +"/runPlan1", "ACTIVE PHASE TIME BEFORE COMMON POINT MOVE: " + (api.getTimeRemaining().get(0)/1000) +" sec" );
 
                 if (!moveBee(PointConstants.POINTS_COORDS.get(current_target.get(targetCounter) - 1), PointConstants.POINTS_QUATERNIONS.get(current_target.get(targetCounter) - 1), current_target.get(targetCounter))) // -1 as index start at 0
                 {// move bee to middle point of all points that not have KOZ on the way
@@ -78,39 +84,16 @@ public class YourService extends KiboRpcService {
                     // go to next phase if not enough time in current  phase (kinda illegal laser move lmao)
                     Log.i(TAG + "/runPlan1", "active phase time after common point move is: " + (api.getTimeRemaining().get(0) / 1000) + " seconds.");
 
-                    if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL + 5 * 1000) {
-                        Log.e(TAG + "/runPlan1/OutOfTime", "Sequence2 broken at targetCounter of " + targetCounter + " as not enough time, TIME REMAINING: " + api.getTimeRemaining().get(1));
-                        lastSequence();
-                        break;
-                    }
-
-                    Log.i(TAG + "/runPlan1", "before going to point = " + current_target.get(0) + ", TIME REMAINING:" + api.getTimeRemaining().get(1));
                     // move bee to point 1
+                    // instead of using 'target counter' to choose which point to take
+                    // TODO: use a priority queue
                     moveBee(PointConstants.POINTS_COORDS.get(current_target.get(targetCounter) - 1), PointConstants.POINTS_QUATERNIONS.get(current_target.get(targetCounter) - 1), current_target.get(targetCounter)); // -1 as index start at 0
                 }
 
-
-                // turn on flashlight to improve accuracy, value taken from page 33 in manual
-                // api.flashlightControlFront(0.05f); //not really needed
-                // optimize center using image processing the corners
-                //optimizeCenter(current_target.get(targetCounter));
-                // to reset active id ??
-                api.getActiveTargets();
                 // irradiate with laser
                 laserBeam(current_target.get(targetCounter), PointConstants.POINTS_QUATERNIONS.get(current_target.get(targetCounter) - 1));
                 laserCounter++;
-                Log.i(TAG+"/runPlan1/laserCounter", "laserCounter value is: " + laserCounter);
-                // turn off flashlight
-                // api.flashlightControlFront((float) 0);
-                Log.i(TAG + "/runPlan1", "current_target after laser beam count: " + laserCounter + " are: " + current_target);
-                Log.i(TAG + "/runPlan1", "getActiveTargets return:" + api.getActiveTargets().toString());
-
-
-                if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL) {
-                    Log.e(TAG + "/runPlan1/OutOfTime", "Sequence3 broken at targetCounter of " + targetCounter + " as not enough time, TIME REMAINING: " + api.getTimeRemaining().get(1));
-                    lastSequence();
-                    break;
-                }
+                Log.i(TAG + "/runPlan1/laserCounter", "LASER COUNTER: " + laserCounter);
 
                 targetCounter++;
             }
