@@ -114,7 +114,7 @@ public class ImageProcessing extends KiboRpcService {
         return aruco_middle;
     }
 
-    private void optimizeCenter(int targetID){
+    public void optimizeCenter(int targetID){
         int img_process_counter = 0;
         while (img_process_counter < 2) {
             imageProcessing(dictionary, corners, detectorParameters, ids, targetID);
