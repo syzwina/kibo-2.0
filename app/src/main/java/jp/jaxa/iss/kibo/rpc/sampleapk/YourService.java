@@ -33,6 +33,8 @@ public class YourService extends KiboRpcService {
     private Point currentGoalCoords = new Point(0,0,0);
     private Quaternion currentQuaternion = new Quaternion(0,0,0,0);
 
+    private ImageProcessing imageProcessing = new ImageProcessing();
+
     @Override
     protected void runPlan1(){
 

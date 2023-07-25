@@ -118,12 +118,71 @@ public class ImageProcessing extends KiboRpcService {
         int img_process_counter = 0;
         while (img_process_counter < 2) {
             imageProcessing(dictionary, corners, detectorParameters, ids, targetID);
-            // code to align astrobee with target 
+            // code to align astrobee with target
+            moveCloserToArucoMarker(inspectCorners(corners), targetID);
             corners.clear();
             Log.i(TAG+"/optimizeCentre", "Optimizing Centre, attempt: " + img_process_counter);
             img_process_counter++;
         }
     }
+
+    private void moveCloserToArucoMarker(double[] aruco_middle, int current_target){
+        int counter_x = 0;
+        int counter_y = 0;
+        final double middle_x = 1280/2;
+        final double middle_y = 960/2;
+
+        double aruco_middle_x = aruco_middle[0];
+        double aruco_middle_y = aruco_middle[1];
+
+        double x_difference = middle_x - aruco_middle_x;
+        Log.i(TAG+"/moveCloserToArucoMarker", "The x difference is: " + x_difference);
+        double y_difference = middle_y - aruco_middle_y;
+        Log.i(TAG+"/moveCloserToArucoMarker", "The y difference is: " + y_difference);
+
+        Kinematics kinematics;
+        Quaternion quaternion;
+        Point point;
+        Point new_point;
+
+        kinematics = api.getRobotKinematics();
+        quaternion = kinematics.getOrientation();
+        point = kinematics.getPosition();
+
+        /* We want the bee to move closer, thus each 4 points might be a bit different
+         * Thought process:
+         * 1) check for the x difference & y difference
+         * 2) if the x diff & y diff still less than 20, repeat the image processing few times
+          * */
+        while (x_difference >= 30){
+            Log.i(TAG+"/moveCloserToArucoMarker", "The x difference is being called");
+
+            /* get the new_point from the point constants */
+            new_point = new Point (point.getX(), point.getY(), point.getZ());
+            api.moveTo(new_point, quaternion, true);
+
+            x_difference -= 10;
+            counter_x ++;
+            Log.i(TAG+"/moveCloserToArucoMarker", "The while (x) attempted: " + counter_x);
+
+        }
+
+        while (y_difference >= 30){
+            Log.i(TAG+"/moveCloserToArucoMarker", "The y difference is being called");
+
+            /* get the new_point from the point constants */
+            new_point = new Point (point.getX(), point.getY(), point.getZ());
+            api.moveTo(new_point, quaternion, true);
+
+            y_difference -= 10;
+            counter_y ++;
+            Log.i(TAG+"/moveCloserToArucoMarker", "The while (y) attempted: " + counter_y);
+
+        }
+
+
+    }
+
 
     private void init() {
 
