@@ -33,6 +33,8 @@ public class YourService extends KiboRpcService {
     private Point currentGoalCoords = new Point(0,0,0);
     private Quaternion currentQuaternion = new Quaternion(0,0,0,0);
 
+    private int targetCounter = 0;
+
     @Override
     protected void runPlan1(){
 
@@ -49,6 +51,8 @@ public class YourService extends KiboRpcService {
 
         // 4 phase
         while ( (phaseCounter < 7)) {
+
+            targetCounter = 0;
 
             // add code to estimate if it is worth to go through with this phase
             // or should we skip immediately to last sequence
