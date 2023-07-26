@@ -11,11 +11,16 @@ import gov.nasa.arc.astrobee.types.Quaternion;
 
 import org.opencv.core.Mat;
 import org.opencv.core.Core;
+import org.opencv.aruco.Dictionary;
+import org.opencv.aruco.Aruco;
+import org.opencv.core.Scalar;
+import org.opencv.aruco.DetectorParameters;
 
 // not imported here due to naming conflicts
 // but used explicitly
 // import org.opencv.core.Point;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -34,7 +39,12 @@ public class YourService extends KiboRpcService {
     private Point currentGoalCoords = new Point(0,0,0);
     private Quaternion currentQuaternion = new Quaternion(0,0,0,0);
 
-    private ImageProcessing imageProcessing = new ImageProcessing();
+    Dictionary dictionary = Aruco.getPredefinedDictionary(Aruco.DICT_5X5_250);
+    List<Mat> corners = new ArrayList<Mat>();
+    Mat ids = new Mat(1, 4, 1, new Scalar( 0, 150, 250 ));
+    DetectorParameters detectorParameters = DetectorParameters.create();
+
+    private ImageProcessing imageProcessing = new ImageProcessing(dictionary, corners, ids, detectorParameters);
     private QRCodeMapper qrCodeMapper = new QRCodeMapper();
     private QRCodeReader qrCodeReader = new QRCodeReader();
 
@@ -94,14 +104,14 @@ public class YourService extends KiboRpcService {
                     moveBee(PointConstants.POINTS_COORDS.get(current_target.get(targetCounter) - 1), PointConstants.POINTS_QUATERNIONS.get(current_target.get(targetCounter) - 1), current_target.get(targetCounter)); // -1 as index start at 0
 
                     // align astrobee to target
-                    optimizeCenter(current_target.get(targetCounter));
+                    // optimizeCenter(current_target.get(targetCounter));
                 }
                 else 
                 {
                     Log.i(TAG + "/runPlan1/moveToCommon", "SUCCESSFUL ATTEMPT TO MOVE TO POINT DIRECTLY");
 
                     // align astrobee to target
-                    optimizeCenter(current_target.get(targetCounter));
+                    // optimizeCenter(current_target.get(targetCounter));
                 }
 
                 // irradiate with laser
@@ -125,7 +135,7 @@ public class YourService extends KiboRpcService {
         Log.i(TAG + "/lastSequence", "MOVE TO QR");
         moveBee(PointConstants.POINT7_COORDS, PointConstants.POINT7_QUATERNION, 7);
         // align astrobee to target
-        optimizeCenter(current_target.get(targetCounter));
+        // optimizeCenter(current_target.get(targetCounter));
 
         // turn on flashlight to improve accuracy, value taken from page 33 in manual
         api.flashlightControlFront(0.05f);
@@ -249,23 +259,23 @@ public class YourService extends KiboRpcService {
 
     }
 
-    public void optimizeCenter(int targetID){
-        int img_process_counter = 0;
-        while (img_process_counter < 2) {
-            // image processing to figure our position of target
-            Mat grayImage = api.getMatNavCam();
-            api.saveMatImage(grayImage, "nearTarget" + targetID + "_" + img_process_counter + ".png");
-            Mat colorImage = imageProcessing.imageProcessing(grayImage, targetID);
-            api.saveMatImage(colorImage, "processedNearTarget" + targetID + "_" + img_process_counter+ ".png");
+    // public void optimizeCenter(int targetID){
+    //     int img_process_counter = 0;
+    //     while (img_process_counter < 2) {
+    //         // image processing to figure our position of target
+    //         Mat grayImage = api.getMatNavCam();
+    //         api.saveMatImage(grayImage, "nearTarget" + targetID + "_" + img_process_counter + ".png");
+    //         Mat colorImage = imageProcessing.imageProcessing(grayImage, targetID);
+    //         api.saveMatImage(colorImage, "processedNearTarget" + targetID + "_" + img_process_counter+ ".png");
 
-            // code to align astrobee with target
-            Kinematics kinematics = api.getRobotKinematics();
-            Point new_point = imageProcessing.moveCloserToArucoMarker(kinematics, imageProcessing.inspectCorners(imageProcessing.corners), targetID);
-            api.moveTo(new_point, kinematics.getOrientation(), true);
-            imageProcessing.corners.clear();
-            Log.i(TAG+"/optimizeCentre", "Optimizing Centre, attempt: " + img_process_counter);
-            img_process_counter++;
-        }
-    }
+    //         // code to align astrobee with target
+    //         Kinematics kinematics = api.getRobotKinematics();
+    //         Point new_point = imageProcessing.moveCloserToArucoMarker(kinematics, imageProcessing.inspectCorners(imageProcessing.corners), targetID);
+    //         api.moveTo(new_point, kinematics.getOrientation(), true);
+    //         imageProcessing.corners.clear();
+    //         Log.i(TAG+"/optimizeCentre", "Optimizing Centre, attempt: " + img_process_counter);
+    //         img_process_counter++;
+    //     }
+    // }
 
 }
