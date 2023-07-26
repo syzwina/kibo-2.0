@@ -36,11 +36,12 @@ public class ImageProcessing extends KiboRpcService {
      */
     private int imageProcessing_called = 0;
 
+    // initialise objects to be used in image processing
     HashMap<Integer, Integer> arucoTargets;
-    DetectorParameters detectorParameters;
-    List<Mat> corners;
-    Dictionary dictionary;
-    Mat ids;
+    Dictionary dictionary = Aruco.getPredefinedDictionary(Aruco.DICT_5X5_250);
+    List<Mat> corners = new ArrayList<Mat>();
+    Mat ids = new Mat(1, 4, 1, new Scalar( 0, 150, 250 ));
+    DetectorParameters detectorParameters = DetectorParameters.create();
 
     /**
      * Processes the provided image using ArUco marker detection and labeling.
