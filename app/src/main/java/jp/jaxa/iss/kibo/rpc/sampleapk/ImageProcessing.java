@@ -36,11 +36,19 @@ public class ImageProcessing {
      */
     private int imageProcessing_called = 0;
 
-    HashMap<Integer, Integer> arucoTargets;
-    DetectorParameters detectorParameters;
-    List<Mat> corners;
-    Dictionary dictionary;
-    Mat ids;
+    // initialise objects to be used in image processing
+    private HashMap<Integer, Integer> arucoTargets;
+    private DetectorParameters detectorParameters;
+    public List<Mat> corners;
+    private Dictionary dictionary;
+    private Mat ids;
+    
+    public ImageProcessing (Dictionary dictionary, List<Mat> corners, Mat ids, DetectorParameters detectorParameters) {
+        this.dictionary = dictionary;
+        this.corners = corners;
+        this.ids = ids;
+        this.detectorParameters = detectorParameters;
+    }
 
     /**
      * Processes the provided image using ArUco marker detection and labeling.

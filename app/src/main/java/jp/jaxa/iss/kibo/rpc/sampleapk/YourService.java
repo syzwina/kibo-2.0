@@ -11,12 +11,13 @@ import gov.nasa.arc.astrobee.types.Quaternion;
 
 import org.opencv.core.Mat;
 import org.opencv.core.Core;
-
-// not imported here due to naming conflicts
-// but used explicitly
-// import org.opencv.core.Point;
+import org.opencv.aruco.Dictionary;
+import org.opencv.aruco.Aruco;
+import org.opencv.core.Scalar;
+import org.opencv.aruco.DetectorParameters;
 
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Class meant to handle commands from the Ground Data System and execute them in Astrobee
@@ -34,14 +35,27 @@ public class YourService extends KiboRpcService {
     private Point currentGoalCoords = new Point(0,0,0);
     private Quaternion currentQuaternion = new Quaternion(0,0,0,0);
 
-    private ImageProcessing imageProcessing = new ImageProcessing();
+    private ImageProcessing imageProcessing;
     private QRCodeMapper qrCodeMapper = new QRCodeMapper();
     private QRCodeReader qrCodeReader = new QRCodeReader();
 
     private int targetCounter = 0;
 
+    private Dictionary dictionary;
+    private List<Mat> corners;
+    private Mat ids;
+    private DetectorParameters detectorParameters;
+
     @Override
     protected void runPlan1(){
+
+        dictionary = Aruco.getPredefinedDictionary(Aruco.DICT_5X5_250);
+        corners = new ArrayList<Mat>();
+        ids = new Mat(1, 4, 1, new Scalar( 0, 150, 250 ));
+        detectorParameters = DetectorParameters.create();
+
+        imageProcessing = new ImageProcessing(dictionary, corners, ids, detectorParameters);
+
 
         // the mission starts
         api.startMission();
