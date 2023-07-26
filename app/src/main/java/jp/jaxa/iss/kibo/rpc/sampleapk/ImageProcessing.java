@@ -36,11 +36,12 @@ public class ImageProcessing {
      */
     private int imageProcessing_called = 0;
 
+    // initialise objects to be used in image processing
     HashMap<Integer, Integer> arucoTargets;
-    DetectorParameters detectorParameters;
-    List<Mat> corners;
-    Dictionary dictionary;
-    Mat ids;
+    Dictionary dictionary = Aruco.getPredefinedDictionary(Aruco.DICT_5X5_250);
+    List<Mat> corners = new ArrayList<Mat>();
+    Mat ids = new Mat(1, 4, 1, new Scalar( 0, 150, 250 ));
+    DetectorParameters detectorParameters = DetectorParameters.create();
 
     /**
      * Processes the provided image using ArUco marker detection and labeling.
@@ -50,10 +51,8 @@ public class ImageProcessing {
      */
     public Mat imageProcessing(Mat grayImage, int targetID) {
 
-        Log.i(TAG+"/imageProcessing", "Image has been saved in Black and White");
-
-        Mat colorImage = new Mat();
         // Convert the grayscale image to color
+        Mat colorImage = new Mat();
         Imgproc.cvtColor(grayImage, colorImage, Imgproc.COLOR_GRAY2BGR);
 
         Log.i(TAG+"/imageProcessing", "TARGET " + targetID + " image processing");
@@ -75,7 +74,6 @@ public class ImageProcessing {
         // and set the new 'centre' coordinate to 'aruco_middle'
 
         // use mod 4 to get whether it is tl, tr, bl, br
-
 
         double[] topright;
         double[] topleft;
@@ -165,14 +163,6 @@ public class ImageProcessing {
 
 
     private void init() {
-
-        // initialise aruco dictionary
-        dictionary = Aruco.getPredefinedDictionary(Aruco.DICT_5X5_250);
-
-        // initialise objects to be used in image processing
-        corners = new ArrayList<Mat>();
-        ids = new Mat(1, 4, 1, new Scalar( 0, 150, 250 ));
-        detectorParameters = DetectorParameters.create();
 
         // initialise target to aruco marker hashmap
         arucoTargets = new HashMap<Integer, Integer>();
