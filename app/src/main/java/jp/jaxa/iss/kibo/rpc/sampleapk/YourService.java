@@ -10,12 +10,20 @@ import gov.nasa.arc.astrobee.types.Quaternion;
 
 import org.opencv.core.Mat;
 import org.opencv.core.Core;
+import org.opencv.imgproc.Imgproc;
+import org.opencv.aruco.Dictionary;
+import org.opencv.aruco.Aruco;
+import org.opencv.core.Scalar;
+import org.opencv.aruco.DetectorParameters;
 
 // not imported here due to naming conflicts
 // but used explicitly
 // import org.opencv.core.Point;
 
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 
 /**
  * Class meant to handle commands from the Ground Data System and execute them in Astrobee
@@ -34,6 +42,11 @@ public class YourService extends KiboRpcService {
     private Quaternion currentQuaternion = new Quaternion(0,0,0,0);
 
     private int targetCounter = 0;
+
+    Dictionary dictionary = Aruco.getPredefinedDictionary(Aruco.DICT_5X5_250);
+    List<Mat> corners = new ArrayList<Mat>();
+    Mat ids = new Mat(1, 4, 1, new Scalar( 0, 150, 250 ));
+    DetectorParameters detectorParameters = DetectorParameters.create();
 
     @Override
     protected void runPlan1(){
@@ -221,6 +234,89 @@ public class YourService extends KiboRpcService {
         else Log.e(TAG+"/moveBee", "failed to move to point " + pointNumber);
         Log.i(TAG+"/moveBee/coords", "point: x = " + point.getX() + ", y = " + point.getY() + ", z = " + point.getZ());
         return true;
+    }
+
+
+    /**
+     * Processes the provided image using ArUco marker detection and labeling.
+     *
+     * @param dictionary        The ArUco dictionary for marker detection.
+     * @param corners           List to store the detected marker corners.
+     * @param detectorParameters Parameters for the marker detector.
+     * @param ids               Matrix to store the detected marker IDs.
+     * @param targetID          The target ID for which the image is being processed.
+     */
+    private void imageProcessing(Dictionary dictionary, List<Mat> corners, DetectorParameters detectorParameters, Mat ids, int targetID) {
+
+        Mat grayImage = api.getMatNavCam();
+        api.saveMatImage(grayImage, "Target_" + targetID + ".png");
+        Log.i(TAG+"/imageProcessing", "Image has been saved in Black and White");
+
+        Mat colorImage = new Mat();
+        // Convert the grayscale image to color
+        Imgproc.cvtColor(grayImage, colorImage, Imgproc.COLOR_GRAY2BGR);
+
+        Log.i(TAG+"/imageProcessing", "TARGET " + targetID + " image processing");
+        Aruco.detectMarkers(colorImage, dictionary, corners, ids, detectorParameters);
+        Aruco.drawDetectedMarkers(colorImage, corners, ids, new Scalar( 0, 255, 0 ));
+
+        Imgproc.putText(colorImage, "Aruco:"+ Arrays.toString(ids.get(0,0)), new org.opencv.core.Point(30.0, 80.0), 3, 0.5, new Scalar(255, 0, 0, 255), 1);
+        Log.i(TAG+"imageProcessing", "Aruco marker has been labeled");
+
+        api.saveMatImage(colorImage, "Processed_Target_" + targetID + ".png");
+        Log.i(TAG+"imageProcessing", "Image has been saved in Colour");
+
+    }
+
+    private double[] inspectCorners(List<Mat> corners) {
+
+        // once you choose one ID
+        // decide which ID it is, and were it is relative to the centre of the circle
+        // and set the new 'centre' coordinate to 'aruco_middle'
+
+        // use mod 4 to get whether it is tl, tr, bl, br
+
+
+        double[] topright;
+        double[] topleft;
+        double[] bottomleft;
+        double[] bottomright;
+
+        double aruco_middle_x = 0.0;
+        double aruco_middle_y = 0.0;
+
+        final int x_coords = 0;
+        final int y_coords = 1;
+
+        try{
+
+        bottomleft  = corners.get(0).get(0, 2);
+        bottomright = corners.get(0).get(0, 3);
+        topleft     = corners.get(0).get(0, 1);
+        topright    = corners.get(0).get(0, 0);
+
+        aruco_middle_x = (bottomleft[x_coords] + bottomright[x_coords] + topleft[x_coords] + topright[x_coords])/4;
+        aruco_middle_y = (bottomleft[y_coords] + bottomright[y_coords] + topleft[y_coords] + topright[y_coords])/4;
+        
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        double[] aruco_middle = {aruco_middle_x, aruco_middle_y};
+
+        return aruco_middle;
+    }
+
+    private void optimizeCenter(int targetID){
+        int img_process_counter = 0;
+        while (img_process_counter < 2) {
+            imageProcessing(dictionary, corners, detectorParameters, ids, targetID);
+            // code to align astrobee with target 
+            corners.clear();
+            Log.i(TAG+"/optimizeCentre", "Optimizing Centre, attempt: " + img_process_counter);
+            img_process_counter++;
+        }
     }
 
 }
