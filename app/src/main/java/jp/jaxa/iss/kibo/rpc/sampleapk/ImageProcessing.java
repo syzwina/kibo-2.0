@@ -43,10 +43,10 @@ public class ImageProcessing {
     Mat ids;
     
     public ImageProcessing () {
-        Dictionary dictionary = Aruco.getPredefinedDictionary(Aruco.DICT_5X5_250);
-        List<Mat> corners = new ArrayList<Mat>();
-        Mat ids = new Mat(1, 4, 1, new Scalar( 0, 150, 250 ));
-        DetectorParameters detectorParameters = DetectorParameters.create();
+        dictionary = Aruco.getPredefinedDictionary(Aruco.DICT_5X5_250);
+        corners = new ArrayList<Mat>();
+        ids = new Mat(1, 4, 1, new Scalar( 0, 150, 250 ));
+        detectorParameters = DetectorParameters.create();
     }
 
     /**
