@@ -42,7 +42,7 @@ public class ImageProcessing {
     Dictionary dictionary;
     Mat ids;
     
-    private ImageProcessing () {
+    public ImageProcessing () {
         Dictionary dictionary = Aruco.getPredefinedDictionary(Aruco.DICT_5X5_250);
         List<Mat> corners = new ArrayList<Mat>();
         Mat ids = new Mat(1, 4, 1, new Scalar( 0, 150, 250 ));
