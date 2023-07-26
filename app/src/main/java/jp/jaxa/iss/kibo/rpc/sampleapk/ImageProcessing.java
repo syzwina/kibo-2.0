@@ -24,7 +24,7 @@ import jp.jaxa.iss.kibo.rpc.api.KiboRpcService;
  * This class provides image processing functionalities for Near Target Identification.
  * It inherits from KiboRpcService to use the provided API for communication with the Kibo Robot Programming Challenge.
  */
-public class ImageProcessing {
+public class ImageProcessing extends KiboRpcService {
 
     /**
      * Tag used for logging purposes. It helps identify log messages from this class.
@@ -49,7 +49,7 @@ public class ImageProcessing {
      * @param grayImage         The input image for image processing
      * @param targetID          The target ID for which the image is being processed.
      */
-    public Mat imageProcessing(Mat grayImage, int targetID) {
+    private Mat imageProcessing(Mat grayImage, int targetID) {
 
         // Convert the grayscale image to color
         Mat colorImage = new Mat();
@@ -67,7 +67,7 @@ public class ImageProcessing {
 
     }
 
-    public double[] inspectCorners(List<Mat> corners) {
+    private double[] inspectCorners(List<Mat> corners) {
 
         // once you choose one ID
         // decide which ID it is, and were it is relative to the centre of the circle
@@ -106,7 +106,7 @@ public class ImageProcessing {
         return aruco_middle;
     }
 
-    public Point moveCloserToArucoMarker(Kinematics kinematics, double[] aruco_middle, int current_target){
+    private Point moveCloserToArucoMarker(Kinematics kinematics, double[] aruco_middle, int current_target){
         int counter_x = 0;
         int counter_y = 0;
         final double middle_x = 1280/2;
@@ -159,6 +159,27 @@ public class ImageProcessing {
 
         return new_point;
 
+    }
+
+    public void optimizeCenter(int targetID){
+        // attempt to move bee 2 times
+        // TODO: only do one attempt
+        int img_process_counter = 0;
+        while (img_process_counter < 2) {
+            // image processing to figure our position of target
+            Mat grayImage = api.getMatNavCam();
+            api.saveMatImage(grayImage, "nearTarget" + targetID + "_" + img_process_counter + ".png");
+            Mat colorImage = imageProcessing(grayImage, targetID);
+            api.saveMatImage(colorImage, "processedNearTarget" + targetID + "_" + img_process_counter+ ".png");
+
+            // code to align astrobee with target
+            Kinematics kinematics = api.getRobotKinematics();
+            Point new_point = moveCloserToArucoMarker(kinematics, inspectCorners(corners), targetID);
+            api.moveTo(new_point, kinematics.getOrientation(), true);
+            corners.clear();
+            Log.i(TAG+"/optimizeCentre", "Optimizing Centre, attempt: " + img_process_counter);
+            img_process_counter++;
+        }
     }
 
 
