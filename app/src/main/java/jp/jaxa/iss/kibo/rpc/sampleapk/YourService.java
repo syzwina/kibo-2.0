@@ -35,6 +35,8 @@ public class YourService extends KiboRpcService {
     private Quaternion currentQuaternion = new Quaternion(0,0,0,0);
 
     private ImageProcessing imageProcessing = new ImageProcessing();
+    private QRCodeMapper qrCodeMapper = new QRCodeMapper();
+    private QRCodeReader qrCodeReader = new QRCodeReader();
 
     private int targetCounter = 0;
 
@@ -45,6 +47,7 @@ public class YourService extends KiboRpcService {
         api.startMission();
         Log.i(TAG+"/runPlan1", "start mission!");
 
+        // TODO: can try to move to point directly first, if can't, then move to this point
         // move bee from KIZ2 to KIZ1 by moving to bottom right of KIZ2 (KIZ1 xyz min + KIZ2 xyz max)/2
         moveBee(new Point(10.4, -9.9, 4.50), PointConstants.POINT1_QUATERNION, 0);
 
@@ -184,42 +187,40 @@ public class YourService extends KiboRpcService {
         Log.i(TAG+"/laserBeam", "laser turned on");
         api.laserControl(true);
 
-        // take laser image
-/*        Mat grayImage = api.getMatNavCam();
-        api.saveMatImage(grayImage, "LaserSnapshot" + current_target + ".png");*/
-
         api.takeTargetSnapshot(current_target);
     }
 
 
     private String readQR(){
-        QRCodeMapper qrCodeMapper = new QRCodeMapper();
-        String key = "";
 
+        Log.i(TAG+"/readQR", "QR IMAGE PROCESSING");
+        
         Mat grayImage = api.getMatNavCam();
         api.saveMatImage(grayImage, "QRImage.png");
-
-        Log.i(TAG+"/readQR", "QR image processing");
-
-        QRCodeReader qrCodeReader = new QRCodeReader();
+        
+        String key = "";
+        key = qrCodeReader.readQR(grayImage);
+        
+        // loop and turn the image multiple times to get the QR key
         int qrCounter = 0;
-        key = qrCodeReader.readQR(grayImage);
-        while ((key.equals("NO QR")|| key.equals("")) && qrCounter < 5) {
-        key = qrCodeReader.readQR(grayImage);
-        Core.rotate(grayImage,grayImage, Core.ROTATE_90_CLOCKWISE);
-        qrCounter++;
-        Log.i(TAG+"/readQR", "QRCode key is: " + key + " attempt: " + qrCounter);
+        while ((key.equals("NO QR")|| key.equals("")) && qrCounter < 5) 
+        {
+            qrCounter++;
+            key = qrCodeReader.readQR(grayImage);
+            Core.rotate(grayImage, grayImage, Core.ROTATE_90_CLOCKWISE);
+            api.saveMatImage(grayImage, "QRImage_" + qrCounter + ".png");
+            Log.i(TAG+"/readQR", "QRCODE KEY: " + key + " ATTEMPT: " + qrCounter);
         }
-        Log.i(TAG+"/readQR", "QRCode key is: " + key);
+        Log.i(TAG+"/readQR", "QRCODE KEY: " + key);
+
         return qrCodeMapper.getValue(key);
     }
 
     private boolean moveBee(Point point, Quaternion quaternion, int pointNumber){
 
-
-        final int LOOP_MAX = 5;
         currentGoalCoords = point;
         currentQuaternion = quaternion;
+
         // probably not needed as all point is in KIZ
         /*if (checksForKOZ(point)) Log.i(TAG+"/moveBee", "point " + pointNumber + " is NOT in KOZ");
         else {
@@ -228,18 +229,24 @@ public class YourService extends KiboRpcService {
 
         if (checksForKIZ(point)) Log.i(TAG+"/moveBee", "point " + pointNumber + " is in KIZ");
         else Log.e(TAG+"/moveBee", "point " + pointNumber + " is NOT in KIZ");*/
-        Log.i(TAG+"/moveBee", "move to point " + pointNumber);
+
+        Log.i(TAG+"/moveBee", "MOVE TO: " + pointNumber);
         Result result = api.moveTo(point, quaternion, true);
-        Log.i(TAG+"/moveBee", "moveTo status:" + result.hasSucceeded());
 
+        if (result.hasSucceeded())  
+        {
+            Log.i(TAG + "/moveBee", "MOVETO STATUS: SUCCESS");
+            Log.i(TAG + "/moveBee", "SUCCESSFULLY MOVED TO POINT: " + pointNumber);
+            Log.i(TAG + "/moveBee/coords", "X: " + point.getX() + ", Y: " + point.getY() + ", Z: " + point.getZ());
+            return true;
+        }
+        else 
+        {
+            Log.e(TAG + "/moveBee", "MOVETO STATUS: FAILED");
+            Log.e(TAG + "/moveBee", "UN-SUCCESSFULLY MOVED TO POINT: " + pointNumber);
+            return false;
+        }
 
-        // check result and loop while moveTo api is not succeeded
-        if (!result.hasSucceeded()) return false;
-
-        if (result.hasSucceeded()) Log.i(TAG, "successfully moved to point " + pointNumber);
-        else Log.e(TAG+"/moveBee", "failed to move to point " + pointNumber);
-        Log.i(TAG+"/moveBee/coords", "point: x = " + point.getX() + ", y = " + point.getY() + ", z = " + point.getZ());
-        return true;
     }
 
     public void optimizeCenter(int targetID){
