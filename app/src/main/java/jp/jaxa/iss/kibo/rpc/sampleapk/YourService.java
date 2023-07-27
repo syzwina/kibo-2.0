@@ -156,9 +156,13 @@ public class YourService extends KiboRpcService {
 
         api.notifyGoingToGoal();
 
-        // move to z axis of point 6 to avoid KOZ3
-        Log.i(TAG + "/lastSequence", "MOVE TO AVOID KOZ3");
-        moveBee(new Point(PointConstants.POINT7_COORDS.getX(),PointConstants.POINT7_COORDS.getY(), PointConstants.OLD_POINT6_COORDS.getZ()), PointConstants.GOAL_QUATERNION, 1008);
+        // try to move to goal directly from current position
+        if (!moveBee(PointConstants.GOAL_COORDS, PointConstants.GOAL_QUATERNION, 8))
+        {
+            // move to z axis of point 6 to avoid KOZ3
+            Log.i(TAG + "/lastSequence", "MOVE TO AVOID KOZ3");
+            moveBee(new Point(PointConstants.POINT7_COORDS.getX(),PointConstants.POINT7_COORDS.getY(), PointConstants.OLD_POINT6_COORDS.getZ()), PointConstants.GOAL_QUATERNION, 1008);
+        }
 
         Log.i(TAG + "/lastSequence", "MOVE TO GOAL");
         moveBee(PointConstants.GOAL_COORDS, PointConstants.GOAL_QUATERNION, 8);
