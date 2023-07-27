@@ -277,6 +277,4 @@ public class YourService extends KiboRpcService {
         api.moveTo(new_point, kinematics.getOrientation(), true);
         imageProcessing.corners.clear();
         }
-    }
-
 }
