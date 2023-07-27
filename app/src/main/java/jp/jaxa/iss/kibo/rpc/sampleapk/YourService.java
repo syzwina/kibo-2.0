@@ -48,6 +48,7 @@ public class YourService extends KiboRpcService {
     private DetectorParameters detectorParameters;
 
     private boolean QR_decoded = false;
+    private String QRstring;
 
     @Override
     protected void runPlan1(){
@@ -79,10 +80,10 @@ public class YourService extends KiboRpcService {
 
             Log.i(TAG + "/runPlan1", "PHASE COUNTER = " + phaseCounter + ", TIME REMAINING:" + api.getTimeRemaining().get(1));
             phaseCounter++;
-
+            
             current_target = api.getActiveTargets();
             Log.i(TAG+"/runPlan1", "ACTIVE TARGETS : " + current_target.toString());
-
+            
             // add code to estimate if it is worth to go through with this phase
             // or should we skip immediately to last sequence
             if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL) {
@@ -90,11 +91,18 @@ public class YourService extends KiboRpcService {
                 lastSequence();
                 break;
             }
-
+            
             // while the number of targets visited is less than the number of active targets
             while (targetCounter < current_target.size()) {
 
                 Log.i(TAG +"/runPlan1", "ACTIVE PHASE TIME BEFORE COMMON POINT MOVE: " + (api.getTimeRemaining().get(0)/1000) +" sec" );
+
+                // TODO: check to go to QR first, when you're in the area
+                if (!current_target.contains(1) && !QR_decoded) {
+                    Log.i(TAG +"/runPlan1", "READ QR EARLY");
+                    readQrSequence();
+                    QR_decoded = true;
+                }
 
                 if (!moveBee(PointConstants.POINTS_COORDS.get(current_target.get(targetCounter) - 1), PointConstants.POINTS_QUATERNIONS.get(current_target.get(targetCounter) - 1), current_target.get(targetCounter))) // -1 as index start at 0
                 {
@@ -129,27 +137,28 @@ public class YourService extends KiboRpcService {
 
     }
 
+    private void readQrSequence() {
+        // move bee to middle point of all points that not have KOZ on the way
+        Log.i(TAG + "/readQrSequence", "MOVE TO PRE-POINT OF QR");
+        moveBee(PointConstants.COMMON_COORDS   , PointConstants.POINT7_QUATERNION, 7);
+
+        // move bee to target 7
+        Log.i(TAG + "/readQrSequence", "MOVE TO QR");
+        moveBee(PointConstants.POINT7_COORDS, PointConstants.POINT7_QUATERNION, 7);
+
+        // turn on flashlight to improve accuracy, value taken from page 33 in manual
+        api.flashlightControlFront(0.05f);
+
+        // read QR code
+        QRstring = readQR();
+
+        // turn off flashlight
+        api.flashlightControlFront(0);
+    }
+
     private void lastSequence(){
 
-        if (!QR_decoded)
-        {
-            // move bee to middle point of all points that not have KOZ on the way
-            Log.i(TAG + "/lastSequence", "MOVE TO PRE-POINT OF QR");
-            moveBee(PointConstants.COMMON_COORDS   , PointConstants.POINT7_QUATERNION, 7);
-
-            // move bee to target 7
-            Log.i(TAG + "/lastSequence", "MOVE TO QR");
-            moveBee(PointConstants.POINT7_COORDS, PointConstants.POINT7_QUATERNION, 7);
-
-            // turn on flashlight to improve accuracy, value taken from page 33 in manual
-            api.flashlightControlFront(0.05f);
-
-            // read QR code
-            String QRstring = readQR();
-
-            // turn off flashlight
-            api.flashlightControlFront(0);
-        }
+        if (!QR_decoded) readQrSequence();
 
         api.notifyGoingToGoal();
 
