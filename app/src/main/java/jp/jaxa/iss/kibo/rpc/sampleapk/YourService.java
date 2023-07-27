@@ -97,11 +97,11 @@ public class YourService extends KiboRpcService {
 
                 Log.i(TAG +"/runPlan1", "ACTIVE PHASE TIME BEFORE COMMON POINT MOVE: " + (api.getTimeRemaining().get(0)/1000) +" sec" );
 
-                if (!current_target.contains(1) && !QR_decoded) {
+                if ((current_target.get(targetCounter) != 1) && !QR_decoded) {
                     Log.i(TAG +"/runPlan1", "READ QR EARLY");
                     readQrSequence();
                     QR_decoded = true;
-                    TIME_FOR_QR_AND_GOAL -= 50 * 1000;
+                    TIME_FOR_QR_AND_GOAL -= 20 * 1000;
                 }
 
                 if (!moveBee(PointConstants.POINTS_COORDS.get(current_target.get(targetCounter) - 1), PointConstants.POINTS_QUATERNIONS.get(current_target.get(targetCounter) - 1), current_target.get(targetCounter))) // -1 as index start at 0
