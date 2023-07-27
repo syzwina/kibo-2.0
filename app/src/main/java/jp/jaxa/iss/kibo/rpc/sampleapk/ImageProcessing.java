@@ -143,28 +143,51 @@ public class ImageProcessing {
          * 1) check for the x difference & y difference
          * 2) if the x diff & y diff still less than 20, repeat the image processing few times
           * */
-        while (x_difference >= 30){
-            Log.i(TAG+"/moveCloserToArucoMarker", "The x difference is being called");
 
-            /* get the new_point from the point constants */
-            new_point = new Point (point.getX(), point.getY(), point.getZ());
+        /* Case 1: positive difference case */
+        while (x_difference >= 20){
+            new_point = new Point (point.getX() + (x_difference - 20), point.getY(), point.getZ());
 
+            /* add the x_difference so the while loop can be break */
             x_difference -= 10;
             counter_x ++;
             Log.i(TAG+"/moveCloserToArucoMarker", "The while (x) attempted: " + counter_x);
-
+            Log.i(TAG+"/moveCloserToArucoMarker", "The x difference is currently: " + x_difference);
+            Log.i(TAG+"/moveCloserToArucoMarker", "The new point is now: " + new_point);
         }
 
-        while (y_difference >= 30){
-            Log.i(TAG+"/moveCloserToArucoMarker", "The y difference is being called");
+        while (y_difference >= 20){
+            new_point = new Point (point.getX(), point.getY() + (y_difference - 20), point.getZ());
 
-            /* get the new_point from the point constants */
-            new_point = new Point (point.getX(), point.getY(), point.getZ());
-
+            /* add the y_difference so the while loop can be break */
             y_difference -= 10;
             counter_y ++;
             Log.i(TAG+"/moveCloserToArucoMarker", "The while (y) attempted: " + counter_y);
+            Log.i(TAG+"/moveCloserToArucoMarker", "The y difference is currently: " + y_difference);
+            Log.i(TAG+"/moveCloserToArucoMarker", "The new point is now: " + new_point);
+        }
 
+        /* Case 2: negative difference case */
+        while (x_difference <= -20){
+            new_point = new Point (point.getX() + (x_difference + 20), point.getY(), point.getZ());
+
+            /* add the x_difference so the while loop can be break */
+            x_difference += 10;
+            counter_x ++;
+            Log.i(TAG+"/moveCloserToArucoMarker", "The while (x) attempted: " + counter_x);
+            Log.i(TAG+"/moveCloserToArucoMarker", "The x difference is currently: " + x_difference);
+            Log.i(TAG+"/moveCloserToArucoMarker", "The new point is now: " + new_point);
+        }
+
+        while (y_difference <= -20){
+            new_point = new Point (point.getX(), point.getY() + (y_difference + 20), point.getZ());
+
+            /* add the y_difference so the while loop can be break */
+            y_difference += 10;
+            counter_y ++;
+            Log.i(TAG+"/moveCloserToArucoMarker", "The while (y) attempted: " + counter_y);
+            Log.i(TAG+"/moveCloserToArucoMarker", "The y difference is currently: " + y_difference);
+            Log.i(TAG+"/moveCloserToArucoMarker", "The new point is now: " + new_point);
         }
 
         return new_point;
