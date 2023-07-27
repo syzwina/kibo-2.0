@@ -47,6 +47,8 @@ public class YourService extends KiboRpcService {
     private Mat ids;
     private DetectorParameters detectorParameters;
 
+    private boolean QR_decoded = false;
+
     @Override
     protected void runPlan1(){
 
@@ -129,22 +131,25 @@ public class YourService extends KiboRpcService {
 
     private void lastSequence(){
 
-        // move bee to middle point of all points that not have KOZ on the way
-        Log.i(TAG + "/lastSequence", "MOVE TO PRE-POINT OF QR");
-        moveBee(PointConstants.COMMON_COORDS   , PointConstants.POINT7_QUATERNION, 7);
+        if (!QR_decoded)
+        {
+            // move bee to middle point of all points that not have KOZ on the way
+            Log.i(TAG + "/lastSequence", "MOVE TO PRE-POINT OF QR");
+            moveBee(PointConstants.COMMON_COORDS   , PointConstants.POINT7_QUATERNION, 7);
 
-        // move bee to target 7
-        Log.i(TAG + "/lastSequence", "MOVE TO QR");
-        moveBee(PointConstants.POINT7_COORDS, PointConstants.POINT7_QUATERNION, 7);
+            // move bee to target 7
+            Log.i(TAG + "/lastSequence", "MOVE TO QR");
+            moveBee(PointConstants.POINT7_COORDS, PointConstants.POINT7_QUATERNION, 7);
 
-        // turn on flashlight to improve accuracy, value taken from page 33 in manual
-        api.flashlightControlFront(0.05f);
+            // turn on flashlight to improve accuracy, value taken from page 33 in manual
+            api.flashlightControlFront(0.05f);
 
-        // read QR code
-        String QRstring = readQR();
+            // read QR code
+            String QRstring = readQR();
 
-        // turn off flashlight
-        api.flashlightControlFront(0);
+            // turn off flashlight
+            api.flashlightControlFront(0);
+        }
 
         api.notifyGoingToGoal();
 
