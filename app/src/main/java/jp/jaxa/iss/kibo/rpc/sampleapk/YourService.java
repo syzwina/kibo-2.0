@@ -11,9 +11,10 @@ import gov.nasa.arc.astrobee.types.Quaternion;
 
 import org.opencv.core.Mat;
 import org.opencv.core.Core;
+import org.opencv.core.Scalar;
+
 import org.opencv.aruco.Dictionary;
 import org.opencv.aruco.Aruco;
-import org.opencv.core.Scalar;
 import org.opencv.aruco.DetectorParameters;
 
 import java.util.List;

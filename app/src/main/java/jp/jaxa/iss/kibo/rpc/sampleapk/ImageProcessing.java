@@ -17,9 +17,6 @@ import java.util.List;
 
 import android.util.Log;
 
-import gov.nasa.arc.astrobee.types.Quaternion;
-import jp.jaxa.iss.kibo.rpc.api.KiboRpcService;
-
 /**
  * This class provides image processing functionalities for Near Target Identification.
  * It inherits from KiboRpcService to use the provided API for communication with the Kibo Robot Programming Challenge.
