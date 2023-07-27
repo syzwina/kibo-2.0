@@ -97,7 +97,6 @@ public class YourService extends KiboRpcService {
 
                 Log.i(TAG +"/runPlan1", "ACTIVE PHASE TIME BEFORE COMMON POINT MOVE: " + (api.getTimeRemaining().get(0)/1000) +" sec" );
 
-                // TODO: check to go to QR first, when you're in the area
                 if (!current_target.contains(1) && !QR_decoded) {
                     Log.i(TAG +"/runPlan1", "READ QR EARLY");
                     readQrSequence();
@@ -162,11 +161,17 @@ public class YourService extends KiboRpcService {
         {
             // move to z axis of point 6 to avoid KOZ3
             Log.i(TAG + "/lastSequence", "MOVE TO AVOID KOZ3");
-            moveBee(new Point(PointConstants.POINT7_COORDS.getX(),PointConstants.POINT7_COORDS.getY(), PointConstants.OLD_POINT6_COORDS.getZ()), PointConstants.GOAL_QUATERNION, 1008);
+            if (!moveBee(new Point(PointConstants.POINT7_COORDS.getX(),PointConstants.POINT7_COORDS.getY(), PointConstants.OLD_POINT6_COORDS.getZ()), PointConstants.GOAL_QUATERNION, 1008))
+            {
+                // move to common point, needed if moving from target 2
+                Log.i(TAG + "/lastSequence", "MOVE TO COMMON POINT");
+                moveBee(PointConstants.COMMON_COORDS, PointConstants.POINT1_QUATERNION, current_target.get(0));
+                Log.i(TAG + "/lastSequence", "MOVE TO AVOID KOZ3");
+                moveBee(new Point(PointConstants.POINT7_COORDS.getX(),PointConstants.POINT7_COORDS.getY(), PointConstants.OLD_POINT6_COORDS.getZ()), PointConstants.GOAL_QUATERNION, 1008))
+            }
+            Log.i(TAG + "/lastSequence", "MOVE TO GOAL");
+            moveBee(PointConstants.GOAL_COORDS, PointConstants.GOAL_QUATERNION, 8);
         }
-
-        Log.i(TAG + "/lastSequence", "MOVE TO GOAL");
-        moveBee(PointConstants.GOAL_COORDS, PointConstants.GOAL_QUATERNION, 8);
 
         // send mission completion
         api.reportMissionCompletion(QRstring);
