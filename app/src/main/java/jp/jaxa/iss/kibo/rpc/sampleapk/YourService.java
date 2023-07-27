@@ -75,22 +75,19 @@ public class YourService extends KiboRpcService {
 
             targetCounter = 0;
 
-            // add code to estimate if it is worth to go through with this phase
-            // or should we skip immediately to last sequence
-            //
-            if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL) {
-                Log.e(TAG + "/runPlan1/OutOfTime", "BREAK SEQUENCE, TARGET COUNTER: " + targetCounter + ", TIME REMAINING: " + api.getTimeRemaining().get(1));
-                lastSequence();
-                break;
-            }
-            //
-            //
-
             Log.i(TAG + "/runPlan1", "PHASE COUNTER = " + phaseCounter + ", TIME REMAINING:" + api.getTimeRemaining().get(1));
             phaseCounter++;
 
             current_target = api.getActiveTargets();
             Log.i(TAG+"/runPlan1", "ACTIVE TARGETS : " + current_target.toString());
+
+            // add code to estimate if it is worth to go through with this phase
+            // or should we skip immediately to last sequence
+            if (api.getTimeRemaining().get(1) < TIME_FOR_QR_AND_GOAL) {
+                Log.e(TAG + "/runPlan1/OutOfTime", "BREAK SEQUENCE, TARGET COUNTER: " + targetCounter + ", TIME REMAINING: " + api.getTimeRemaining().get(1));
+                lastSequence();
+                break;
+            }
 
             // while the number of targets visited is less than the number of active targets
             while (targetCounter < current_target.size()) {
