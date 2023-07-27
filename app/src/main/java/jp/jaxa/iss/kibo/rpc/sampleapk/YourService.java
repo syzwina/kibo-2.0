@@ -110,21 +110,15 @@ public class YourService extends KiboRpcService {
                     Log.i(TAG + "/runPlan1/moveToCommon", "UN-SUCCESSFUL ATTEMPT TO MOVE TO POINT DIRECTLY");
                     moveBee(PointConstants.COMMON_COORDS, PointConstants.POINT1_QUATERNION, current_target.get(0));
 
-                    // move bee to point 1
-                    // instead of using 'target counter' to choose which point to take
                     // TODO: use a priority queue
+                    // move based on chosen target, targetCounter
                     moveBee(PointConstants.POINTS_COORDS.get(current_target.get(targetCounter) - 1), PointConstants.POINTS_QUATERNIONS.get(current_target.get(targetCounter) - 1), current_target.get(targetCounter)); // -1 as index start at 0
 
-                    // align astrobee to target
-                    optimizeCenter(current_target.get(targetCounter));
                 }
-                else 
-                {
-                    Log.i(TAG + "/runPlan1/moveToCommon", "SUCCESSFUL ATTEMPT TO MOVE TO POINT DIRECTLY");
+                else    Log.i(TAG + "/runPlan1/moveToCommon", "SUCCESSFUL ATTEMPT TO MOVE TO POINT DIRECTLY");
 
-                    // align astrobee to target
-                    optimizeCenter(current_target.get(targetCounter));
-                }
+                // align astrobee to target
+                optimizeCenter(current_target.get(targetCounter));
 
                 // irradiate with laser
                 laserBeam(current_target.get(targetCounter), PointConstants.POINTS_QUATERNIONS.get(current_target.get(targetCounter) - 1));
