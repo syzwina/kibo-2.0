@@ -102,6 +102,7 @@ public class YourService extends KiboRpcService {
                     Log.i(TAG +"/runPlan1", "READ QR EARLY");
                     readQrSequence();
                     QR_decoded = true;
+                    TIME_FOR_QR_AND_GOAL -= 50 * 1000;
                 }
 
                 if (!moveBee(PointConstants.POINTS_COORDS.get(current_target.get(targetCounter) - 1), PointConstants.POINTS_QUATERNIONS.get(current_target.get(targetCounter) - 1), current_target.get(targetCounter))) // -1 as index start at 0
