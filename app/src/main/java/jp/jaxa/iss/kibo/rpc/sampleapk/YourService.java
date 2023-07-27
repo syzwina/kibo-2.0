@@ -267,7 +267,6 @@ public class YourService extends KiboRpcService {
         Log.i(TAG+"/optimizeCentre", "OPTIMIZING CENTER");
         // image processing to figure our position of target
         Mat grayImage = api.getMatNavCam();
-        api.saveMatImage(grayImage, "Target_" + targetID + ".png");
         Mat colorImage = imageProcessing.imageProcessing(grayImage, targetID);
         api.saveMatImage(colorImage, "ProcessedTarget_" + targetID + ".png");
 
