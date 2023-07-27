@@ -264,21 +264,18 @@ public class YourService extends KiboRpcService {
     }
 
     public void optimizeCenter(int targetID){
-        int img_process_counter = 0;
-        while (img_process_counter < 2) {
-            // image processing to figure our position of target
-            Mat grayImage = api.getMatNavCam();
-            api.saveMatImage(grayImage, "nearTarget" + targetID + "_" + img_process_counter + ".png");
-            Mat colorImage = imageProcessing.imageProcessing(grayImage, targetID);
-            api.saveMatImage(colorImage, "processedNearTarget" + targetID + "_" + img_process_counter+ ".png");
+        Log.i(TAG+"/optimizeCentre", "OPTIMIZING CENTER");
+        // image processing to figure our position of target
+        Mat grayImage = api.getMatNavCam();
+        api.saveMatImage(grayImage, "Target_" + targetID + ".png");
+        Mat colorImage = imageProcessing.imageProcessing(grayImage, targetID);
+        api.saveMatImage(colorImage, "ProcessedTarget_" + targetID + ".png");
 
-            // code to align astrobee with target
-            Kinematics kinematics = api.getRobotKinematics();
-            Point new_point = imageProcessing.moveCloserToArucoMarker(kinematics, imageProcessing.inspectCorners(imageProcessing.corners), targetID);
-            api.moveTo(new_point, kinematics.getOrientation(), true);
-            imageProcessing.corners.clear();
-            Log.i(TAG+"/optimizeCentre", "Optimizing Centre, attempt: " + img_process_counter);
-            img_process_counter++;
+        // code to align astrobee with target
+        Kinematics kinematics = api.getRobotKinematics();
+        Point new_point = imageProcessing.moveCloserToArucoMarker(kinematics, imageProcessing.inspectCorners(imageProcessing.corners), targetID);
+        api.moveTo(new_point, kinematics.getOrientation(), true);
+        imageProcessing.corners.clear();
         }
     }
 
