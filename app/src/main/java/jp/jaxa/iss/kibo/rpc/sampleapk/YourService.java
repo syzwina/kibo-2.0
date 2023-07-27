@@ -167,7 +167,7 @@ public class YourService extends KiboRpcService {
                 Log.i(TAG + "/lastSequence", "MOVE TO COMMON POINT");
                 moveBee(PointConstants.COMMON_COORDS, PointConstants.POINT1_QUATERNION, current_target.get(0));
                 Log.i(TAG + "/lastSequence", "MOVE TO AVOID KOZ3");
-                moveBee(new Point(PointConstants.POINT7_COORDS.getX(),PointConstants.POINT7_COORDS.getY(), PointConstants.OLD_POINT6_COORDS.getZ()), PointConstants.GOAL_QUATERNION, 1008))
+                moveBee(new Point(PointConstants.POINT7_COORDS.getX(),PointConstants.POINT7_COORDS.getY(), PointConstants.OLD_POINT6_COORDS.getZ()), PointConstants.GOAL_QUATERNION, 1008);
             }
             Log.i(TAG + "/lastSequence", "MOVE TO GOAL");
             moveBee(PointConstants.GOAL_COORDS, PointConstants.GOAL_QUATERNION, 8);
