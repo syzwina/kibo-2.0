@@ -1,10 +1,12 @@
 package jp.jaxa.iss.kibo.rpc.sampleapk;
 
 import org.opencv.core.Mat;
+import org.opencv.core.Scalar;
+
 import org.opencv.imgproc.Imgproc;
+
 import org.opencv.aruco.Dictionary;
 import org.opencv.aruco.Aruco;
-import org.opencv.core.Scalar;
 import org.opencv.aruco.DetectorParameters;
 
 import gov.nasa.arc.astrobee.Kinematics;
