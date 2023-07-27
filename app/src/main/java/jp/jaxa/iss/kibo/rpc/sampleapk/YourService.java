@@ -139,8 +139,6 @@ public class YourService extends KiboRpcService {
         // move bee to target 7
         Log.i(TAG + "/lastSequence", "MOVE TO QR");
         moveBee(PointConstants.POINT7_COORDS, PointConstants.POINT7_QUATERNION, 7);
-        // align astrobee to target
-        optimizeCenter(current_target.get(targetCounter));
 
         // turn on flashlight to improve accuracy, value taken from page 33 in manual
         api.flashlightControlFront(0.05f);
