@@ -91,16 +91,21 @@ public class ImageProcessing {
 
        // Aruco.estimatePoseSingleMarkers(List<Mat> corners, 5, cameraMatrix, distCoeffs, rvecs, tvecs );
 
+        /* it needs to only use either one of the AR tags
+           Priority: TR TL BL BR
+        */
+
+
         /* detect the positions of AR tags */
-        if(arucoTargets.get("TopRight") != null){
+        if(arucoTargets.containsValue("TopRight")){
             aruco_middle_x = -10.0;
             aruco_middle_y = -3.75;
         }
-        else if(arucoTargets.get("TopLeft") != null){
+        else if(arucoTargets.containsValue("TopLeft")){
             aruco_middle_x = +10.0;
             aruco_middle_y = -3.75;
         }
-        else if(arucoTargets.get("BottomLeft") != null){
+        else if(arucoTargets.containsValue("BottomLeft")){
             aruco_middle_x = +10.0;
             aruco_middle_y = +3.75;
         }
