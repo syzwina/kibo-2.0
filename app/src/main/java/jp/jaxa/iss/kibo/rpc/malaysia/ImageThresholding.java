@@ -1,4 +1,4 @@
-package jp.jaxa.iss.kibo.rpc.sampleapk;
+package jp.jaxa.iss.kibo.rpc.malaysia;
 
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;

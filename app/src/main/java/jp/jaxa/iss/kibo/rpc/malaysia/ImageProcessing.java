@@ -1,4 +1,4 @@
-package jp.jaxa.iss.kibo.rpc.sampleapk;
+package jp.jaxa.iss.kibo.rpc.malaysia;
 
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
@@ -12,7 +12,6 @@ import org.opencv.aruco.DetectorParameters;
 import gov.nasa.arc.astrobee.Kinematics;
 import gov.nasa.arc.astrobee.types.Point;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
