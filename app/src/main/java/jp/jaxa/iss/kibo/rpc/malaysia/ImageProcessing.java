@@ -74,7 +74,7 @@ public class ImageProcessing {
 
     }
 
-    public double[] inspectCorners(List<Mat> corners) {
+    public double[] inspectCorners(List<Mat> corners, HashMap) {
         /* Ideas:
         * 1) detect AR tag and its ID
         *   - detect centre of AR tag (AR_midpoint)
@@ -88,8 +88,30 @@ public class ImageProcessing {
 
         double aruco_middle_x = 0.0;
         double aruco_middle_y = 0.0;
-        double AR_midpoint;
 
+       // Aruco.estimatePoseSingleMarkers(List<Mat> corners, 5, cameraMatrix, distCoeffs, rvecs, tvecs );
+
+        /* detect the positions of AR tags */
+        if(arucoTargets.get("TopRight") != null){
+            aruco_middle_x = -10.0;
+            aruco_middle_y = -3.75;
+        }
+        else if(arucoTargets.get("TopLeft") != null){
+            aruco_middle_x = +10.0;
+            aruco_middle_y = -3.75;
+        }
+        else if(arucoTargets.get("BottomLeft") != null){
+            aruco_middle_x = +10.0;
+            aruco_middle_y = +3.75;
+        }
+        else {
+            aruco_middle_x = -10.0;
+            aruco_middle_y = -3.75;
+        }
+
+
+        /*
+        Previous:
         double[] topright;
         double[] topleft;
         double[] bottomleft;
@@ -114,7 +136,10 @@ public class ImageProcessing {
         }
 
         double[] aruco_middle = {aruco_middle_x, aruco_middle_y};
+        */
 
+        //eventual solution will be the aruco middle
+        double[] aruco_middle = {aruco_middle_x, aruco_middle_y};
         return aruco_middle;
     }
 

@@ -118,7 +118,7 @@ public class YourService extends KiboRpcService {
                 else    Log.i(TAG + "/runPlan1/moveToCommon", "SUCCESSFUL ATTEMPT TO MOVE TO POINT DIRECTLY");
 
                 // align astrobee to target
-                // optimizeCenter(current_target.get(targetCounter));
+                optimizeCenter(current_target.get(targetCounter));
 
                 // irradiate with laser
                 laserBeam(current_target.get(targetCounter), PointConstants.POINTS_QUATERNIONS.get(current_target.get(targetCounter) - 1));
