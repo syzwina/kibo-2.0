@@ -74,7 +74,7 @@ public class ImageProcessing {
 
     }
 
-    public double[] inspectCorners(List<Mat> corners, HashMap) {
+    public double[] inspectCorners(List<Mat> corners, HashMap <Integer, Position> arucoTargets) {
         /* Ideas:
         * 1) detect AR tag and its ID
         *   - detect centre of AR tag (AR_midpoint)
