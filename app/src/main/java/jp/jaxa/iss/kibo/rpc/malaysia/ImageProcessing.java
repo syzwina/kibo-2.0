@@ -115,6 +115,15 @@ public class ImageProcessing {
             Log.i(TAG+"/inspectCorners", "It uses the Bottom Right Tag");
         }
 
+        // TODO: check the id of aruco markers
+        // TODO: compute aruco markers of the current target only
+        // TODO: add 'ids' into the parameter list of 'inspectCorners'
+        // however, the variable 'ids' is produced in the method 'imageProcessing'
+        // and is forgotten once we exit the method, return ids or set ids as a global variable
+        // so that we can use it in this method
+        // ids.get(0,0);  this returns an array of the detected id, the first element, maybe, not sure
+        // look at line 69, this is how i get the first detected aruco marker to draw it in the final image
+
 
         /*
         Previous:
