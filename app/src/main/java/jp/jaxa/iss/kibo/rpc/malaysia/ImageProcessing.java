@@ -86,32 +86,33 @@ public class ImageProcessing {
         * 2) AR_midpoint: middle of the AR Tag
         * */
 
-        double aruco_middle_x = 0.0;
-        double aruco_middle_y = 0.0;
+        double aruco_middle_x;
+        double aruco_middle_y;
 
        // Aruco.estimatePoseSingleMarkers(List<Mat> corners, 5, cameraMatrix, distCoeffs, rvecs, tvecs );
 
         /* it needs to only use either one of the AR tags
-           Priority: TR TL BL BR
-        */
-
-
-        /* detect the positions of AR tags */
-        if(arucoTargets.containsValue("TopRight")){
+           TR TL BL BR
+           detect the positions of AR tags */
+        if(arucoTargets.containsValue(Position.TopRight)){
             aruco_middle_x = -10.0;
             aruco_middle_y = -3.75;
+            Log.i(TAG+"/inspectCorners", "It uses the Top Right Tag");
         }
-        else if(arucoTargets.containsValue("TopLeft")){
+        else if(arucoTargets.containsValue(Position.TopLeft)){
             aruco_middle_x = +10.0;
             aruco_middle_y = -3.75;
+            Log.i(TAG+"/inspectCorners", "It uses the Top Left Tag");
         }
-        else if(arucoTargets.containsValue("BottomLeft")){
+        else if(arucoTargets.containsValue(Position.BottomLeft)){
             aruco_middle_x = +10.0;
             aruco_middle_y = +3.75;
+            Log.i(TAG+"/inspectCorners", "It uses the Bottom Left Tag");
         }
         else {
             aruco_middle_x = -10.0;
             aruco_middle_y = -3.75;
+            Log.i(TAG+"/inspectCorners", "It uses the Bottom Right Tag");
         }
 
 
