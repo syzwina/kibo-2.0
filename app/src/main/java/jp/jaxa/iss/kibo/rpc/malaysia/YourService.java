@@ -17,6 +17,7 @@ import org.opencv.aruco.Dictionary;
 import org.opencv.aruco.Aruco;
 import org.opencv.aruco.DetectorParameters;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 
