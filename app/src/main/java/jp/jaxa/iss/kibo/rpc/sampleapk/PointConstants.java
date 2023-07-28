@@ -1,6 +1,5 @@
 package jp.jaxa.iss.kibo.rpc.sampleapk;
 
-
 import java.util.Arrays;
 import java.util.List;
 
