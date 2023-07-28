@@ -36,7 +36,7 @@ public class ImageProcessing {
     private int imageProcessing_called = 0;
 
     // initialise objects to be used in image processing
-    private HashMap<Integer, Integer> arucoTargets;
+    private HashMap<Integer, Position> arucoTargets;
     private DetectorParameters detectorParameters;
     public List<Mat> corners;
     private Dictionary dictionary;
@@ -76,21 +76,25 @@ public class ImageProcessing {
     }
 
     public double[] inspectCorners(List<Mat> corners) {
+        /* Ideas:
+        * 1) detect AR tag and its ID
+        *   - detect centre of AR tag (AR_midpoint)
+        * 2) detect its placement
+        * 3) make it move by few cm (ref to discord) to get to aruco_middle
+        *
+        * param:
+        * 1) aruco_middle: middle of the circle
+        * 2) AR_midpoint: middle of the AR Tag
+        * */
 
-        // once you choose one ID
-        // decide which ID it is, and were it is relative to the centre of the circle
-        // and set the new 'centre' coordinate to 'aruco_middle'
-
-        // use mod 4 to get whether it is tl, tr, bl, br
-
+        double aruco_middle_x = 0.0;
+        double aruco_middle_y = 0.0;
+        double AR_midpoint;
 
         double[] topright;
         double[] topleft;
         double[] bottomleft;
         double[] bottomright;
-
-        double aruco_middle_x = 0.0;
-        double aruco_middle_y = 0.0;
 
         final int x_coords = 0;
         final int y_coords = 1;
@@ -215,34 +219,24 @@ public class ImageProcessing {
 
 
     private void init() {
-
-        // initialise aruco dictionary
-        dictionary = Aruco.getPredefinedDictionary(Aruco.DICT_5X5_250);
-
-        // initialise objects to be used in image processing
-        corners = new ArrayList<Mat>();
-        ids = new Mat(1, 4, 1, new Scalar( 0, 150, 250 ));
-        detectorParameters = DetectorParameters.create();
-
         // initialise target to aruco marker hashmap
-        arucoTargets = new HashMap<Integer, Integer>();
-        arucoTargets.put(1,1);
-        arucoTargets.put(2,1);
-        arucoTargets.put(3,1);
-        arucoTargets.put(4,1);
-        arucoTargets.put(5,2);
-        arucoTargets.put(6,2);
-        arucoTargets.put(7,2);
-        arucoTargets.put(8,2);
-        arucoTargets.put(9,3);
-        arucoTargets.put(10,3);
-        arucoTargets.put(11,3);
-        arucoTargets.put(12,3);
-        arucoTargets.put(13,4);
-        arucoTargets.put(14,4);
-        arucoTargets.put(15,4);
-        arucoTargets.put(16,4);
-
+        arucoTargets = new HashMap<Integer, Position>();
+        arucoTargets.put(1,Position.TopRight);
+        arucoTargets.put(2,Position.TopLeft);
+        arucoTargets.put(3,Position.BottomLeft);
+        arucoTargets.put(4,Position.BottomRight);
+        arucoTargets.put(5,Position.TopRight);
+        arucoTargets.put(6,Position.TopLeft);
+        arucoTargets.put(7,Position.BottomLeft);
+        arucoTargets.put(8,Position.BottomRight);
+        arucoTargets.put(9,Position.TopRight);
+        arucoTargets.put(10,Position.TopLeft);
+        arucoTargets.put(11,Position.BottomLeft);
+        arucoTargets.put(12,Position.BottomRight);
+        arucoTargets.put(13,Position.TopRight);
+        arucoTargets.put(14,Position.TopLeft);
+        arucoTargets.put(15,Position.BottomLeft);
+        arucoTargets.put(16,Position.BottomRight);
     }
 
 }
