@@ -89,54 +89,55 @@ public class ImageProcessing {
         double aruco_middle_x = 0;
         double aruco_middle_y = 0;
 
-       // Aruco.estimatePoseSingleMarkers(List<Mat> corners, 5, cameraMatrix, distCoeffs, rvecs, tvecs );
+        // Aruco.estimatePoseSingleMarkers(List<Mat> corners, 5, cameraMatrix, distCoeffs, rvecs, tvecs );
 
 
-       // if the aruco id, belongs to the current target, go into if block, else continue
-       for ( int i=0; i<ids.rows(); i++ ) {
-        if (current_target == arucoTargets.get((ids.get(i, 0)[0]))) {
+        // if the aruco id, belongs to the current target, go into if block, else continue
+        for ( int i=0; i<ids.rows(); i++ ) {
 
-            // if aruco id is at Position.A, go into A block 
-            /* it needs to only use either one of the AR tags
-            TR TL BL BR
-            detect the positions of AR tags */
-            if(arucoIds.get((ids.get(i, 0)[0])) == Position.TopRight){
-                aruco_middle_x = -10.0;
-                aruco_middle_y = -3.75;
-                Log.i(TAG+"/inspectCorners", "It uses the Top Right Tag");
-            }
-            else if(arucoIds.get((ids.get(i, 0)[0])) == Position.TopLeft){
-                aruco_middle_x = +10.0;
-                aruco_middle_y = -3.75;
-                Log.i(TAG+"/inspectCorners", "It uses the Top Left Tag");
-            }
-            else if(arucoIds.get((ids.get(i, 0)[0])) == Position.BottomLeft){
-                aruco_middle_x = +10.0;
-                aruco_middle_y = +3.75;
-                Log.i(TAG+"/inspectCorners", "It uses the Bottom Left Tag");
-            }
-            else if (arucoIds.get((ids.get(i, 0)[0])) == Position.BottomRight) {
-                aruco_middle_x = -10.0;
-                aruco_middle_y = -3.75;
-                Log.i(TAG+"/inspectCorners", "It uses the Bottom Right Tag");
+            Log.i(TAG+"/inspectCorners", "ids.rows(): " + ids.rows());
+            Log.i(TAG+"/inspectCorners", "ids.size(): " + ids.size());
+            Log.i(TAG+"/inspectCorners", "i: " + i);
+
+            if (current_target == arucoTargets.get((ids.get(i, 0)[0]))) {
+
+                // if aruco id is at Position.A, go into A block 
+                /* it needs to only use either one of the AR tags
+                TR TL BL BR
+                detect the positions of AR tags */
+                if(arucoIds.get((ids.get(i, 0)[0])) == Position.TopRight){
+                    aruco_middle_x = -10.0;
+                    aruco_middle_y = -3.75;
+                    Log.i(TAG+"/inspectCorners", "It uses the Top Right Tag");
+                }
+                else if(arucoIds.get((ids.get(i, 0)[0])) == Position.TopLeft){
+                    aruco_middle_x = +10.0;
+                    aruco_middle_y = -3.75;
+                    Log.i(TAG+"/inspectCorners", "It uses the Top Left Tag");
+                }
+                else if(arucoIds.get((ids.get(i, 0)[0])) == Position.BottomLeft){
+                    aruco_middle_x = +10.0;
+                    aruco_middle_y = +3.75;
+                    Log.i(TAG+"/inspectCorners", "It uses the Bottom Left Tag");
+                }
+                else if (arucoIds.get((ids.get(i, 0)[0])) == Position.BottomRight) {
+                    aruco_middle_x = -10.0;
+                    aruco_middle_y = -3.75;
+                    Log.i(TAG+"/inspectCorners", "It uses the Bottom Right Tag");
+                }
+                else {
+                    Log.e(TAG+"/inspectCorners", "Error: unable to use any corners");
+                }
+                Log.i(TAG+"/inspectCorners", "Current ID is: " + ids.get(i, 0)[0]);
+                Log.i(TAG+"/inspectCorners", "aruco_middle_x is: " + aruco_middle_x);
+                Log.i(TAG+"/inspectCorners", "aruco_middle_y is: " + aruco_middle_y);
+
             }
             else {
-                Log.e(TAG+"/inspectCorners", "Error: unable to use any corners");
+                Log.i(TAG+"/inspectCorners", "Aruco ID: " + ids.get(i,0)[0] + " does not belong to current target: " + current_target);
             }
-            Log.i(TAG+"/inspectCorners", "Current ID is: " + ids.get(i, 0)[0]);
-            Log.i(TAG+"/inspectCorners", "aruco_middle_x is: " + aruco_middle_x);
-            Log.i(TAG+"/inspectCorners", "aruco_middle_y is: " + aruco_middle_y);
-
-        }
-        else {
-            Log.i(TAG+"/inspectCorners", "Aruco ID: " + ids.get(i,0)[0] + " does not belong to current target: " + current_target);
-        }
-        Log.i(TAG+"/inspectCorners", "Current index is: " + i);
+            Log.i(TAG+"/inspectCorners", "Current index is: " + i);
        }
-
-        // TODO: check the id of aruco markers
-        // TODO: compute aruco markers of the current target only
-        // int id = (int)(ids.get(i, 0)[0]); // Mat object
 
         //eventual solution will be the aruco middle
         double[] aruco_middle = {aruco_middle_x, aruco_middle_y};
