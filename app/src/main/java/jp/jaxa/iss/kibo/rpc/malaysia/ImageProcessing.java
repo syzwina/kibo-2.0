@@ -166,6 +166,7 @@ public class ImageProcessing {
         double[] TopRightCoords = corners.get(0).get(0, 0);
         double[] BottomLeftCoords = corners.get(0).get(0, 2);
         double arLength = Math.sqrt(Math.pow((TopRightCoords[0] - BottomLeftCoords[0]), 2) + Math.pow((TopRightCoords[1] - BottomLeftCoords[1]), 2));
+        Log.i(TAG+"/moveCloserToArucoMarker", "Length of AR Tag is: " + arLength);
 
         // move_relative will be integrated into if function
         double move_relative = arLength / 2.0;
