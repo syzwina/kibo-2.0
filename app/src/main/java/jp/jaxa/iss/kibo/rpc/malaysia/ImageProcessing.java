@@ -106,23 +106,27 @@ public class ImageProcessing {
                 TR TL BL BR
                 detect the positions of AR tags */
                 if(arucoIds.get(((int) ids.get(i, 0)[0])) == Position.TopRight){
-                    aruco_middle_x = -10.0;
-                    aruco_middle_z = -3.75;
+                    double[] topright = corners.get(i).get(0, 0);
+                    aruco_middle_x = topright[0] - 10.0;
+                    aruco_middle_z = topright[1] - 3.75;
                     Log.i(TAG+"/inspectCorners", "It uses the Top Right Tag");
                 }
                 else if(arucoIds.get(((int) ids.get(i, 0)[0])) == Position.TopLeft){
-                    aruco_middle_x = +10.0;
-                    aruco_middle_z = -3.75;
+                    double[] topleft = corners.get(i).get(0, 1);
+                    aruco_middle_x = topleft[0] + 10.0;
+                    aruco_middle_z = topleft[1] - 3.75;
                     Log.i(TAG+"/inspectCorners", "It uses the Top Left Tag");
                 }
                 else if(arucoIds.get(((int) ids.get(i, 0)[0])) == Position.BottomLeft){
-                    aruco_middle_x = +10.0;
-                    aruco_middle_z = +3.75;
+                    double[] bottomleft = corners.get(i).get(0, 2);
+                    aruco_middle_x = bottomleft[0] + 10.0;
+                    aruco_middle_z = bottomleft[1] + 3.75;
                     Log.i(TAG+"/inspectCorners", "It uses the Bottom Left Tag");
                 }
                 else if (arucoIds.get(((int) ids.get(i, 0)[0])) == Position.BottomRight) {
-                    aruco_middle_x = -10.0;
-                    aruco_middle_z = -3.75;
+                    double[] bottomright = corners.get(i).get(0, 3);
+                    aruco_middle_x = bottomright[0] - 10.0;
+                    aruco_middle_z = bottomright[1] - 3.75;
                     Log.i(TAG+"/inspectCorners", "It uses the Bottom Right Tag");
                 }
                 else {
