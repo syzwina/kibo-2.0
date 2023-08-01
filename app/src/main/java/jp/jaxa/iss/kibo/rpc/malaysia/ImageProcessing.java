@@ -150,7 +150,7 @@ public class ImageProcessing {
 
     public Point moveCloserToArucoMarker(Kinematics kinematics, int current_target){
 
-        double[] aruco_middle = inspectCorners(corners, current_target);// 4.5cm (aprox) for ar tag
+        double[] aruco_middle = inspectCorners(corners, current_target);// 5cm for each AR tags (ref to rulebook)
 
         int counter_x = 0;
         int counter_z = 0;
