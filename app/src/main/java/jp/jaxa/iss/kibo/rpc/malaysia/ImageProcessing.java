@@ -69,7 +69,7 @@ public class ImageProcessing {
         Aruco.drawDetectedMarkers(colorImage, corners, ids, new Scalar( 0, 255, 0 ));
 
         Imgproc.putText(colorImage, "Aruco:"+ Arrays.toString(ids.get(0,0)), new org.opencv.core.Point(30.0, 80.0), 3, 0.5, new Scalar(255, 0, 0, 255), 1);
-        Log.i(TAG+"imageProcessing", "Aruco marker has been labeled");
+        Log.i(TAG+"/imageProcessing", "Aruco marker has been labeled");
 
         imageProcessing_called++;
         return colorImage;
@@ -99,28 +99,28 @@ public class ImageProcessing {
             Log.i(TAG+"/inspectCorners", "ids.size(): " + ids.size());
             Log.i(TAG+"/inspectCorners", "i: " + i);
 
-            if (current_target == arucoTargets.get((ids.get(i, 0)[0]))) {
+            if (current_target == arucoTargets.get(((int) ids.get(i, 0)[0]))) {
 
                 // if aruco id is at Position.A, go into A block 
                 /* it needs to only use either one of the AR tags
                 TR TL BL BR
                 detect the positions of AR tags */
-                if(arucoIds.get((ids.get(i, 0)[0])) == Position.TopRight){
+                if(arucoIds.get(((int) ids.get(i, 0)[0])) == Position.TopRight){
                     aruco_middle_x = -10.0;
                     aruco_middle_y = -3.75;
                     Log.i(TAG+"/inspectCorners", "It uses the Top Right Tag");
                 }
-                else if(arucoIds.get((ids.get(i, 0)[0])) == Position.TopLeft){
+                else if(arucoIds.get(((int) ids.get(i, 0)[0])) == Position.TopLeft){
                     aruco_middle_x = +10.0;
                     aruco_middle_y = -3.75;
                     Log.i(TAG+"/inspectCorners", "It uses the Top Left Tag");
                 }
-                else if(arucoIds.get((ids.get(i, 0)[0])) == Position.BottomLeft){
+                else if(arucoIds.get(((int) ids.get(i, 0)[0])) == Position.BottomLeft){
                     aruco_middle_x = +10.0;
                     aruco_middle_y = +3.75;
                     Log.i(TAG+"/inspectCorners", "It uses the Bottom Left Tag");
                 }
-                else if (arucoIds.get((ids.get(i, 0)[0])) == Position.BottomRight) {
+                else if (arucoIds.get(((int) ids.get(i, 0)[0])) == Position.BottomRight) {
                     aruco_middle_x = -10.0;
                     aruco_middle_y = -3.75;
                     Log.i(TAG+"/inspectCorners", "It uses the Bottom Right Tag");
