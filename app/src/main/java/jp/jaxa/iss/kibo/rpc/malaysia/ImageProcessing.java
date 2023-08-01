@@ -47,6 +47,7 @@ public class ImageProcessing {
         this.corners = corners;
         this.ids = ids;
         this.detectorParameters = detectorParameters;
+        init();
     }
 
     /**
