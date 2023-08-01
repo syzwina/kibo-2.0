@@ -35,7 +35,7 @@ public class ImageProcessing {
     private int imageProcessing_called = 0;
 
     // initialise objects to be used in image processing
-    private HashMap<Integer, Position> arucoTargets;
+    private HashMap<Integer, Integer> arucoTargets;
     private HashMap<Integer, Position> arucoIds;
     private DetectorParameters detectorParameters;
     public List<Mat> corners;
@@ -75,7 +75,7 @@ public class ImageProcessing {
 
     }
 
-    public double[] inspectCorners(List<Mat> corners) {
+    public double[] inspectCorners(List<Mat> corners, int current_target) {
         /* Ideas:
         * 1) detect AR tag and its ID
         * 2) detect its placement
@@ -85,34 +85,50 @@ public class ImageProcessing {
         * 1) aruco_middle_(x/y): middle of the circle
         * */
 
-        double aruco_middle_x;
-        double aruco_middle_y;
+        double aruco_middle_x = 0;
+        double aruco_middle_y = 0;
 
        // Aruco.estimatePoseSingleMarkers(List<Mat> corners, 5, cameraMatrix, distCoeffs, rvecs, tvecs );
 
-        /* it needs to only use either one of the AR tags
-           TR TL BL BR
-           detect the positions of AR tags */
-        if(arucoTargets.containsValue(Position.TopRight)){
-            aruco_middle_x = -10.0;
-            aruco_middle_y = -3.75;
-            Log.i(TAG+"/inspectCorners", "It uses the Top Right Tag");
-        }
-        else if(arucoTargets.containsValue(Position.TopLeft)){
-            aruco_middle_x = +10.0;
-            aruco_middle_y = -3.75;
-            Log.i(TAG+"/inspectCorners", "It uses the Top Left Tag");
-        }
-        else if(arucoTargets.containsValue(Position.BottomLeft)){
-            aruco_middle_x = +10.0;
-            aruco_middle_y = +3.75;
-            Log.i(TAG+"/inspectCorners", "It uses the Bottom Left Tag");
+
+       // if the aruco id, belongs to the current target, go into if block, else continue
+       for ( int i=0; i<ids.rows(); i++ ) {
+        if (current_target == arucoTargets.get((ids.get(i, 0)[0]))) {
+
+            // if aruco id is at Position.A, go into A block 
+            /* it needs to only use either one of the AR tags
+            TR TL BL BR
+            detect the positions of AR tags */
+            if(arucoIds.get((ids.get(i, 0)[0])) == Position.TopRight){
+                aruco_middle_x = -10.0;
+                aruco_middle_y = -3.75;
+                Log.i(TAG+"/inspectCorners", "It uses the Top Right Tag");
+            }
+            else if(arucoIds.get((ids.get(i, 0)[0])) == Position.TopLeft){
+                aruco_middle_x = +10.0;
+                aruco_middle_y = -3.75;
+                Log.i(TAG+"/inspectCorners", "It uses the Top Left Tag");
+            }
+            else if(arucoIds.get((ids.get(i, 0)[0])) == Position.BottomLeft){
+                aruco_middle_x = +10.0;
+                aruco_middle_y = +3.75;
+                Log.i(TAG+"/inspectCorners", "It uses the Bottom Left Tag");
+            }
+            else if (arucoIds.get((ids.get(i, 0)[0])) == Position.BottomRight) {
+                aruco_middle_x = -10.0;
+                aruco_middle_y = -3.75;
+                Log.i(TAG+"/inspectCorners", "It uses the Bottom Right Tag");
+            }
+            else {
+                Log.e(TAG+"/inspectCorners", "Error: unable to use any corners");
+            }
+
+
         }
         else {
-            aruco_middle_x = -10.0;
-            aruco_middle_y = -3.75;
-            Log.i(TAG+"/inspectCorners", "It uses the Bottom Right Tag");
+            continue;
         }
+       }
 
         // TODO: check the id of aruco markers
         // TODO: compute aruco markers of the current target only
@@ -151,7 +167,10 @@ public class ImageProcessing {
         return aruco_middle;
     }
 
-    public Point moveCloserToArucoMarker(Kinematics kinematics, double[] aruco_middle, int current_target){
+    public Point moveCloserToArucoMarker(Kinematics kinematics, int current_target){
+
+        double[] aruco_middle = inspectCorners(corners, current_target);
+
         int counter_x = 0;
         int counter_y = 0;
         final double middle_x = 1280/2;
@@ -251,7 +270,7 @@ public class ImageProcessing {
 
 
     private void init() {
-        
+
         // shows you the position of the id
         arucoIds = new HashMap<Integer, Position>();
         arucoIds.put(1,Position.TopRight);
