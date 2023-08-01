@@ -87,7 +87,7 @@ public class ImageProcessing {
         * */
 
         double aruco_middle_x = 0;
-        double aruco_middle_y = 0;
+        double aruco_middle_z = 0;
 
         // Aruco.estimatePoseSingleMarkers(List<Mat> corners, 5, cameraMatrix, distCoeffs, rvecs, tvecs );
 
@@ -107,22 +107,22 @@ public class ImageProcessing {
                 detect the positions of AR tags */
                 if(arucoIds.get(((int) ids.get(i, 0)[0])) == Position.TopRight){
                     aruco_middle_x = -10.0;
-                    aruco_middle_y = -3.75;
+                    aruco_middle_z = -3.75;
                     Log.i(TAG+"/inspectCorners", "It uses the Top Right Tag");
                 }
                 else if(arucoIds.get(((int) ids.get(i, 0)[0])) == Position.TopLeft){
                     aruco_middle_x = +10.0;
-                    aruco_middle_y = -3.75;
+                    aruco_middle_z = -3.75;
                     Log.i(TAG+"/inspectCorners", "It uses the Top Left Tag");
                 }
                 else if(arucoIds.get(((int) ids.get(i, 0)[0])) == Position.BottomLeft){
                     aruco_middle_x = +10.0;
-                    aruco_middle_y = +3.75;
+                    aruco_middle_z = +3.75;
                     Log.i(TAG+"/inspectCorners", "It uses the Bottom Left Tag");
                 }
                 else if (arucoIds.get(((int) ids.get(i, 0)[0])) == Position.BottomRight) {
                     aruco_middle_x = -10.0;
-                    aruco_middle_y = -3.75;
+                    aruco_middle_z = -3.75;
                     Log.i(TAG+"/inspectCorners", "It uses the Bottom Right Tag");
                 }
                 else {
@@ -130,7 +130,7 @@ public class ImageProcessing {
                 }
                 Log.i(TAG+"/inspectCorners", "Current ID is: " + ids.get(i, 0)[0]);
                 Log.i(TAG+"/inspectCorners", "aruco_middle_x is: " + aruco_middle_x);
-                Log.i(TAG+"/inspectCorners", "aruco_middle_y is: " + aruco_middle_y);
+                Log.i(TAG+"/inspectCorners", "aruco_middle_z is: " + aruco_middle_z);
 
             }
             else {
@@ -140,7 +140,7 @@ public class ImageProcessing {
        }
 
         //eventual solution will be the aruco middle
-        double[] aruco_middle = {aruco_middle_x, aruco_middle_y};
+        double[] aruco_middle = {aruco_middle_x, aruco_middle_z};
         return aruco_middle;
     }
 
@@ -149,17 +149,17 @@ public class ImageProcessing {
         double[] aruco_middle = inspectCorners(corners, current_target);
 
         int counter_x = 0;
-        int counter_y = 0;
+        int counter_z = 0;
         final double middle_x = 1280/2;
-        final double middle_y = 960/2;
+        final double middle_z = 960/2;
 
         double aruco_middle_x = aruco_middle[0];
-        double aruco_middle_y = aruco_middle[1];
+        double aruco_middle_z = aruco_middle[1];
 
         double x_difference = middle_x - aruco_middle_x;
         Log.i(TAG+"/moveCloserToArucoMarker", "The x difference is: " + x_difference);
-        double y_difference = middle_y - aruco_middle_y;
-        Log.i(TAG+"/moveCloserToArucoMarker", "The y difference is: " + y_difference);
+        double z_difference = middle_z - aruco_middle_z;
+        Log.i(TAG+"/moveCloserToArucoMarker", "The z difference is: " + z_difference);
 
         Point point;
         Point new_point;
@@ -171,8 +171,8 @@ public class ImageProcessing {
 
         /* We want the bee to move closer, thus each 4 points might be a bit different
          * Thought process:
-         * 1) check for the x difference & y difference
-         * 2) if the x diff & y diff still less than 20, repeat the image processing few times
+         * 1) check for the x difference & z difference
+         * 2) if the x diff & z diff still less than 20, repeat the image processing few times
           * */
 
         /* Case 1: positive difference case */
@@ -192,20 +192,20 @@ public class ImageProcessing {
             Log.i(TAG+"/moveCloserToArucoMarker", "The while (x) attempted: " + counter_x);
         }
 
-        while (y_difference >= 20){
-            /* special case if y >= 100 */
-            if (y_difference >= 100){
-                new_point = new Point (point.getX(), point.getY() + (y_difference - 80), point.getZ());
-                y_difference -= 80;
+        while (z_difference >= 20){
+            /* special case if z >= 100 */
+            if (z_difference >= 100){
+                new_point = new Point (point.getX(), point.getY(), point.getZ() + (z_difference - 80));
+                z_difference -= 80;
             }
             else {
-                new_point = new Point (point.getX(), point.getY() + (y_difference - 20), point.getZ());
-                y_difference -= 20;
+                new_point = new Point (point.getX(), point.getY(), point.getZ() + (z_difference - 20));
+                z_difference -= 20;
             }
-            counter_y ++;
-            Log.i(TAG+"/moveCloserToArucoMarker", "The y difference is currently: " + y_difference);
+            counter_z ++;
+            Log.i(TAG+"/moveCloserToArucoMarker", "The z difference is currently: " + z_difference);
             Log.i(TAG+"/moveCloserToArucoMarker", "The new point is now: " + new_point);
-            Log.i(TAG+"/moveCloserToArucoMarker", "The while (y) attempted: " + counter_y);
+            Log.i(TAG+"/moveCloserToArucoMarker", "The while (z) attempted: " + counter_z);
         }
 
         /* Case 2: negative difference case */
@@ -225,20 +225,20 @@ public class ImageProcessing {
             Log.i(TAG+"/moveCloserToArucoMarker", "The while (x) attempted: " + counter_x);
         }
 
-        while (y_difference <= -20){
-            /* special case if y >= 100 */
-            if (y_difference <= 100){
-                new_point = new Point (point.getX(), point.getY() + (y_difference + 80), point.getZ());
-                y_difference += 80;
+        while (z_difference <= -20){
+            /* special case if z >= 100 */
+            if (z_difference <= 100){
+                new_point = new Point (point.getX(), point.getY(), point.getZ() + (z_difference + 80));
+                z_difference += 80;
             }
             else {
-                new_point = new Point (point.getX(), point.getY() + (y_difference + 20), point.getZ());
-                y_difference += 20;
+                new_point = new Point (point.getX(), point.getY(), point.getZ() + (z_difference + 20));
+                z_difference += 20;
             }
-            counter_y ++;
-            Log.i(TAG+"/moveCloserToArucoMarker", "The y difference is currently: " + y_difference);
+            counter_z ++;
+            Log.i(TAG+"/moveCloserToArucoMarker", "The z difference is currently: " + z_difference);
             Log.i(TAG+"/moveCloserToArucoMarker", "The new point is now: " + new_point);
-            Log.i(TAG+"/moveCloserToArucoMarker", "The while (y) attempted: " + counter_y);
+            Log.i(TAG+"/moveCloserToArucoMarker", "The while (z) attempted: " + counter_z);
         }
 
         return new_point;
