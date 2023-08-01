@@ -36,6 +36,7 @@ public class ImageProcessing {
 
     // initialise objects to be used in image processing
     private HashMap<Integer, Position> arucoTargets;
+    private HashMap<Integer, Position> arucoIds;
     private DetectorParameters detectorParameters;
     public List<Mat> corners;
     private Dictionary dictionary;
@@ -77,13 +78,11 @@ public class ImageProcessing {
     public double[] inspectCorners(List<Mat> corners) {
         /* Ideas:
         * 1) detect AR tag and its ID
-        *   - detect centre of AR tag (AR_midpoint)
         * 2) detect its placement
         * 3) make it move by few cm (ref to discord) to get to aruco_middle
         *
         * param:
-        * 1) aruco_middle: middle of the circle
-        * 2) AR_midpoint: middle of the AR Tag
+        * 1) aruco_middle_(x/y): middle of the circle
         * */
 
         double aruco_middle_x;
@@ -117,13 +116,7 @@ public class ImageProcessing {
 
         // TODO: check the id of aruco markers
         // TODO: compute aruco markers of the current target only
-        // TODO: add 'ids' into the parameter list of 'inspectCorners'
-        // however, the variable 'ids' is produced in the method 'imageProcessing'
-        // and is forgotten once we exit the method, return ids or set ids as a global variable
-        // so that we can use it in this method
-        // ids.get(0,0);  this returns an array of the detected id, the first element, maybe, not sure
-        // look at line 69, this is how i get the first detected aruco marker to draw it in the final image
-
+        // int id = (int)(ids.get(i, 0)[0]); // Mat object
 
         /*
         Previous:
@@ -258,24 +251,44 @@ public class ImageProcessing {
 
 
     private void init() {
-        // initialise target to aruco marker hashmap
-        arucoTargets = new HashMap<Integer, Position>();
-        arucoTargets.put(1,Position.TopRight);
-        arucoTargets.put(2,Position.TopLeft);
-        arucoTargets.put(3,Position.BottomLeft);
-        arucoTargets.put(4,Position.BottomRight);
-        arucoTargets.put(5,Position.TopRight);
-        arucoTargets.put(6,Position.TopLeft);
-        arucoTargets.put(7,Position.BottomLeft);
-        arucoTargets.put(8,Position.BottomRight);
-        arucoTargets.put(9,Position.TopRight);
-        arucoTargets.put(10,Position.TopLeft);
-        arucoTargets.put(11,Position.BottomLeft);
-        arucoTargets.put(12,Position.BottomRight);
-        arucoTargets.put(13,Position.TopRight);
-        arucoTargets.put(14,Position.TopLeft);
-        arucoTargets.put(15,Position.BottomLeft);
-        arucoTargets.put(16,Position.BottomRight);
+        
+        // shows you the position of the id
+        arucoIds = new HashMap<Integer, Position>();
+        arucoIds.put(1,Position.TopRight);
+        arucoIds.put(2,Position.TopLeft);
+        arucoIds.put(3,Position.BottomLeft);
+        arucoIds.put(4,Position.BottomRight);
+        arucoIds.put(5,Position.TopRight);
+        arucoIds.put(6,Position.TopLeft);
+        arucoIds.put(7,Position.BottomLeft);
+        arucoIds.put(8,Position.BottomRight);
+        arucoIds.put(9,Position.TopRight);
+        arucoIds.put(10,Position.TopLeft);
+        arucoIds.put(11,Position.BottomLeft);
+        arucoIds.put(12,Position.BottomRight);
+        arucoIds.put(13,Position.TopRight);
+        arucoIds.put(14,Position.TopLeft);
+        arucoIds.put(15,Position.BottomLeft);
+        arucoIds.put(16,Position.BottomRight);
+
+        // shows you which target the id belongs to
+        arucoTargets = new HashMap<Integer, Integer>();
+        arucoTargets.put(1,1);
+        arucoTargets.put(2,1);
+        arucoTargets.put(3,1);
+        arucoTargets.put(4,1);
+        arucoTargets.put(5,2);
+        arucoTargets.put(6,2);
+        arucoTargets.put(7,2);
+        arucoTargets.put(8,2);
+        arucoTargets.put(9,3);
+        arucoTargets.put(10,3);
+        arucoTargets.put(11,3);
+        arucoTargets.put(12,3);
+        arucoTargets.put(13,4);
+        arucoTargets.put(14,4);
+        arucoTargets.put(15,4);
+        arucoTargets.put(16,4);
     }
 
 }
