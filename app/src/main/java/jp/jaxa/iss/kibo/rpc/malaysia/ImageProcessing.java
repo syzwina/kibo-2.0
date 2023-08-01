@@ -168,7 +168,24 @@ public class ImageProcessing {
         Point point;
         Point new_point;
 
+        // Variable to detect the difference of 2 corners of 1 AR tag
+        // arLength is the difference between 2 corners of the AR tag
+        // use pythagoras for accuarcy
+        double[] TopRightCoords = corners.get(0).get(0, 0);
+        double[] BottomLeftCoords = corners.get(0).get(0, 2);
+        double arLength = Math.sqrt(Math.pow((TopRightCoords[0] - BottomLeftCoords[0]), 2) + Math.pow((TopRightCoords[1] - BottomLeftCoords[1]), 2));
+
         point = kinematics.getPosition();
+
+        /* We need to use one of the AR tags as a reference of the bee moving closer to the image:
+         * 1) We already have the coordinates of the corners (stored in Mat)
+         * 2) Use one of the AR tag (while loop):
+         *      - check the x difference of the corners of the 2 consecutive arrays (corners), difference stored as length
+         *      - check for relative: move_relative = length/5 (the exact length of the tag)
+         *      - new_point = point.getX() + (move_relative / 2), ..... Y, ..... Z + (move_relative / 2)
+         *
+         *
+         */
 
         // initialize new_point
         new_point = new Point (point.getX(), point.getY(), point.getZ());
