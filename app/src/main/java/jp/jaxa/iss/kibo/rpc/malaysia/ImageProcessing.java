@@ -123,45 +123,20 @@ public class ImageProcessing {
             else {
                 Log.e(TAG+"/inspectCorners", "Error: unable to use any corners");
             }
-
+            Log.i(TAG+"/inspectCorners", "Current ID is: " + ids.get(i, 0)[0]);
+            Log.i(TAG+"/inspectCorners", "aruco_middle_x is: " + aruco_middle_x);
+            Log.i(TAG+"/inspectCorners", "aruco_middle_y is: " + aruco_middle_y);
 
         }
         else {
-            continue;
+            Log.i(TAG+"/inspectCorners", "Aruco ID: " + ids.get(i,0)[0] + " does not belong to current target: " + current_target);
         }
+        Log.i(TAG+"/inspectCorners", "Current index is: " + i);
        }
 
         // TODO: check the id of aruco markers
         // TODO: compute aruco markers of the current target only
         // int id = (int)(ids.get(i, 0)[0]); // Mat object
-
-        /*
-        Previous:
-        double[] topright;
-        double[] topleft;
-        double[] bottomleft;
-        double[] bottomright;
-
-        final int x_coords = 0;
-        final int y_coords = 1;
-
-        try{
-
-        bottomleft  = corners.get(0).get(0, 2);
-        bottomright = corners.get(0).get(0, 3);
-        topleft     = corners.get(0).get(0, 1);
-        topright    = corners.get(0).get(0, 0);
-
-        aruco_middle_x = (bottomleft[x_coords] + bottomright[x_coords] + topleft[x_coords] + topright[x_coords])/4;
-        aruco_middle_y = (bottomleft[y_coords] + bottomright[y_coords] + topleft[y_coords] + topright[y_coords])/4;
-        
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        double[] aruco_middle = {aruco_middle_x, aruco_middle_y};
-        */
 
         //eventual solution will be the aruco middle
         double[] aruco_middle = {aruco_middle_x, aruco_middle_y};
