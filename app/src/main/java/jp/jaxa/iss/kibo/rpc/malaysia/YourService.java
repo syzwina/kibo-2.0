@@ -194,22 +194,22 @@ public class YourService extends KiboRpcService {
         Log.i(TAG+"/laserBeam", "current Robot Position before offset compensation laser pointer: " + api.getRobotKinematics().getPosition().toString());
 
         if (current_target == 1) {
-            api.relativeMoveTo(new Point(y_offset, 0, z_offset), pointQuartenion, true); //test target 1, +ve
+            api.relativeMoveTo(new Point(y_offset, 0, z_offset), pointQuartenion, false); //test target 1, +ve
         }
         if (current_target == 2){
-            api.relativeMoveTo(new Point(y_offset, -z_offset, 0), pointQuartenion, true); //test target 2, correct wall now
+            api.relativeMoveTo(new Point(y_offset, -z_offset, 0), pointQuartenion, false); //test target 2, correct wall now
         }
         if (current_target == 3) {
-            api.relativeMoveTo(new Point(z_offset, y_offset, 0), pointQuartenion, true); //testing hypothesis on target 3, works!
+            api.relativeMoveTo(new Point(z_offset, y_offset, 0), pointQuartenion, false); //testing hypothesis on target 3, works!
         }
         if (current_target == 4) {
-            api.relativeMoveTo(new Point(0, -y_offset, z_offset), pointQuartenion, true); //+ve y to go left,
+            api.relativeMoveTo(new Point(0, -y_offset, z_offset), pointQuartenion, false); //+ve y to go left,
         }
         if (current_target == 5) {
-            api.relativeMoveTo(new Point(y_offset, z_offset, 0), pointQuartenion, true); // test
+            api.relativeMoveTo(new Point(y_offset, z_offset, 0), pointQuartenion, false); // test
         }
         if (current_target == 6) {
-            api.relativeMoveTo(new Point(0, y_offset, z_offset), pointQuartenion, true); // hopefully correct
+            api.relativeMoveTo(new Point(0, y_offset, z_offset), pointQuartenion, false); // hopefully correct
         }
         Log.i(TAG+"/laserBeam", "current Robot Position after offset compensation laser pointer: " + api.getRobotKinematics().getPosition().toString());
 
