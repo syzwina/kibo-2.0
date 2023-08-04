@@ -244,7 +244,7 @@ public class ImageProcessing {
             //2: z_difference > scale
             else{
                 //for extreme values
-                if(x_difference >= 100){
+                if(z_difference >= 100){
                     new_point = new Point (new_point.getX(), new_point.getY(), new_point.getZ() + (z_difference - 80));
                     z_difference -= 80;
                 }
