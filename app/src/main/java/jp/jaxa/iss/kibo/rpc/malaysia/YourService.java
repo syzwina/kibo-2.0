@@ -213,8 +213,8 @@ public class YourService extends KiboRpcService {
         }
         // TODO: save an image here too
         Mat laserImage = api.getMatNavCam();
-        Mat colorLaserImage = imageProcessing.imageProcessing(laserImage, targetID);
-        api.saveMatImage(colorLaserImage, called_image_save + "_LaseredTarget_" + targetID + ".png");
+        Mat colorLaserImage = imageProcessing.imageProcessing(laserImage, current_target);
+        api.saveMatImage(colorLaserImage, called_image_save + "_LaseredTarget_" + current_target + ".png");
 
         Log.i(TAG+"/laserBeam", "current Robot Position after offset compensation laser pointer: " + api.getRobotKinematics().getPosition().toString());
 
