@@ -51,6 +51,8 @@ public class YourService extends KiboRpcService {
     private boolean QR_decoded = false;
     private String QRstring;
 
+    private int called_image_save = 0;
+
     @Override
     protected void runPlan1(){
 
@@ -221,11 +223,12 @@ public class YourService extends KiboRpcService {
 
 
     private String readQR(){
-
+        called_image_save++;
+        
         Log.i(TAG+"/readQR", "QR IMAGE PROCESSING");
         
         Mat grayImage = api.getMatNavCam();
-        api.saveMatImage(grayImage, "QRImage.png");
+        api.saveMatImage(grayImage, called_image_save + "_QRImage.png");
         
         String key = "";
         key = qrCodeReader.readQR(grayImage);
@@ -237,7 +240,7 @@ public class YourService extends KiboRpcService {
             qrCounter++;
             key = qrCodeReader.readQR(grayImage);
             Core.rotate(grayImage, grayImage, Core.ROTATE_90_CLOCKWISE);
-            api.saveMatImage(grayImage, "QRImage_" + qrCounter + ".png");
+            api.saveMatImage(grayImage, called_image_save + "_" + qrCounter + "_QRImage.png");
             Log.i(TAG+"/readQR", "QRCODE KEY: " + key + " ATTEMPT: " + qrCounter);
         }
         Log.i(TAG+"/readQR", "QRCODE KEY: " + key);
@@ -279,11 +282,13 @@ public class YourService extends KiboRpcService {
     }
 
     public void optimizeCenter(int targetID){
+        called_image_save++;
+
         Log.i(TAG+"/optimizeCenter", "OPTIMIZING CENTER");
         // image processing to figure our position of target
         Mat grayImage = api.getMatNavCam();
         Mat colorImage = imageProcessing.imageProcessing(grayImage, targetID);
-        api.saveMatImage(colorImage, "ProcessedTarget_" + targetID + ".png");
+        api.saveMatImage(colorImage, called_image_save + "_Target_" + targetID + ".png");
 
         // code to align astrobee with target
         Kinematics kinematics = api.getRobotKinematics();
@@ -291,7 +296,7 @@ public class YourService extends KiboRpcService {
         api.moveTo(new_point, kinematics.getOrientation(), true);
         Mat alignedImage = api.getMatNavCam();
         Mat colorAlignedImage = imageProcessing.imageProcessing(alignedImage, targetID);
-        api.saveMatImage(colorAlignedImage, "AlignedProcessedTarget_" + targetID + ".png");
+        api.saveMatImage(colorAlignedImage, called_image_save + "_AlignedTarget_" + targetID + ".png");
         imageProcessing.corners.clear();
         }
 }
