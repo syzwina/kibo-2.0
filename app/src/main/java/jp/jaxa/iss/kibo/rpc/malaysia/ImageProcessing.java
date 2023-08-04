@@ -193,8 +193,8 @@ public class ImageProcessing {
                     x_difference += 80;
                 }
                 else{
-                    new_point = new Point (new_point.getX() + (x_difference + 20), new_point.getY(), new_point.getZ());
-                    x_difference += 20;
+                    new_point = new Point (new_point.getX() + (x_difference + scale), new_point.getY(), new_point.getZ());
+                    x_difference += scale;
                 }
             }
             //2: x_difference > scale
@@ -205,8 +205,8 @@ public class ImageProcessing {
                     x_difference -= 80;
                 }
                 else{
-                    new_point = new Point (new_point.getX() + (x_difference - 20), new_point.getY(), new_point.getZ());
-                    x_difference -= 20;
+                    new_point = new Point (new_point.getX() + (x_difference - scale), new_point.getY(), new_point.getZ());
+                    x_difference -= scale;
                 }
             }
             counter_x ++;
@@ -225,8 +225,8 @@ public class ImageProcessing {
                     z_difference += 80;
                 }
                 else{
-                    new_point = new Point (new_point.getX(), new_point.getY(), new_point.getZ() + (z_difference + 20));
-                    z_difference += 20;
+                    new_point = new Point (new_point.getX(), new_point.getY(), new_point.getZ() + (z_difference + scale));
+                    z_difference += scale;
                 }
             }
             //2: x_difference > scale
@@ -237,8 +237,8 @@ public class ImageProcessing {
                     z_difference -= 80;
                 }
                 else{
-                    new_point = new Point (new_point.getX(), new_point.getY(), new_point.getZ() + (z_difference - 20));
-                    z_difference -= 20;
+                    new_point = new Point (new_point.getX(), new_point.getY(), new_point.getZ() + (z_difference - scale));
+                    z_difference -= scale;
                 }
             }
             counter_z ++;
