@@ -150,7 +150,7 @@ public class ImageProcessing {
 
     public Point moveCloserToArucoMarker(int current_target){
 
-        double[] aruco_middle = inspectCorners(corners, current_target);// 5cm for each AR tags (ref to rulebook)
+        double[] aruco_middle = inspectCorners(corners, current_target);
 
         int counter_x = 0;
         int counter_z = 0;
@@ -160,9 +160,10 @@ public class ImageProcessing {
         double aruco_middle_x = aruco_middle[0];
         double aruco_middle_z = aruco_middle[1];
 
-        // Variable to detect the difference of 2 corners of 1 AR tag
-        // arLength is the difference between 2 corners of the AR tag
-        // use pythagoras for accuarcy
+        /* Variable to detect the difference of 2 corners of 1 AR tag
+            - arLength = Length of Side of AR Tag (actual: 5cm)
+            - Use pythagoras for accuarcy 
+        */
         double[] TopRightCoords = corners.get(0).get(0, 0);
         double[] BottomLeftCoords = corners.get(0).get(0, 2);
         double arLength = Math.sqrt(Math.pow((TopRightCoords[0] - BottomLeftCoords[0]), 2) + Math.pow((TopRightCoords[1] - BottomLeftCoords[1]), 2));
@@ -178,7 +179,7 @@ public class ImageProcessing {
         Log.i(TAG+"/moveCloserToArucoMarker", "The z difference is: " + z_difference);
 
         /* We need to use one of the AR tags as a reference of the bee moving closer to the image:
-         * 1) We already have the coordinates of the corners (stored in Mat)
+         * 1) We have: corners (stored in Mat)
          * 2) Use one of the AR tag (while loop):
          *      - check the x difference of the corners of the 2 consecutive arrays (corners), difference stored as length
          *      - check for scale = length/5 (the exact length of the tag)
@@ -188,35 +189,42 @@ public class ImageProcessing {
         // initialize new_point
         Point new_point = new Point(0,0,0);
 
-        /* We want the bee to move closer, thus each 4 points might be a bit different
-         * Thought process:
-         * 1) check for the x difference & z difference
-         * 2) if the x diff & z diff still less than 20, repeat the image processing few times
-          * */
-
-        //TODO: Combine the scale of while loop (both positive & negative)
-        //Main reason is so that it falls within the range of 20 to -20 only
-        //Combine 2 cases: x_diff & z_diff
         //TODO: implement scale in aruco_middle
 
-        /* Case 1: positive difference case */
-        while (x_difference >= scale){
-            /* special case if x >= 100 */
-            if (x_difference >= 100){
-                new_point = new Point (new_point.getX() + (x_difference - 80), new_point.getY(), new_point.getZ());
-                x_difference -= 80;
-                //x_difference /= (move_relative / 2.0);
+        /* Case 1: x_difference only */
+        while(x_difference < -scale || x_difference > scale){
+            //1: x_difference < -scale
+            if(x_difference < -scale){
+                //for extreme values
+                if(x_difference <= -100){
+                    new_point = new Point (new_point.getX() + (x_difference + 80), new_point.getY(), new_point.getZ());
+                    x_difference += 80;
+                }
+                else{
+                    new_point = new Point (new_point.getX() + (x_difference + 20), new_point.getY(), new_point.getZ());
+                    x_difference += 20;
+                }
             }
-            else {
-                new_point = new Point (new_point.getX() + (x_difference - 20), new_point.getY(), new_point.getZ());
-                x_difference -= 20;
-                //x_difference /= (move_relative / 2.0);
+
+            //2: x_difference > scale
+            else{
+                //for extreme values
+                if(x_difference >= 100){
+                    new_point = new Point (new_point.getX() + (x_difference - 80), new_point.getY(), new_point.getZ());
+                    x_difference -= 80;
+                }
+                else{
+                    new_point = new Point (new_point.getX() + (x_difference - 20), new_point.getY(), new_point.getZ());
+                    x_difference -= 20;
+                }
             }
             counter_x ++;
             Log.i(TAG+"/moveCloserToArucoMarker", "The x difference is currently: " + x_difference);
             Log.i(TAG+"/moveCloserToArucoMarker", "The new point is now: " + new_point);
             Log.i(TAG+"/moveCloserToArucoMarker", "The while (x) attempted: " + counter_x);
         }
+
+        
 
         while (z_difference >= scale){
             /* special case if z >= 100 */
@@ -237,23 +245,6 @@ public class ImageProcessing {
         }
 
         /* Case 2: negative difference case */
-        while (x_difference <= -scale){
-            /* special case if x >= 100 */
-            if (x_difference <= 100){
-                new_point = new Point (new_point.getX() + (x_difference + 80), new_point.getY(), new_point.getZ());
-                x_difference += 80;
-                //x_difference /= (move_relative / 2.0);
-            }
-            else {
-                new_point = new Point (new_point.getX() + (x_difference + 20), new_point.getY(), new_point.getZ());
-                x_difference += 20;
-                //x_difference /= (move_relative / 2.0);
-            }
-            counter_x ++;
-            Log.i(TAG+"/moveCloserToArucoMarker", "The x difference is currently: " + x_difference);
-            Log.i(TAG+"/moveCloserToArucoMarker", "The new point is now: " + new_point);
-            Log.i(TAG+"/moveCloserToArucoMarker", "The while (x) attempted: " + counter_x);
-        }
 
         while (z_difference <= -scale){
             /* special case if z >= 100 */
