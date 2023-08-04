@@ -109,25 +109,25 @@ public class ImageProcessing {
                     double[] topright = corners.get(i).get(0, 0);
                     aruco_middle_x = topright[0] - 10.0;
                     aruco_middle_z = topright[1] - 3.75;
-                    Log.i(TAG+"/inspectCorners", "It uses the Top Right Tag");
+                    Log.i(TAG+"/inspectCorners", "Top Right Tag");
                 }
                 else if(arucoIds.get(((int) ids.get(i, 0)[0])) == Position.TopLeft){
                     double[] topleft = corners.get(i).get(0, 1);
                     aruco_middle_x = topleft[0] + 10.0;
                     aruco_middle_z = topleft[1] - 3.75;
-                    Log.i(TAG+"/inspectCorners", "It uses the Top Left Tag");
+                    Log.i(TAG+"/inspectCorners", "Top Left Tag");
                 }
                 else if(arucoIds.get(((int) ids.get(i, 0)[0])) == Position.BottomLeft){
                     double[] bottomleft = corners.get(i).get(0, 2);
                     aruco_middle_x = bottomleft[0] + 10.0;
                     aruco_middle_z = bottomleft[1] + 3.75;
-                    Log.i(TAG+"/inspectCorners", "It uses the Bottom Left Tag");
+                    Log.i(TAG+"/inspectCorners", "Bottom Left Tag");
                 }
                 else if (arucoIds.get(((int) ids.get(i, 0)[0])) == Position.BottomRight) {
                     double[] bottomright = corners.get(i).get(0, 3);
                     aruco_middle_x = bottomright[0] - 10.0;
                     aruco_middle_z = bottomright[1] - 3.75;
-                    Log.i(TAG+"/inspectCorners", "It uses the Bottom Right Tag");
+                    Log.i(TAG+"/inspectCorners", "Bottom Right Tag");
                 }
                 else {
                     Log.e(TAG+"/inspectCorners", "Error: unable to use any corners");
