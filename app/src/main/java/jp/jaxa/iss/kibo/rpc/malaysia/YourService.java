@@ -211,6 +211,11 @@ public class YourService extends KiboRpcService {
         if (current_target == 6) {
             api.relativeMoveTo(new Point(0, y_offset, z_offset), pointQuartenion, false); // hopefully correct
         }
+        // TODO: save an image here too
+        Mat laserImage = api.getMatNavCam();
+        Mat colorLaserImage = imageProcessing.imageProcessing(laserImage, targetID);
+        api.saveMatImage(colorLaserImage, called_image_save + "_LaseredTarget_" + targetID + ".png");
+
         Log.i(TAG+"/laserBeam", "current Robot Position after offset compensation laser pointer: " + api.getRobotKinematics().getPosition().toString());
 
 
