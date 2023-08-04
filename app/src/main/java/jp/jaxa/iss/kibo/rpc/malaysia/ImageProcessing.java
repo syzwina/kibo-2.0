@@ -170,6 +170,7 @@ public class ImageProcessing {
 
         // scale is so that it can move as close as possible
         double scale = arLength / (5.0 * 1.5);
+        Log.i(TAG+"/moveCloserToArucoMarker", "Scale is: " + scale);
 
         double x_difference = middle_x - aruco_middle_x;
         Log.i(TAG+"/moveCloserToArucoMarker", "The x difference is: " + x_difference);
@@ -197,6 +198,11 @@ public class ImageProcessing {
          * 1) check for the x difference & z difference
          * 2) if the x diff & z diff still less than 20, repeat the image processing few times
           * */
+
+        //TODO: Combine the scale of while loop (both positive & negative)
+        //Main reason is so that it falls within the range of 20 to -20 only
+        //Combine 2 cases: x_diff & z_diff
+        //TODO: implement scale in aruco_middle
 
         /* Case 1: positive difference case */
         while (x_difference >= scale){
