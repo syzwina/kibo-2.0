@@ -31,7 +31,7 @@ public class YourService extends KiboRpcService {
 
     private List<Integer> current_target;
 
-    private int TIME_FOR_QR_AND_GOAL = 150 * 1000;
+    private int TIME_FOR_QR_AND_GOAL = 151 * 1000;
 
     // used globally as a way to know which point is the current goal
     private Point currentGoalCoords = new Point(0,0,0);
@@ -121,10 +121,15 @@ public class YourService extends KiboRpcService {
                 else    Log.i(TAG + "/runPlan1/moveToCommon", "SUCCESSFUL ATTEMPT TO MOVE TO POINT DIRECTLY");
 
                 // align astrobee to target
-                optimizeCenter(current_target.get(targetCounter));
+                Point new_point = optimizeCenter(current_target.get(targetCounter));
 
                 // irradiate with laser
-                laserBeam(current_target.get(targetCounter), PointConstants.POINTS_QUATERNIONS.get(current_target.get(targetCounter) - 1));
+                laserBeam(current_target.get(targetCounter), new_point);
+
+                Mat laserImage = api.getMatNavCam();
+                Mat colorLaserImage = imageProcessing.imageProcessing(laserImage, current_target.get(targetCounter));
+                api.saveMatImage(colorLaserImage, called_image_save + "_LaseredTarget_" + current_target + ".png");
+
                 laserCounter++;
                 Log.i(TAG + "/runPlan1/laserCounter", "LASER COUNTER: " + laserCounter);
 
@@ -182,7 +187,7 @@ public class YourService extends KiboRpcService {
 
     }
 
-    private void laserBeam(int current_target, Quaternion pointQuartenion){
+    private void laserBeam(int current_target, Point optimized_point){
         // compensate for laser pointer offset from navcam in plane that contains navcam/laser pointer by getting orientation first
         // yz axis offset value with local point origin at astrobee FROM NAVCAM under upright orientation ie x-axis as front to back axis (with front being
         // front view of astrobee in Figure 8-2
@@ -193,28 +198,28 @@ public class YourService extends KiboRpcService {
         //probably need orientation check as well, cus now theres target in ceiling etc
         Log.i(TAG+"/laserBeam", "current Robot Position before offset compensation laser pointer: " + api.getRobotKinematics().getPosition().toString());
 
+        Point new_point = new Point(0,0,0);
+
         if (current_target == 1) {
-            api.relativeMoveTo(new Point(y_offset, 0, z_offset), pointQuartenion, false); //test target 1, +ve
+            new_point = new Point(optimized_point.getX() + y_offset, optimized_point.getY(), optimized_point.getZ() + z_offset); //test target 1, +ve
         }
         if (current_target == 2){
-            api.relativeMoveTo(new Point(y_offset, -z_offset, 0), pointQuartenion, false); //test target 2, correct wall now
+            new_point = new Point(optimized_point.getX() + y_offset, optimized_point.getY() - z_offset, optimized_point.getZ()); //test target 2, correct wall now
         }
         if (current_target == 3) {
-            api.relativeMoveTo(new Point(z_offset, y_offset, 0), pointQuartenion, false); //testing hypothesis on target 3, works!
+            new_point = new Point(optimized_point.getX() + z_offset, optimized_point.getY() + y_offset, optimized_point.getZ()); //testing hypothesis on target 3, works!
         }
         if (current_target == 4) {
-            api.relativeMoveTo(new Point(0, -y_offset, z_offset), pointQuartenion, false); //+ve y to go left,
+            new_point = new Point(optimized_point.getX(), optimized_point.getY()- y_offset, optimized_point.getZ() + z_offset); //+ve y to go left,
         }
         if (current_target == 5) {
-            api.relativeMoveTo(new Point(y_offset, z_offset, 0), pointQuartenion, false); // test
+            new_point = new Point(optimized_point.getX() + y_offset, optimized_point.getY() + z_offset, optimized_point.getZ()); // test
         }
         if (current_target == 6) {
-            api.relativeMoveTo(new Point(0, y_offset, z_offset), pointQuartenion, false); // hopefully correct
+            new_point = new Point(optimized_point.getX(), optimized_point.getY() + y_offset, optimized_point.getZ() + z_offset); // hopefully correct
         }
-        // TODO: save an image here too
-        Mat laserImage = api.getMatNavCam();
-        Mat colorLaserImage = imageProcessing.imageProcessing(laserImage, current_target);
-        api.saveMatImage(colorLaserImage, called_image_save + "_LaseredTarget_" + current_target + ".png");
+
+        api.moveTo(new_point, PointConstants.POINTS_QUATERNIONS.get(this.current_target.get(targetCounter) - 1), false);
 
         Log.i(TAG+"/laserBeam", "current Robot Position after offset compensation laser pointer: " + api.getRobotKinematics().getPosition().toString());
 
@@ -288,7 +293,7 @@ public class YourService extends KiboRpcService {
 
     }
 
-    public void optimizeCenter(int targetID){
+    public Point optimizeCenter(int targetID){
         called_image_save++;
 
         Log.i(TAG+"/optimizeCenter", "OPTIMIZING CENTER");
@@ -300,11 +305,9 @@ public class YourService extends KiboRpcService {
         // code to align astrobee with target
         Kinematics kinematics = api.getRobotKinematics();
         Point new_point = imageProcessing.moveCloserToArucoMarker(kinematics, targetID);
-        // TODO: experiment with relativeMoveTo
-        api.moveTo(new_point, PointConstants.POINTS_QUATERNIONS.get(current_target.get(targetCounter) - 1), false);
-        Mat alignedImage = api.getMatNavCam();
-        Mat colorAlignedImage = imageProcessing.imageProcessing(alignedImage, targetID);
-        api.saveMatImage(colorAlignedImage, called_image_save + "_AlignedTarget_" + targetID + ".png");
+
         imageProcessing.corners.clear();
+
+        return new_point;
         }
 }
