@@ -224,7 +224,7 @@ public class YourService extends KiboRpcService {
 
     private String readQR(){
         called_image_save++;
-        
+
         Log.i(TAG+"/readQR", "QR IMAGE PROCESSING");
         
         Mat grayImage = api.getMatNavCam();
@@ -263,7 +263,7 @@ public class YourService extends KiboRpcService {
         else Log.e(TAG+"/moveBee", "point " + pointNumber + " is NOT in KIZ");*/
 
         Log.i(TAG+"/moveBee", "MOVE TO: " + pointNumber);
-        Result result = api.moveTo(point, quaternion, true);
+        Result result = api.moveTo(point, quaternion, false);
 
         if (result.hasSucceeded())  
         {
@@ -293,7 +293,7 @@ public class YourService extends KiboRpcService {
         // code to align astrobee with target
         Kinematics kinematics = api.getRobotKinematics();
         Point new_point = imageProcessing.moveCloserToArucoMarker(kinematics, targetID);
-        api.moveTo(new_point, kinematics.getOrientation(), true);
+        api.moveTo(new_point, kinematics.getOrientation(), false);
         Mat alignedImage = api.getMatNavCam();
         Mat colorAlignedImage = imageProcessing.imageProcessing(alignedImage, targetID);
         api.saveMatImage(colorAlignedImage, called_image_save + "_AlignedTarget_" + targetID + ".png");
