@@ -295,10 +295,8 @@ public class YourService extends KiboRpcService {
         // code to align astrobee with target
         Kinematics kinematics = api.getRobotKinematics();
         Point new_point = imageProcessing.moveCloserToArucoMarker(kinematics, targetID);
-        // TODO: instead of kinematics.getOrientation(), use the absolute Quaternion in the constants file
-        // because the current Quaternion might not be correct
         // TODO: experiment with relativeMoveTo
-        api.moveTo(new_point, kinematics.getOrientation(), false);
+        api.moveTo(new_point, PointConstants.POINTS_QUATERNIONS.get(current_target.get(targetCounter) - 1), false);
         Mat alignedImage = api.getMatNavCam();
         Mat colorAlignedImage = imageProcessing.imageProcessing(alignedImage, targetID);
         api.saveMatImage(colorAlignedImage, called_image_save + "_AlignedTarget_" + targetID + ".png");
