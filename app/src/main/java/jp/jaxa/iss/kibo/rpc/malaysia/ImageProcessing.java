@@ -148,7 +148,7 @@ public class ImageProcessing {
         return aruco_middle;
     }
 
-    public Point moveCloserToArucoMarker(Kinematics kinematics, int current_target){
+    public Point moveCloserToArucoMarker(int current_target){
 
         double[] aruco_middle = inspectCorners(corners, current_target);// 5cm for each AR tags (ref to rulebook)
 
@@ -177,11 +177,6 @@ public class ImageProcessing {
         double z_difference = middle_z - aruco_middle_z;
         Log.i(TAG+"/moveCloserToArucoMarker", "The z difference is: " + z_difference);
 
-        Point point;
-        Point new_point;
-
-        point = kinematics.getPosition();
-
         /* We need to use one of the AR tags as a reference of the bee moving closer to the image:
          * 1) We already have the coordinates of the corners (stored in Mat)
          * 2) Use one of the AR tag (while loop):
@@ -191,7 +186,7 @@ public class ImageProcessing {
          */
 
         // initialize new_point
-        new_point = new Point (point.getX(), point.getY(), point.getZ());
+        Point new_point = new Point(0,0,0);
 
         /* We want the bee to move closer, thus each 4 points might be a bit different
          * Thought process:
@@ -208,12 +203,12 @@ public class ImageProcessing {
         while (x_difference >= scale){
             /* special case if x >= 100 */
             if (x_difference >= 100){
-                new_point = new Point (point.getX() + (x_difference - 80), point.getY(), point.getZ());
+                new_point = new Point (new_point.getX() + (x_difference - 80), new_point.getY(), new_point.getZ());
                 x_difference -= 80;
                 //x_difference /= (move_relative / 2.0);
             }
             else {
-                new_point = new Point (point.getX() + (x_difference - 20), point.getY(), point.getZ());
+                new_point = new Point (new_point.getX() + (x_difference - 20), new_point.getY(), new_point.getZ());
                 x_difference -= 20;
                 //x_difference /= (move_relative / 2.0);
             }
@@ -226,12 +221,12 @@ public class ImageProcessing {
         while (z_difference >= scale){
             /* special case if z >= 100 */
             if (z_difference >= 100){
-                new_point = new Point (point.getX(), point.getY(), point.getZ() + (z_difference - 80));
+                new_point = new Point (new_point.getX(), new_point.getY(), new_point.getZ() + (z_difference - 80));
                 z_difference -= 80;
                 //z_difference *= (move_relative / 2.0);
             }
             else {
-                new_point = new Point (point.getX(), point.getY(), point.getZ() + (z_difference - 20));
+                new_point = new Point (new_point.getX(), new_point.getY(), new_point.getZ() + (z_difference - 20));
                 z_difference -= 20;
                // z_difference *= (move_relative / 2.0);
             }
@@ -245,12 +240,12 @@ public class ImageProcessing {
         while (x_difference <= -scale){
             /* special case if x >= 100 */
             if (x_difference <= 100){
-                new_point = new Point (point.getX() + (x_difference + 80), point.getY(), point.getZ());
+                new_point = new Point (new_point.getX() + (x_difference + 80), new_point.getY(), new_point.getZ());
                 x_difference += 80;
                 //x_difference /= (move_relative / 2.0);
             }
             else {
-                new_point = new Point (point.getX() + (x_difference + 20), point.getY(), point.getZ());
+                new_point = new Point (new_point.getX() + (x_difference + 20), new_point.getY(), new_point.getZ());
                 x_difference += 20;
                 //x_difference /= (move_relative / 2.0);
             }
@@ -263,12 +258,12 @@ public class ImageProcessing {
         while (z_difference <= -scale){
             /* special case if z >= 100 */
             if (z_difference <= 100){
-                new_point = new Point (point.getX(), point.getY(), point.getZ() + (z_difference + 80));
+                new_point = new Point (new_point.getX(), new_point.getY(), new_point.getZ() + (z_difference + 80));
                 z_difference += 80;
                // z_difference /= (move_relative / 2.0);
             }
             else {
-                new_point = new Point (point.getX(), point.getY(), point.getZ() + (z_difference + 20));
+                new_point = new Point (new_point.getX(), new_point.getY(), new_point.getZ() + (z_difference + 20));
                 z_difference += 20;
                 //z_difference /= (move_relative / 2.0);
             }
@@ -277,6 +272,26 @@ public class ImageProcessing {
             Log.i(TAG+"/moveCloserToArucoMarker", "The new point is now: " + new_point);
             Log.i(TAG+"/moveCloserToArucoMarker", "The while (z) attempted: " + counter_z);
         }
+
+        // if (current_target == 1) {
+        //     new_point = new Point(new_point.getX() + x_difference, new_point.getY(), new_point.getZ() + z_difference);
+        // }
+        // if (current_target == 2){
+        //     new_point = new Point(new_point.getX() + x_difference, new_point.getY() - z_difference, new_point.getZ() + 0);
+        // }
+        // if (current_target == 3) {
+        //     new_point = new Point(new_point.getX() + z_difference, new_point.getY() + x_difference, new_point.getZ() + 0);
+        // }
+        // if (current_target == 4) {
+        //     new_point = new Point(new_point.getX(), new_point.getY() - x_difference, new_point.getZ() + z_difference);
+        // }
+        // if (current_target == 5) {
+        //     new_point = new Point(new_point.getX() + x_difference, new_point.getY() + z_difference, new_point.getZ() + 0);
+        // }
+        // if (current_target == 6) {
+        //     new_point = new Point(new_point.getX(), new_point.getY() + x_difference, new_point.getZ() + z_difference);
+        // }
+
 
         return new_point;
 

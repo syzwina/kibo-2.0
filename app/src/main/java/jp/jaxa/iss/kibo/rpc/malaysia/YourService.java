@@ -303,8 +303,7 @@ public class YourService extends KiboRpcService {
         api.saveMatImage(colorImage, called_image_save + "_Target_" + targetID + ".png");
 
         // code to align astrobee with target
-        Kinematics kinematics = api.getRobotKinematics();
-        Point new_point = imageProcessing.moveCloserToArucoMarker(kinematics, targetID);
+        Point new_point = imageProcessing.moveCloserToArucoMarker(targetID);
 
         imageProcessing.corners.clear();
 
