@@ -269,6 +269,8 @@ public class YourService extends KiboRpcService {
         {
             Log.i(TAG + "/moveBee", "MOVETO STATUS: SUCCESS");
             Log.i(TAG + "/moveBee", "SUCCESSFULLY MOVED TO POINT: " + pointNumber);
+            // TODO: print the actual current point and quaternion using kinematics
+            // beacuse it might not go exactly to the point
             Log.i(TAG + "/moveBee/coords", "X: " + point.getX() + ", Y: " + point.getY() + ", Z: " + point.getZ());
             return true;
         }
@@ -293,6 +295,9 @@ public class YourService extends KiboRpcService {
         // code to align astrobee with target
         Kinematics kinematics = api.getRobotKinematics();
         Point new_point = imageProcessing.moveCloserToArucoMarker(kinematics, targetID);
+        // TODO: instead of kinematics.getOrientation(), use the absolute Quaternion in the constants file
+        // because the current Quaternion might not be correct
+        // TODO: experiment with relativeMoveTo
         api.moveTo(new_point, kinematics.getOrientation(), false);
         Mat alignedImage = api.getMatNavCam();
         Mat colorAlignedImage = imageProcessing.imageProcessing(alignedImage, targetID);
