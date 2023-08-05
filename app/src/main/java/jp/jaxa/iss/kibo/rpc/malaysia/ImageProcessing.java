@@ -170,7 +170,9 @@ public class ImageProcessing {
         Log.i(TAG+"/moveCloserToArucoMarker", "Length of AR Tag is: " + arLength);
 
         // scale is so that it can move as close as possible
-        double scale = arLength / (5.0 * 1.5);
+        double oldscale = arLength / (5.0 * 1.5);
+        String StringScale = (String) String.format("%.2f", oldscale);
+        Double scale = Double.parseDouble(StringScale);
         Log.i(TAG+"/moveCloserToArucoMarker", "Scale is: " + scale);
 
         double x_difference = middle_x - aruco_middle_x;
