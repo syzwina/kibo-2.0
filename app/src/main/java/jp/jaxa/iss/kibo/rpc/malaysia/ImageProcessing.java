@@ -41,7 +41,7 @@ public class ImageProcessing {
     public List<Mat> corners;
     private Dictionary dictionary;
     private Mat ids;
-    private double scale;
+    public double scale;
     
     public ImageProcessing (Dictionary dictionary, List<Mat> corners, Mat ids, DetectorParameters detectorParameters) {
         this.dictionary = dictionary;
@@ -272,12 +272,12 @@ public class ImageProcessing {
         if (current_target == 4) {
             new_point = new Point(new_point.getX(), new_point.getY() - x_difference, new_point.getZ() + z_difference);
         }
-        if (current_target == 5) {
-            new_point = new Point(new_point.getX() + x_difference, new_point.getY() + z_difference, new_point.getZ() + 0);
-        }
-        if (current_target == 6) {
-            new_point = new Point(new_point.getX(), new_point.getY() + x_difference, new_point.getZ() + z_difference);
-        }
+        // if (current_target == 5) {
+        //     new_point = new Point(new_point.getX() + x_difference, new_point.getY() + z_difference, new_point.getZ() + 0);
+        // }
+        // if (current_target == 6) {
+        //     new_point = new Point(new_point.getX(), new_point.getY() + x_difference, new_point.getZ() + z_difference);
+        // }
 
 
         return new_point;
