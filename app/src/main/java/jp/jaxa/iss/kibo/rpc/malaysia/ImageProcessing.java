@@ -170,7 +170,7 @@ public class ImageProcessing {
         Log.i(TAG+"/moveCloserToArucoMarker", "Length of AR Tag is: " + arLength);
 
         // scale is so that it can move as close as possible
-        double oldscale = arLength / (5.0 * 1.5);
+        double oldscale = arLength / (5.0);
         String StringScale = (String) String.format("%.2f", oldscale);
         Double scale = Double.parseDouble(StringScale);
         Log.i(TAG+"/moveCloserToArucoMarker", "Scale is: " + scale);
@@ -265,24 +265,24 @@ public class ImageProcessing {
             Log.i(TAG+"/moveCloserToArucoMarker", "The while (z) attempted: " + counter_z);
         }
 
-        // if (current_target == 1) {
-        //     new_point = new Point(new_point.getX() + x_difference, new_point.getY(), new_point.getZ() + z_difference);
-        // }
-        // if (current_target == 2){
-        //     new_point = new Point(new_point.getX() + x_difference, new_point.getY() - z_difference, new_point.getZ() + 0);
-        // }
-        // if (current_target == 3) {
-        //     new_point = new Point(new_point.getX() + z_difference, new_point.getY() + x_difference, new_point.getZ() + 0);
-        // }
-        // if (current_target == 4) {
-        //     new_point = new Point(new_point.getX(), new_point.getY() - x_difference, new_point.getZ() + z_difference);
-        // }
-        // if (current_target == 5) {
-        //     new_point = new Point(new_point.getX() + x_difference, new_point.getY() + z_difference, new_point.getZ() + 0);
-        // }
-        // if (current_target == 6) {
-        //     new_point = new Point(new_point.getX(), new_point.getY() + x_difference, new_point.getZ() + z_difference);
-        // }
+        if (current_target == 1) {
+            new_point = new Point(new_point.getX() + x_difference, new_point.getY(), new_point.getZ() + z_difference);
+        }
+        if (current_target == 2){
+            new_point = new Point(new_point.getX() + x_difference, new_point.getY() - z_difference, new_point.getZ() + 0);
+        }
+        if (current_target == 3) {
+            new_point = new Point(new_point.getX() + z_difference, new_point.getY() + x_difference, new_point.getZ() + 0);
+        }
+        if (current_target == 4) {
+            new_point = new Point(new_point.getX(), new_point.getY() - x_difference, new_point.getZ() + z_difference);
+        }
+        if (current_target == 5) {
+            new_point = new Point(new_point.getX() + x_difference, new_point.getY() + z_difference, new_point.getZ() + 0);
+        }
+        if (current_target == 6) {
+            new_point = new Point(new_point.getX(), new_point.getY() + x_difference, new_point.getZ() + z_difference);
+        }
 
 
         return new_point;
