@@ -41,6 +41,9 @@ public class ImageProcessing {
     public List<Mat> corners;
     private Dictionary dictionary;
     private Mat ids;
+
+    //introduce scale as a global variable
+    double scale = 0.0;
     
     public ImageProcessing (Dictionary dictionary, List<Mat> corners, Mat ids, DetectorParameters detectorParameters) {
         this.dictionary = dictionary;
@@ -81,16 +84,26 @@ public class ImageProcessing {
         * 1) detect AR tag and its ID
         * 2) detect its placement
         * 3) make it move by few cm (ref to discord) to get to aruco_middle
-        *
-        * param:
-        * 1) aruco_middle_(x/y): middle of the circle
         * */
 
+        //initialisation
         double aruco_middle_x = 0;
         double aruco_middle_z = 0;
 
-        // Aruco.estimatePoseSingleMarkers(List<Mat> corners, 5, cameraMatrix, distCoeffs, rvecs, tvecs );
+        /* Using AR Tag for reference:
+         * 1) arLength: use corners & pythagoras
+         * 2) scale: arLength/(5)
+         */
+        double[] TopRightCoords = corners.get(0).get(0, 0);
+        double[] BottomLeftCoords = corners.get(0).get(0, 2);
+        double arLength = Math.sqrt(Math.pow((TopRightCoords[0] - BottomLeftCoords[0]), 2) + Math.pow((TopRightCoords[1] - BottomLeftCoords[1]), 2));
+        Log.i(TAG+"/inspectCorners", "Length of AR Tag is: " + arLength);
 
+        // scale as ratio
+        double oldscale = arLength / (5.0);
+        String StringScale = (String) String.format("%.2f", oldscale);
+        Double scale = Double.parseDouble(StringScale);
+        Log.i(TAG+"/inspectCorners", "Scale is: " + scale);
 
         // if the aruco id, belongs to the current target, go into if block, else continue
         for ( int i=0; i<ids.rows(); i++ ) {
@@ -107,26 +120,26 @@ public class ImageProcessing {
                 detect the positions of AR tags */
                 if(arucoIds.get(((int) ids.get(i, 0)[0])) == Position.TopRight){
                     double[] topright = corners.get(i).get(0, 0);
-                    aruco_middle_x = topright[0] - 10.0;
-                    aruco_middle_z = topright[1] - 3.75;
+                    aruco_middle_x = topright[0] - (10.0 * scale);
+                    aruco_middle_z = topright[1] - (3.75 * scale);
                     Log.i(TAG+"/inspectCorners", "Top Right Tag");
                 }
                 else if(arucoIds.get(((int) ids.get(i, 0)[0])) == Position.TopLeft){
                     double[] topleft = corners.get(i).get(0, 1);
-                    aruco_middle_x = topleft[0] + 10.0;
-                    aruco_middle_z = topleft[1] - 3.75;
+                    aruco_middle_x = topleft[0] + (10.0 * scale);
+                    aruco_middle_z = topleft[1] - (3.75 * scale);
                     Log.i(TAG+"/inspectCorners", "Top Left Tag");
                 }
                 else if(arucoIds.get(((int) ids.get(i, 0)[0])) == Position.BottomLeft){
                     double[] bottomleft = corners.get(i).get(0, 2);
-                    aruco_middle_x = bottomleft[0] + 10.0;
-                    aruco_middle_z = bottomleft[1] + 3.75;
+                    aruco_middle_x = bottomleft[0] + (10.0 * scale);
+                    aruco_middle_z = bottomleft[1] + (3.75 * scale);
                     Log.i(TAG+"/inspectCorners", "Bottom Left Tag");
                 }
                 else if (arucoIds.get(((int) ids.get(i, 0)[0])) == Position.BottomRight) {
                     double[] bottomright = corners.get(i).get(0, 3);
-                    aruco_middle_x = bottomright[0] - 10.0;
-                    aruco_middle_z = bottomright[1] - 3.75;
+                    aruco_middle_x = bottomright[0] - (10.0 * scale);
+                    aruco_middle_z = bottomright[1] - (3.75 * scale);
                     Log.i(TAG+"/inspectCorners", "Bottom Right Tag");
                 }
                 else {
@@ -160,25 +173,13 @@ public class ImageProcessing {
         double aruco_middle_x = aruco_middle[0];
         double aruco_middle_z = aruco_middle[1];
 
-        /* Using AR Tag for reference:
-         * 1) arLength: use corners & pythagoras
-         * 2) scale: arLength/(5*a); a is a constant
-         */
-        double[] TopRightCoords = corners.get(0).get(0, 0);
-        double[] BottomLeftCoords = corners.get(0).get(0, 2);
-        double arLength = Math.sqrt(Math.pow((TopRightCoords[0] - BottomLeftCoords[0]), 2) + Math.pow((TopRightCoords[1] - BottomLeftCoords[1]), 2));
-        Log.i(TAG+"/moveCloserToArucoMarker", "Length of AR Tag is: " + arLength);
-
-        // scale is so that it can move as close as possible
-        double oldscale = arLength / (5.0);
-        String StringScale = (String) String.format("%.2f", oldscale);
-        Double scale = Double.parseDouble(StringScale);
-        Log.i(TAG+"/moveCloserToArucoMarker", "Scale is: " + scale);
-
         double x_difference = middle_x - aruco_middle_x;
         Log.i(TAG+"/moveCloserToArucoMarker", "The x difference is: " + x_difference);
         double z_difference = middle_z - aruco_middle_z;
         Log.i(TAG+"/moveCloserToArucoMarker", "The z difference is: " + z_difference);
+
+        //Reintroduce scale
+
 
         // initialize new_point
         Point new_point = new Point(0,0,0);
