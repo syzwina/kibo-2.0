@@ -41,7 +41,7 @@ public class ImageProcessing {
     public List<Mat> corners;
     private Dictionary dictionary;
     private Mat ids;
-    public double scale;
+    private double scale;
     
     public ImageProcessing (Dictionary dictionary, List<Mat> corners, Mat ids, DetectorParameters detectorParameters) {
         this.dictionary = dictionary;
@@ -324,6 +324,10 @@ public class ImageProcessing {
         arucoTargets.put(14,4);
         arucoTargets.put(15,4);
         arucoTargets.put(16,4);
+    }
+
+    public double getScale (){
+        return scale;
     }
 
 }

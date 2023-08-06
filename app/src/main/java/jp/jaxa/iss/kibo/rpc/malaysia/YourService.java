@@ -191,8 +191,10 @@ public class YourService extends KiboRpcService {
         // compensate for laser pointer offset from navcam in plane that contains navcam/laser pointer by getting orientation first
         // yz axis offset value with local point origin at astrobee FROM NAVCAM under upright orientation ie x-axis as front to back axis (with front being
         // front view of astrobee in Figure 8-2
-        double y_offset = 0.0572 * imageProcessing.scale; // -0.0422 - 0.0572   //ie side/left/right offset
-        double z_offset = -0.1111 * imageProcessing.scale; // -0.0826 - (-0.1111) //ie up down offset
+        double y_offset = 0.0572 * imageProcessing.getScale(); // -0.0422 - 0.0572   //ie side/left/right offset
+        double z_offset = -0.1111 * imageProcessing.getScale(); // -0.0826 - (-0.1111) //ie up down offset
+        Log.i(TAG+"/laserBeam", "y_offset is: " + y_offset);
+        Log.i(TAG+"/laserBeam", "z_offset is: " + z_offset);
         // x in this case is front/back which not needed
         //currentQuaternion = api.getRobotKinematics().getOrientation();
         //probably need orientation check as well, cus now theres target in ceiling etc
