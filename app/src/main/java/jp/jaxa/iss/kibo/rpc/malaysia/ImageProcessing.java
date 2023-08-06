@@ -41,9 +41,7 @@ public class ImageProcessing {
     public List<Mat> corners;
     private Dictionary dictionary;
     private Mat ids;
-
-    //introduce scale as a global variable
-    double scale = 0.0;
+    private double scale;
     
     public ImageProcessing (Dictionary dictionary, List<Mat> corners, Mat ids, DetectorParameters detectorParameters) {
         this.dictionary = dictionary;
@@ -102,7 +100,8 @@ public class ImageProcessing {
         // scale as ratio
         double oldscale = arLength / (5.0);
         String StringScale = (String) String.format("%.2f", oldscale);
-        Double scale = Double.parseDouble(StringScale);
+        Double ValueScale = Double.parseDouble(StringScale);
+        scale = ValueScale;
         Log.i(TAG+"/inspectCorners", "Scale is: " + scale);
 
         // if the aruco id, belongs to the current target, go into if block, else continue
@@ -178,13 +177,8 @@ public class ImageProcessing {
         double z_difference = middle_z - aruco_middle_z;
         Log.i(TAG+"/moveCloserToArucoMarker", "The z difference is: " + z_difference);
 
-        //Reintroduce scale
-
-
         // initialize new_point
         Point new_point = new Point(0,0,0);
-
-        //TODO: implement scale in aruco_middle
 
         /* Case 1: x_difference only */
         while(x_difference < -scale || x_difference > scale){
