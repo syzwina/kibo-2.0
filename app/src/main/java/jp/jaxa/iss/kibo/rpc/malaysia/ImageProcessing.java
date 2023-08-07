@@ -186,15 +186,12 @@ public class ImageProcessing {
             if(x_difference < -scale){
                 //for extreme values
                 if(x_difference <= -100){
-                    new_point = new Point (new_point.getX() + (x_difference + 80), new_point.getY(), new_point.getZ());
                     x_difference += 80;
                 }
                 else if(x_difference <= -30){
-                    new_point = new Point (new_point.getX() + (x_difference + 20), new_point.getY(), new_point.getZ());
                     x_difference += 20;
                 }
                 else{
-                    new_point = new Point (new_point.getX() + (x_difference + scale), new_point.getY(), new_point.getZ());
                     x_difference += scale;
                 }
             }
@@ -202,15 +199,12 @@ public class ImageProcessing {
             else{
                 //for extreme values
                 if(x_difference >= 100){
-                    new_point = new Point (new_point.getX() + (x_difference - 80), new_point.getY(), new_point.getZ());
                     x_difference -= 80;
                 }
                 else if(x_difference >= 30){
-                    new_point = new Point (new_point.getX() + (x_difference - 20), new_point.getY(), new_point.getZ());
                     x_difference -= 20;
                 }
                 else{
-                    new_point = new Point (new_point.getX() + (x_difference - scale), new_point.getY(), new_point.getZ());
                     x_difference -= scale;
                 }
             }
@@ -226,15 +220,12 @@ public class ImageProcessing {
             if(z_difference < -scale){
                 //for extreme values
                 if(z_difference <= -100){
-                    new_point = new Point (new_point.getX(), new_point.getY(), new_point.getZ() + (z_difference + 80));
                     z_difference += 80;
                 }
                 else if(z_difference <= -30){
-                    new_point = new Point (new_point.getX(), new_point.getY(), new_point.getZ() + (z_difference + 20));
                     z_difference += 20;
                 }
                 else{
-                    new_point = new Point (new_point.getX(), new_point.getY(), new_point.getZ() + (z_difference + scale));
                     z_difference += scale;
                 }
             }
@@ -242,15 +233,12 @@ public class ImageProcessing {
             else{
                 //for extreme values
                 if(z_difference >= 100){
-                    new_point = new Point (new_point.getX(), new_point.getY(), new_point.getZ() + (z_difference - 80));
                     z_difference -= 80;
                 }
                 else if(z_difference >= 30){
-                    new_point = new Point (new_point.getX(), new_point.getY(), new_point.getZ() + (z_difference - 20));
                     z_difference -= 20;
                 }
                 else{
-                    new_point = new Point (new_point.getX(), new_point.getY(), new_point.getZ() + (z_difference - scale));
                     z_difference -= scale;
                 }
             }
@@ -272,16 +260,9 @@ public class ImageProcessing {
         if (current_target == 4) {
             new_point = new Point(new_point.getX(), new_point.getY() - x_difference, new_point.getZ() + z_difference);
         }
-        // if (current_target == 5) {
-        //     new_point = new Point(new_point.getX() + x_difference, new_point.getY() + z_difference, new_point.getZ() + 0);
-        // }
-        // if (current_target == 6) {
-        //     new_point = new Point(new_point.getX(), new_point.getY() + x_difference, new_point.getZ() + z_difference);
-        // }
-
+        Log.i(TAG+"/moveCloserToArucoMarker", "The new point is now: " + new_point);
 
         return new_point;
-
     }
 
 
