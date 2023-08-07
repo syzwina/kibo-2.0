@@ -173,9 +173,9 @@ public class ImageProcessing {
         double aruco_middle_z = aruco_middle[1];
 
         double x_difference = middle_x - aruco_middle_x;
-        Log.i(TAG+"/moveCloserToArucoMarker", "The x difference is: " + x_difference);
+        Log.i(TAG+"/moveCloserToArucoMarker", "The initial x difference is: " + x_difference);
         double z_difference = middle_z - aruco_middle_z;
-        Log.i(TAG+"/moveCloserToArucoMarker", "The z difference is: " + z_difference);
+        Log.i(TAG+"/moveCloserToArucoMarker", "The initial z difference is: " + z_difference);
 
         // initialize new_point
         Point new_point = new Point(0,0,0);
@@ -209,8 +209,6 @@ public class ImageProcessing {
                 }
             }
             counter_x ++;
-            Log.i(TAG+"/moveCloserToArucoMarker", "The x difference is currently: " + x_difference);
-            Log.i(TAG+"/moveCloserToArucoMarker", "The new point is now: " + new_point);
             Log.i(TAG+"/moveCloserToArucoMarker", "The while (x) attempted: " + counter_x);
         }
 
@@ -243,8 +241,6 @@ public class ImageProcessing {
                 }
             }
             counter_z ++;
-            Log.i(TAG+"/moveCloserToArucoMarker", "The z difference is currently: " + z_difference);
-            Log.i(TAG+"/moveCloserToArucoMarker", "The new point is now: " + new_point);
             Log.i(TAG+"/moveCloserToArucoMarker", "The while (z) attempted: " + counter_z);
         }
 
@@ -261,6 +257,8 @@ public class ImageProcessing {
             new_point = new Point(new_point.getX(), new_point.getY() - x_difference, new_point.getZ() + z_difference);
         }
         Log.i(TAG+"/moveCloserToArucoMarker", "The new point is now: " + new_point);
+        Log.i(TAG+"/moveCloserToArucoMarker", "The final x difference is: " + x_difference);
+        Log.i(TAG+"/moveCloserToArucoMarker", "The final z difference is: " + z_difference);
 
         return new_point;
     }

@@ -191,8 +191,8 @@ public class YourService extends KiboRpcService {
         // compensate for laser pointer offset from navcam in plane that contains navcam/laser pointer by getting orientation first
         // yz axis offset value with local point origin at astrobee FROM NAVCAM under upright orientation ie x-axis as front to back axis (with front being
         // front view of astrobee in Figure 8-2
-        double y_offset = 0.0572 * imageProcessing.getScale(); // -0.0422 - 0.0572   //ie side/left/right offset
-        double z_offset = -0.1111 * imageProcessing.getScale(); // -0.0826 - (-0.1111) //ie up down offset
+        double y_offset = -0.0994 * imageProcessing.getScale(); // -0.0422 - 0.0572   //ie side/left/right offset
+        double z_offset = 0.0285 * imageProcessing.getScale(); // -0.0826 - (-0.1111) //ie up down offset
         Log.i(TAG+"/laserBeam", "y_offset is: " + y_offset);
         Log.i(TAG+"/laserBeam", "z_offset is: " + z_offset);
         // x in this case is front/back which not needed
@@ -213,12 +213,6 @@ public class YourService extends KiboRpcService {
         }
         if (current_target == 4) {
             new_point = new Point(optimized_point.getX(), optimized_point.getY()- y_offset, optimized_point.getZ() + z_offset); //+ve y to go left,
-        }
-        if (current_target == 5) {
-            new_point = new Point(optimized_point.getX() + y_offset, optimized_point.getY() + z_offset, optimized_point.getZ()); // test
-        }
-        if (current_target == 6) {
-            new_point = new Point(optimized_point.getX(), optimized_point.getY() + y_offset, optimized_point.getZ() + z_offset); // hopefully correct
         }
 
         api.moveTo(new_point, PointConstants.POINTS_QUATERNIONS.get(this.current_target.get(targetCounter) - 1), false);
