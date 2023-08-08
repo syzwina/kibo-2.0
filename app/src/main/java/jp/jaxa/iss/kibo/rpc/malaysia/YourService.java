@@ -31,7 +31,7 @@ public class YourService extends KiboRpcService {
 
     private List<Integer> current_target;
 
-    private int TIME_FOR_QR_AND_GOAL = 151 * 1000;
+    private int TIME_FOR_QR_AND_GOAL = 152 * 1000;
 
     // used globally as a way to know which point is the current goal
     private Point currentGoalCoords = new Point(0,0,0);
