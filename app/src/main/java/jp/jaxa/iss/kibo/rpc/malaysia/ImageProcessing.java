@@ -169,7 +169,7 @@ public class ImageProcessing {
         Log.i(TAG+"/moveCloserToArucoMarker", "Length of AR Tag is: " + arLength);
 
         // scale is so that it can move as close as possible
-        double scale = arLength / (5.0 * 1.5);
+        double scale = arLength / (5.0);
         Log.i(TAG+"/moveCloserToArucoMarker", "Scale is: " + scale);
 
         double x_difference = middle_x - aruco_middle_x;
@@ -204,55 +204,39 @@ public class ImageProcessing {
         //Combine 2 cases: x_diff & z_diff
         //TODO: implement scale in aruco_middle
 
-        /* Case 1: positive difference case */
-        while (x_difference >= scale){
-            /* special case if x >= 100 */
-            if (x_difference >= 100){
-                new_point = new Point (point.getX() + (x_difference - 80), point.getY(), point.getZ());
-                x_difference -= 80;
-                //x_difference /= (move_relative / 2.0);
+        /* Case 1: x_difference only */
+        while(x_difference < -scale || x_difference > scale){
+            //1: x_difference < -scale
+            if(x_difference < -scale){
+                //for extreme values
+                if(x_difference <= -100){
+                    new_point = new Point (new_point.getX() + (x_difference + 80), new_point.getY(), new_point.getZ());
+                    x_difference += 80;
+                }
+                else if(x_difference <= -30){
+                    new_point = new Point (new_point.getX() + (x_difference + 20), new_point.getY(), new_point.getZ());
+                    x_difference += 20;
+                }
+                else{
+                    new_point = new Point (new_point.getX() + (x_difference + scale), new_point.getY(), new_point.getZ());
+                    x_difference += scale;
+                }
             }
-            else {
-                new_point = new Point (point.getX() + (x_difference - 20), point.getY(), point.getZ());
-                x_difference -= 20;
-                //x_difference /= (move_relative / 2.0);
-            }
-            counter_x ++;
-            Log.i(TAG+"/moveCloserToArucoMarker", "The x difference is currently: " + x_difference);
-            Log.i(TAG+"/moveCloserToArucoMarker", "The new point is now: " + new_point);
-            Log.i(TAG+"/moveCloserToArucoMarker", "The while (x) attempted: " + counter_x);
-        }
-
-        while (z_difference >= scale){
-            /* special case if z >= 100 */
-            if (z_difference >= 100){
-                new_point = new Point (point.getX(), point.getY(), point.getZ() + (z_difference - 80));
-                z_difference -= 80;
-                //z_difference *= (move_relative / 2.0);
-            }
-            else {
-                new_point = new Point (point.getX(), point.getY(), point.getZ() + (z_difference - 20));
-                z_difference -= 20;
-               // z_difference *= (move_relative / 2.0);
-            }
-            counter_z ++;
-            Log.i(TAG+"/moveCloserToArucoMarker", "The z difference is currently: " + z_difference);
-            Log.i(TAG+"/moveCloserToArucoMarker", "The new point is now: " + new_point);
-            Log.i(TAG+"/moveCloserToArucoMarker", "The while (z) attempted: " + counter_z);
-        }
-
-        /* Case 2: negative difference case */
-        while (x_difference <= -scale){
-            /* special case if x >= 100 */
-            if (x_difference <= 100){
-                new_point = new Point (point.getX() + (x_difference + 80), point.getY(), point.getZ());
-                x_difference += 80;
-                //x_difference /= (move_relative / 2.0);
-            }
-            else {
-                new_point = new Point (point.getX() + (x_difference + 20), point.getY(), point.getZ());
-                x_difference += 20;
-                //x_difference /= (move_relative / 2.0);
+            //2: x_difference > scale
+            else{
+                //for extreme values
+                if(x_difference >= 100){
+                    new_point = new Point (new_point.getX() + (x_difference - 80), new_point.getY(), new_point.getZ());
+                    x_difference -= 80;
+                }
+                else if(x_difference >= 30){
+                    new_point = new Point (new_point.getX() + (x_difference - 20), new_point.getY(), new_point.getZ());
+                    x_difference -= 20;
+                }
+                else{
+                    new_point = new Point (new_point.getX() + (x_difference - scale), new_point.getY(), new_point.getZ());
+                    x_difference -= scale;
+                }
             }
             counter_x ++;
             Log.i(TAG+"/moveCloserToArucoMarker", "The x difference is currently: " + x_difference);
@@ -260,17 +244,39 @@ public class ImageProcessing {
             Log.i(TAG+"/moveCloserToArucoMarker", "The while (x) attempted: " + counter_x);
         }
 
-        while (z_difference <= -scale){
-            /* special case if z >= 100 */
-            if (z_difference <= 100){
-                new_point = new Point (point.getX(), point.getY(), point.getZ() + (z_difference + 80));
-                z_difference += 80;
-               // z_difference /= (move_relative / 2.0);
+        /* Case 2: z_difference only */
+        while(z_difference < -scale || z_difference > scale){
+            //1: z_difference < -scale
+            if(z_difference < -scale){
+                //for extreme values
+                if(z_difference <= -100){
+                    new_point = new Point (new_point.getX(), new_point.getY(), new_point.getZ() + (z_difference + 80));
+                    z_difference += 80;
+                }
+                else if(z_difference <= -30){
+                    new_point = new Point (new_point.getX(), new_point.getY(), new_point.getZ() + (z_difference + 20));
+                    z_difference += 20;
+                }
+                else{
+                    new_point = new Point (new_point.getX(), new_point.getY(), new_point.getZ() + (z_difference + scale));
+                    z_difference += scale;
+                }
             }
-            else {
-                new_point = new Point (point.getX(), point.getY(), point.getZ() + (z_difference + 20));
-                z_difference += 20;
-                //z_difference /= (move_relative / 2.0);
+            //2: z_difference > scale
+            else{
+                //for extreme values
+                if(z_difference >= 100){
+                    new_point = new Point (new_point.getX(), new_point.getY(), new_point.getZ() + (z_difference - 80));
+                    z_difference -= 80;
+                }
+                else if(z_difference >= 30){
+                    new_point = new Point (new_point.getX(), new_point.getY(), new_point.getZ() + (z_difference - 20));
+                    z_difference -= 20;
+                }
+                else{
+                    new_point = new Point (new_point.getX(), new_point.getY(), new_point.getZ() + (z_difference - scale));
+                    z_difference -= scale;
+                }
             }
             counter_z ++;
             Log.i(TAG+"/moveCloserToArucoMarker", "The z difference is currently: " + z_difference);
