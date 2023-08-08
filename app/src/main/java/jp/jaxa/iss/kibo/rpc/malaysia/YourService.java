@@ -191,8 +191,8 @@ public class YourService extends KiboRpcService {
         // compensate for laser pointer offset from navcam in plane that contains navcam/laser pointer by getting orientation first
         // yz axis offset value with local point origin at astrobee FROM NAVCAM under upright orientation ie x-axis as front to back axis (with front being
         // front view of astrobee in Figure 8-2
-        double y_offset = -0.0994 * imageProcessing.getScale(); // -0.0422 - 0.0572   //ie side/left/right offset
-        double z_offset = 0.0285 * imageProcessing.getScale(); // -0.0826 - (-0.1111) //ie up down offset
+        double y_offset = 0; // -0.0422 - 0.0572   //ie side/left/right offset
+        double z_offset = 0; // -0.0826 - (-0.1111) //ie up down offset
         Log.i(TAG+"/laserBeam", "y_offset is: " + y_offset);
         Log.i(TAG+"/laserBeam", "z_offset is: " + z_offset);
         // x in this case is front/back which not needed
@@ -200,22 +200,26 @@ public class YourService extends KiboRpcService {
         //probably need orientation check as well, cus now theres target in ceiling etc
         Log.i(TAG+"/laserBeam", "current Robot Position before offset compensation laser pointer: " + api.getRobotKinematics().getPosition().toString());
 
-        Point new_point = new Point(0,0,0);
+        Point new_point;
 
         if (current_target == 1) {
             new_point = new Point(optimized_point.getX() + y_offset, optimized_point.getY(), optimized_point.getZ() + z_offset); //test target 1, +ve
         }
-        if (current_target == 2){
+        else if (current_target == 2){
             new_point = new Point(optimized_point.getX() + y_offset, optimized_point.getY() - z_offset, optimized_point.getZ()); //test target 2, correct wall now
         }
-        if (current_target == 3) {
+        else if (current_target == 3) {
             new_point = new Point(optimized_point.getX() + z_offset, optimized_point.getY() + y_offset, optimized_point.getZ()); //testing hypothesis on target 3, works!
         }
-        if (current_target == 4) {
+        else if (current_target == 4) {
             new_point = new Point(optimized_point.getX(), optimized_point.getY()- y_offset, optimized_point.getZ() + z_offset); //+ve y to go left,
         }
+        else {
+            new_point = new Point(0,0,0);
+            Log.i(TAG+"/laserBeam", "ALERT: Unknown Target " + current_target);
+        }
 
-        api.moveTo(new_point, PointConstants.POINTS_QUATERNIONS.get(this.current_target.get(targetCounter) - 1), false);
+        api.relativeMoveTo(new_point, PointConstants.POINTS_QUATERNIONS.get(this.current_target.get(targetCounter) - 1), false);
 
         Log.i(TAG+"/laserBeam", "current Robot Position after offset compensation laser pointer: " + api.getRobotKinematics().getPosition().toString());
 
